@@ -1,12 +1,19 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Navigate, useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
+
+import { useEffect } from "react";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard"); 
+    }
+  }, [navigate]);
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -21,7 +28,9 @@ function Login() {
       //redirect later logic here will be added
       setEmail("");
       setPassword("");
-      navigate("/dashboard");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1100);
     } catch (err) {
       console.error(err);
       setMsg("Login failed");
@@ -32,7 +41,6 @@ function Login() {
   return (
     <>
       <div className="flex justify-center items-center h-screen bg-gray-100">
-        
         <form
           onSubmit={handleLogin}
           className="bg-white p-8 rounded shadow-md w-full max-w-md"
@@ -69,7 +77,15 @@ function Login() {
             </a>
           </p>
 
-          {msg && <p className="mt-4 text-center text-sm">{msg}</p>}
+          {msg && (
+            <p
+              className={`mt-4 text-center text-sm ${
+                msg === "Login Successful" ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {msg}
+            </p>
+          )}
         </form>
       </div>
     </>

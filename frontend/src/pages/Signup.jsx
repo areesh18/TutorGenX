@@ -1,12 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
-
+import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
-
+  const navigate = useNavigate();
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
@@ -22,6 +23,9 @@ function Signup() {
         setPassword("");
         console.log("Signup successful");
         setMsg("Signup successful ✅ Please login now.");
+        setTimeout(() => {
+          navigate("/login");
+        },1000);
       }
     } catch (err) {
       console.error(err);
@@ -74,12 +78,20 @@ function Signup() {
           Sign Up
         </button>
         <p className="text-center text-sm mt-4">
-          Don’t have an account?{" "}
+          Already have an account?{" "}
           <a href="/login" className="text-blue-600">
             login
           </a>
         </p>
-        {msg && <p className="mt-4 text-center text-sm">{msg}</p>}
+        {msg && (
+          <p
+            className={`mt-4 text-center text-sm ${
+              msg.includes("successful") ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {msg}
+          </p>
+        )}
       </form>
     </div>
   );
