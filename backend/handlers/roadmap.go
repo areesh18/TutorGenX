@@ -13,6 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sashabaranov/go-openai"
+	"gorm.io/gorm"
 )
 
 type RoadmapRequest struct {
@@ -394,7 +395,13 @@ func GetUsersRoadmap(w http.ResponseWriter, r *http.Request) {
 	userEmail := claims["email"].(string)
 
 	var roadmaps []models.Roadmap
-	result := db.DB.Preload("Weeks").Where("user_email = ?", userEmail).Order("created_at desc").Find(&roadmaps)
+	result := db.DB.
+		Preload("Weeks", func(db *gorm.DB) *gorm.DB {
+			return db.Order("week ASC")
+		}).
+		Where("user_email = ?", userEmail).
+		Order("created_at desc").
+		Find(&roadmaps)
 
 	if result.Error != nil {
 		fmt.Println("DB Error:", result.Error)

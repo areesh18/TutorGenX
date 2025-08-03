@@ -9,7 +9,6 @@ function Dashboard() {
   const [savedRoadmaps, setSavedRoadmaps] = useState([]);
 
   const token = localStorage.getItem("token");
-  if (!token) return <Navigate to="/login" />;
   useEffect(() => {
     const fetchSavedRoadmaps = async () => {
       try {
@@ -26,6 +25,8 @@ function Dashboard() {
 
     fetchSavedRoadmaps();
   }, [token]);
+  if (!token) return <Navigate to="/login" />;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg("Generating roadmap..");
@@ -195,13 +196,13 @@ function Dashboard() {
               Delete All
             </button>
           </div>
-          <div className="space-y-6">
+          {/* <div className="space-y-6 bg-red-600">
             {savedRoadmaps.map((roadmap, i) => (
               <div
                 key={roadmap.ID || i}
-                className="border rounded p-4 bg-white shadow"
+                className="border rounded p-4  shadow bg-green-500"
               >
-                <div className="flex justify-between">
+                <div className="flex justify-between bg-blue-600">
                   <p className="text-sm text-gray-600 mb-1">
                     📅 Created:{" "}
                     {new Date(roadmap.CreatedAt).toLocaleDateString()}
@@ -282,6 +283,93 @@ function Dashboard() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            ))}
+          </div> */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {savedRoadmaps.map((roadmap, i) => (
+              <div
+                key={roadmap.ID || i}
+                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
+              >
+                {/* Header */}
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      🎯 {roadmap.goal}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Created:{" "}
+                      {new Date(roadmap.CreatedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(roadmap.ID)}
+                    className="text-red-600 text-sm hover:underline"
+                  >
+                    Delete
+                  </button>
+                </div>
+
+                {/* Weeks */}
+                <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
+                  {roadmap.weeks.map((week) => {
+                    let topics = [];
+                    let progress = [];
+
+                    try {
+                      topics = JSON.parse(week.topics || "[]");
+                      progress = JSON.parse(week.progress || "[]");
+                    } catch (err) {
+                      console.error("JSON parse error:", err);
+                    }
+
+                    while (progress.length < topics.length)
+                      progress.push(false);
+
+                    return (
+                      <div
+                        key={week.ID}
+                        className="border p-3 rounded bg-gray-50"
+                      >
+                        <h4 className="font-medium text-gray-700 mb-1">
+                          Week {week.week}: {week.title}
+                        </h4>
+                        <ul className="space-y-1">
+                          {topics.map((topic, i) => (
+                            <li
+                              key={i}
+                              className="flex items-center space-x-2 text-sm"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={progress[i]}
+                                onChange={() =>
+                                  handleCheckboxToggle(
+                                    roadmap.ID,
+                                    week.ID,
+                                    i,
+                                    !progress[i]
+                                  )
+                                }
+                                className="accent-blue-600"
+                              />
+                              <span
+                                className={
+                                  progress[i]
+                                    ? "line-through text-gray-400"
+                                    : ""
+                                }
+                              >
+                                {topic}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ))}
           </div>
