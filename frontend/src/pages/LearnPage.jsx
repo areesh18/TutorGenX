@@ -12,6 +12,30 @@ function LearnPage() {
   const [explanation, setExplanation] = useState("");
   const [quiz, setQuiz] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [simplifiedExp, setSimplifiedExp]=useState("");
+  useEffect(()=>{
+    const generateSimplifiedExp = async ()=>{
+      try{
+        const res=await axios.post("http://localhost:8080/simplify",
+        {
+          topic: selectedTopic,
+          explanation: explanation,
+        },
+      {
+        headers:{
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        }
+      });
+      setSimplifiedExp(res.data.simplifiedexplanation)
+      
+      }catch(err){
+        console.error("Simplification failed:",err);
+      }
+    };
+    if(activeTab=="simplify" && explanation){
+        generateSimplifiedExp();
+      }
+  },[activeTab,explanation,selectedTopic]);
   useEffect(() => {
     const generateQuiz = async () => {
       try {
@@ -36,7 +60,7 @@ function LearnPage() {
     if (activeTab === "quiz" && explanation) {
       generateQuiz();
     }
-  }, [activeTab, explanation]);
+  }, [activeTab, explanation,selectedTopic]);
 
   useEffect(() => {
     const fetchRoadmap = async () => {
@@ -225,7 +249,9 @@ function LearnPage() {
       )}
 
       {activeTab === "simplify" && (
-        <div>🧠 Coming soon: simplified explanations</div>
+        <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
+            <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
+          </div>
       )}
     </div>
   );

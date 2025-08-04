@@ -51,7 +51,7 @@ func main() {
 	router.Handle("/roadmap/{id}", utils.ValidateToken(http.HandlerFunc(handlers.GetSingleRoadmap))).Methods("GET")
 	router.Handle("/explain-topic", utils.ValidateToken(http.HandlerFunc(handlers.ExplainTopicHandler))).Methods("POST")
 	router.Handle("/quiz", utils.ValidateToken(http.HandlerFunc(handlers.GenerateQuiz))).Methods("POST")
-
+	router.Handle("/simplify", utils.ValidateToken(http.HandlerFunc(handlers.Simplify))).Methods("POST")
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
 	handlerWithCORS := utils.CORSMiddleware(router)
