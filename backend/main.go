@@ -50,6 +50,7 @@ func main() {
 	router.Handle("/update-progress", utils.ValidateToken(http.HandlerFunc(handlers.UpdateProgress))).Methods("POST")
 	router.Handle("/roadmap/{id}", utils.ValidateToken(http.HandlerFunc(handlers.GetSingleRoadmap))).Methods("GET")
 	router.Handle("/explain-topic", utils.ValidateToken(http.HandlerFunc(handlers.ExplainTopicHandler))).Methods("POST")
+	router.Handle("/quiz", utils.ValidateToken(http.HandlerFunc(handlers.GenerateQuiz))).Methods("POST")
 
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
