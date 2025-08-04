@@ -6,38 +6,74 @@ import ReactMarkdown from "react-markdown";
 function LearnPage() {
   const { roadmapId } = useParams();
   const [roadmap, setRoadmap] = useState(null);
-  const [activeTab, setActiveTab] = useState("roadmap");
+  const [activeTab, setActiveTab] = useState("Content");
   const [openWeek, setOpenWeek] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [explanation, setExplanation] = useState("");
   const [quiz, setQuiz] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [simplifiedExp, setSimplifiedExp]=useState("");
-  useEffect(()=>{
-    const generateSimplifiedExp = async ()=>{
-      try{
-        const res=await axios.post("http://localhost:8080/simplify",
-        {
-          topic: selectedTopic,
-          explanation: explanation,
-        },
-      {
-        headers:{
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        }
-      });
-      setSimplifiedExp(res.data.simplifiedexplanation)
-      
-      }catch(err){
-        console.error("Simplification failed:",err);
+  const [simplifiedExp, setSimplifiedExp] = useState("");
+  const [examples, setExamples] = useState([]); // array of example objects
+  const [loadingTabData, setLoadingTabData] = useState(false); // loading spinner
+
+  useEffect(() => {
+    const generateExample = async () => {
+      setLoadingTabData(true);
+      try {
+        const res = await axios.post(
+          "http://localhost:8080/example",
+          {
+            topic: selectedTopic,
+            explanation: explanation,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setExamples(res.data.examples);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingTabData(false);
       }
     };
-    if(activeTab=="simplify" && explanation){
-        generateSimplifiedExp();
+    if (activeTab == "example" && explanation) {
+      generateExample();
+    }
+  }, [activeTab, explanation, selectedTopic]);
+
+  useEffect(() => {
+    const generateSimplifiedExp = async () => {
+      setLoadingTabData(true);
+      try {
+        const res = await axios.post(
+          "http://localhost:8080/simplify",
+          {
+            topic: selectedTopic,
+            explanation: explanation,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setSimplifiedExp(res.data.simplifiedexplanation);
+      } catch (err) {
+        console.error("Simplification failed:", err);
+      } finally {
+        setLoadingTabData(false);
       }
-  },[activeTab,explanation,selectedTopic]);
+    };
+    if (activeTab == "simplify" && explanation) {
+      generateSimplifiedExp();
+    }
+  }, [activeTab, explanation, selectedTopic]);
   useEffect(() => {
     const generateQuiz = async () => {
+      setLoadingTabData(true);
       try {
         const res = await axios.post(
           "http://localhost:8080/quiz",
@@ -54,13 +90,15 @@ function LearnPage() {
         setQuiz(res.data.quiz);
       } catch (err) {
         console.error("Quiz generation failed:", err);
+      } finally {
+        setLoadingTabData(false);
       }
     };
 
     if (activeTab === "quiz" && explanation) {
       generateQuiz();
     }
-  }, [activeTab, explanation,selectedTopic]);
+  }, [activeTab, explanation, selectedTopic]);
 
   useEffect(() => {
     const fetchRoadmap = async () => {
@@ -78,6 +116,7 @@ function LearnPage() {
   if (!roadmap) return <p>Loading roadmap...</p>;
 
   const handleExplainTopic = async (topic) => {
+    setLoadingTabData(true);
     setSelectedTopic(topic);
     setExplanation("Loading...");
 
@@ -93,6 +132,8 @@ function LearnPage() {
     } catch (err) {
       setExplanation("Failed to fetch explanation.");
       console.error(err);
+    } finally {
+      setLoadingTabData(false);
     }
   };
 
@@ -182,12 +223,23 @@ function LearnPage() {
       {/* Tab Content */}
       {activeTab === "content" && (
         <div>
-          {selectedTopic && (
-            <h2 className="text-xl font-semibold mb-2">📘 {selectedTopic}</h2>
+          {explanation === "" ? (
+            <p className="text-gray-500">
+              Click a topic and switch to this tab to generate a simplified
+              explanation.
+            </p>
+          ) : (
+            <>
+              {selectedTopic && (
+                <h2 className="text-xl font-semibold mb-2">
+                  📘 {selectedTopic}
+                </h2>
+              )}
+              <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
+                <ReactMarkdown>{explanation}</ReactMarkdown>
+              </div>
+            </>
           )}
-          <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
-            <ReactMarkdown>{explanation}</ReactMarkdown>
-          </div>
         </div>
       )}
       {activeTab === "quiz" && (
@@ -249,19 +301,70 @@ function LearnPage() {
       )}
 
       {activeTab === "simplify" && (
-        <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
-            <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
-          </div>
+        <div>
+          {simplifiedExp === "" ? (
+            <p className="text-gray-500">
+              Click a topic and switch to this tab to generate a simplified
+              explanation.
+            </p>
+          ) : (
+            <>
+              {selectedTopic && (
+                <h2 className="text-xl font-semibold mb-2">
+                  📘 {selectedTopic} simplified!
+                </h2>
+              )}
+              <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
+                <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      {activeTab === "example" && (
+        <div>
+          {examples.length === 0 ? (
+            <p className="text-gray-500">
+              Click a topic and switch to this tab to generate an example.
+            </p>
+          ) : (
+            examples.map((ex, idx) => (
+              <div key={idx} className="bg-white p-4 rounded shadow mb-4">
+                <h3 className="text-lg font-semibold mb-1">📌 {ex.title}</h3>
+                <p className="mb-2">{ex.explanation}</p>
+                <blockquote className="italic text-blue-600 mb-2">
+                  💡 {ex.highlight}
+                </blockquote>
+                {ex.code && (
+                  <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
+                    <code>{ex.code}</code>
+                  </pre>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       )}
     </div>
   );
   return (
-    <div className="flex flex-row justify-between items-center mx-auto px-[10vw] py-8 bg-zinc-100 min-h-screen">
-      {/* Main Content */}
-      <MainSection />
-      {/* Sidebar */}
-      <RoadmapSidebar />
-    </div>
+    <>
+      {loadingTabData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center justify-center shadow min-w-[30vw] min-h-[30vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid mb-4"></div>
+            <span className="text-gray-600 font-semibold">Loading...</span>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-row justify-between items-center mx-auto px-[10vw] py-8 bg-zinc-100 min-h-screen">
+        {/* Main Content */}
+        <MainSection />
+        {/* Sidebar */}
+        <RoadmapSidebar />
+      </div>
+    </>
   );
 }
 

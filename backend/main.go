@@ -52,6 +52,7 @@ func main() {
 	router.Handle("/explain-topic", utils.ValidateToken(http.HandlerFunc(handlers.ExplainTopicHandler))).Methods("POST")
 	router.Handle("/quiz", utils.ValidateToken(http.HandlerFunc(handlers.GenerateQuiz))).Methods("POST")
 	router.Handle("/simplify", utils.ValidateToken(http.HandlerFunc(handlers.Simplify))).Methods("POST")
+	router.Handle("/example", utils.ValidateToken(http.HandlerFunc(handlers.GenerateExamples))).Methods("POST")
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
 	handlerWithCORS := utils.CORSMiddleware(router)
