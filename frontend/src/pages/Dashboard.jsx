@@ -286,93 +286,131 @@ function Dashboard() {
               </div>
             ))}
           </div> */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {savedRoadmaps.map((roadmap, i) => (
+
+          {savedRoadmaps.map((roadmap, i) => {
+            // 🔢 1. Calculate progress
+            let totalTopics = 0;
+            let completedTopics = 0;
+
+            roadmap.weeks.forEach((week) => {
+              let topics = [];
+              let progress = [];
+
+              try {
+                topics = JSON.parse(week.topics || "[]");
+                progress = JSON.parse(week.progress || "[]");
+              } catch (err) {
+                console.error("JSON parse error:", err);
+              }
+
+              totalTopics += topics.length;
+              completedTopics += progress.filter((p) => p).length;
+            });
+
+            const progressPercent =
+              totalTopics === 0
+                ? 0
+                : Math.round((completedTopics / totalTopics) * 100);
+
+            return (
               <div
                 key={roadmap.ID || i}
-                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200"
+                className="bg-white rounded-xl border border-gray-100 p-4 mb-6 shadow-sm transition hover:shadow-md max-w-full"
               >
                 {/* Header */}
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-lg font-semibold text-gray-800 truncate">
                       🎯 {roadmap.goal}
                     </h2>
-                    <p className="text-sm text-gray-500">
-                      Created:{" "}
-                      {new Date(roadmap.CreatedAt).toLocaleDateString()}
+                    <p className="text-xs text-gray-400">
+                      Created: {new Date(roadmap.CreatedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <button
                     onClick={() => handleDelete(roadmap.ID)}
-                    className="text-red-600 text-sm hover:underline"
+                    className="text-xs text-red-500 hover:underline"
                   >
                     Delete
                   </button>
                 </div>
 
+                {/* Progress Bar */}
+                <div className="mb-3">
+                  <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
+                    <span>
+                      Progress: {completedTopics}/{totalTopics}
+                    </span>
+                    <span>{progressPercent}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progressPercent}%` }}
+                    ></div>
+                  </div>
+                </div>
+
                 {/* Weeks */}
-                <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
-                  {roadmap.weeks.map((week) => {
-                    let topics = [];
-                    let progress = [];
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                  {roadmap.weeks
+                    .slice()
+                    .sort((a, b) => a.week - b.week)
+                    .map((week) => {
+                      let topics = [];
+                      let progress = [];
+                      try {
+                        topics = JSON.parse(week.topics || "[]");
+                        progress = JSON.parse(week.progress || "[]");
+                      } catch {}
+                      while (progress.length < topics.length) progress.push(false);
 
-                    try {
-                      topics = JSON.parse(week.topics || "[]");
-                      progress = JSON.parse(week.progress || "[]");
-                    } catch (err) {
-                      console.error("JSON parse error:", err);
-                    }
-
-                    while (progress.length < topics.length)
-                      progress.push(false);
-
-                    return (
-                      <div
-                        key={week.ID}
-                        className="border p-3 rounded bg-gray-50"
-                      >
-                        <h4 className="font-medium text-gray-700 mb-1">
-                          Week {week.week}: {week.title}
-                        </h4>
-                        <ul className="space-y-1">
-                          {topics.map((topic, i) => (
-                            <li
-                              key={i}
-                              className="flex items-center space-x-2 text-sm"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={progress[i]}
-                                onChange={() =>
-                                  handleCheckboxToggle(
-                                    roadmap.ID,
-                                    week.ID,
-                                    i,
-                                    !progress[i]
-                                  )
-                                }
-                                className="accent-blue-600"
-                              />
-                              <span
-                                className={
-                                  progress[i]
-                                    ? "line-through text-gray-400"
-                                    : ""
-                                }
+                      return (
+                        <div
+                          key={week.ID}
+                          className="bg-gray-50 rounded p-2"
+                        >
+                          <h4 className="font-medium text-gray-700 text-sm mb-1">
+                            Week {week.week}: {week.title}
+                          </h4>
+                          <ul className="space-y-1">
+                            {topics.map((topic, i) => (
+                              <li
+                                key={i}
+                                className="flex items-center space-x-2 text-xs"
                               >
-                                {topic}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    );
-                  })}
+                                <input
+                                  type="checkbox"
+                                  checked={progress[i]}
+                                  onChange={() =>
+                                    handleCheckboxToggle(
+                                      roadmap.ID,
+                                      week.ID,
+                                      i,
+                                      !progress[i]
+                                    )
+                                  }
+                                  className="accent-blue-600"
+                                />
+                                <span
+                                  className={
+                                    progress[i]
+                                      ? "line-through text-gray-400"
+                                      : ""
+                                  }
+                                >
+                                  {topic}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
     </div>
