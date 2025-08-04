@@ -12,6 +12,7 @@ import (
 	"tutor_genX/utils"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/gorilla/mux"
 	"github.com/sashabaranov/go-openai"
 	"gorm.io/gorm"
 )
@@ -413,6 +414,76 @@ func GetUsersRoadmap(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(roadmaps)
+}
+func GetSingleRoadmap(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	roadmapID := vars["id"]
+	email := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)["email"].(string)
+
+	var roadmap models.Roadmap
+	err := db.DB.Preload("Weeks").Where("id = ? AND user_email = ?", roadmapID, email).First(&roadmap).Error
+	if err != nil {
+		http.Error(w, "Roadmap not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(roadmap)
+}
+func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
+	// Auth check
+	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Parse request body
+	var req struct {
+		Topic string `json:"topic"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Topic == "" {
+		http.Error(w, "Invalid request: topic is required", http.StatusBadRequest)
+		return
+	}
+
+	// Groq API setup
+	apiKey := os.Getenv("GROQ_API_KEY")
+	if apiKey == "" {
+		http.Error(w, "GROQ_API_KEY not set", http.StatusInternalServerError)
+		return
+	}
+
+	cfg := openai.DefaultConfig(apiKey)
+	cfg.BaseURL = "https://api.groq.com/openai/v1"
+	client := openai.NewClientWithConfig(cfg)
+
+	// Prompt
+	prompt := fmt.Sprintf(`Explain the following topic like you're teaching a beginner, using examples, analogies, and diagrams where needed.
+
+Topic: %s`, req.Topic)
+
+	// Call Groq
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: "llama-3.3-70b-versatile",
+			Messages: []openai.ChatCompletionMessage{
+				{Role: openai.ChatMessageRoleUser, Content: prompt},
+			},
+		},
+	)
+	if err != nil {
+		http.Error(w, "Failed to fetch explanation: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	explanation := resp.Choices[0].Message.Content
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"explanation": explanation,
+	})
 }
 
 func TestPreload(w http.ResponseWriter, r *http.Request) {

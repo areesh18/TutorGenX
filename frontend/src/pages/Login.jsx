@@ -25,7 +25,6 @@ function Login() {
       console.log("Received token:", token);
       localStorage.setItem("token", token);
       setMsg("Login Successful");
-      //redirect later logic here will be added
       setEmail("");
       setPassword("");
       setTimeout(() => {

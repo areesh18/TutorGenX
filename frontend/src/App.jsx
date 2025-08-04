@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
 import Navbar from "./components/Navbar";
+import LearnPage from "./pages/LearnPage";
 function App() {
   return (
     <>
@@ -15,6 +16,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<Landing />} />
+          <Route path="/learn/:roadmapId" element={<LearnPage />} />
         </Routes>
       </BrowserRouter>
     </>

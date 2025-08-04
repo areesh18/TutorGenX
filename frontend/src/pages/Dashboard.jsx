@@ -1,13 +1,13 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 function Dashboard() {
   const [goal, setGoal] = useState("");
   const [roadmap, setRoadmap] = useState([]);
   const [msg, setMsg] = useState("");
   const [savedRoadmaps, setSavedRoadmaps] = useState([]);
-
+  const navigate=useNavigate();
   const token = localStorage.getItem("token");
   useEffect(() => {
     const fetchSavedRoadmaps = async () => {
@@ -324,7 +324,8 @@ function Dashboard() {
                       🎯 {roadmap.goal}
                     </h2>
                     <p className="text-xs text-gray-400">
-                      Created: {new Date(roadmap.CreatedAt).toLocaleDateString()}
+                      Created:{" "}
+                      {new Date(roadmap.CreatedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <button
@@ -362,14 +363,14 @@ function Dashboard() {
                       try {
                         topics = JSON.parse(week.topics || "[]");
                         progress = JSON.parse(week.progress || "[]");
-                      } catch {}
-                      while (progress.length < topics.length) progress.push(false);
+                      } catch (err) {
+                        return err;
+                      }
+                      while (progress.length < topics.length)
+                        progress.push(false);
 
                       return (
-                        <div
-                          key={week.ID}
-                          className="bg-gray-50 rounded p-2"
-                        >
+                        <div key={week.ID} className="bg-gray-50 rounded p-2">
                           <h4 className="font-medium text-gray-700 text-sm mb-1">
                             Week {week.week}: {week.title}
                           </h4>
@@ -408,6 +409,12 @@ function Dashboard() {
                       );
                     })}
                 </div>
+                <button
+                  onClick={() => navigate(`/learn/${roadmap.ID}`)}
+                  className="mt-3 bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700"
+                >
+                  Start Learning →
+                </button>
               </div>
             );
           })}

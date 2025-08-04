@@ -45,7 +45,7 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-	//just for new,responding back with the same received data
+	//just for now,responding back with the same received data
 	response := map[string]string{
 		"name":  req.Name,
 		"email": req.Email,
