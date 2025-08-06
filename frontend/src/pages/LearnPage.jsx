@@ -171,6 +171,7 @@ function LearnPage() {
     if (!roadmap || !roadmap.weeks) {
       return;
     }
+    setActiveTab("content");
     const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
     let prevWeekIndex = currentWeekIndex;
     let prevTopicIndex = currentTopicIndex - 1;
@@ -225,7 +226,7 @@ function LearnPage() {
       console.warn("Roadmap or weeks missing");
       return;
     }
-
+    setActiveTab("content");
     const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
     let nextWeekIndex = currentWeekIndex;
     let nextTopicIndex = currentTopicIndex + 1;
@@ -396,31 +397,7 @@ function LearnPage() {
               <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
                 <ReactMarkdown>{explanation}</ReactMarkdown>
               </div>
-              <div className=" h-[2vh] w-full flex items-center justify-between p-4 mt-4">
-                <button
-                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
-                  onClick={() => handlePrevButton()}
-                >
-                  Prev ⬅️
-                </button>
-                <button
-                  className="bg-green-100 rounded-full border border-green-500 px-4 py-2"
-                  onClick={() => {
-                    console.log("🟠 Button was clicked");
-
-                    
-                  }}
-                >
-                  Mark As Complete✅
-                </button>
-
-                <button
-                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
-                  onClick={() => handleNextButton()}
-                >
-                  Next ➡️
-                </button>
-              </div>
+              
             </>
           )}
         </div>
@@ -528,6 +505,31 @@ function LearnPage() {
           )}
         </div>
       )}
+      <div className=" h-[2vh] w-full flex items-center justify-between p-4 mt-4">
+                <button
+                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
+                  onClick={() => handlePrevButton()}
+                >
+                  Prev ⬅️
+                </button>
+                <button
+                  className="bg-green-100 rounded-full border border-green-500 px-4 py-2"
+                  onClick={() => {
+                    console.log("🟠 Button was clicked");
+
+                    
+                  }}
+                >
+                  Mark As Complete✅
+                </button>
+
+                <button
+                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
+                  onClick={() => handleNextButton()}
+                >
+                  Next ➡️
+                </button>
+              </div>
     </div>
   );
   return (
