@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
+import "react-toastify/dist/ReactToastify.css";
 
 function LearnPage() {
   const { roadmapId } = useParams();
   const [roadmap, setRoadmap] = useState(null);
-  const [activeTab, setActiveTab] = useState("Content");
+  const [activeTab, setActiveTab] = useState("content");
   const [openWeek, setOpenWeek] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [explanation, setExplanation] = useState("");
@@ -15,6 +16,41 @@ function LearnPage() {
   const [simplifiedExp, setSimplifiedExp] = useState("");
   const [examples, setExamples] = useState([]); // array of example objects
   const [loadingTabData, setLoadingTabData] = useState(false); // loading spinner
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+  const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
+
+
+
+  const fetchRoadmap = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/roadmap/${roadmapId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      setRoadmap(res.data);
+    } catch (err) {
+      console.error("Failed to fetch roadmap:", err);
+    }
+  }, [roadmapId]);
+
+  useEffect(() => {
+    if (
+      roadmap &&
+      roadmap.weeks &&
+      roadmap.weeks.length > 0 &&
+      !selectedTopic
+    ) {
+      const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
+      const firstWeek = sortedWeeks[0];
+      const topics = JSON.parse(firstWeek.topics);
+      if (topics.length > 0) {
+        handleExplainTopic(topics[0], 0, 0);
+        setOpenWeek(0);
+      }
+    }
+  }, [roadmap, selectedTopic]);
 
   useEffect(() => {
     const generateExample = async () => {
@@ -101,21 +137,138 @@ function LearnPage() {
   }, [activeTab, explanation, selectedTopic]);
 
   useEffect(() => {
-    const fetchRoadmap = async () => {
-      const res = await axios.get(
-        `http://localhost:8080/roadmap/${roadmapId}`,
+    fetchRoadmap();
+  }, [fetchRoadmap]);
+
+  if (!roadmap) return <p>Loading roadmap...</p>;
+  /* const handleNextButton = () => {
+    const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
+    let nextWeekIndex = currentWeekIndex;
+    let nextTopicIndex = currentTopicIndex + 1;
+
+    const currentWeek = sortedWeeks[currentWeekIndex];
+    if (!currentWeek) return;
+    const topics = JSON.parse(currentWeek.topics);
+    if (nextTopicIndex >= topics.length) {
+      nextWeekIndex++;
+      nextTopicIndex = 0;
+    }
+    if (nextWeekIndex >= sortedWeeks.length) return;
+    const nextWeek = sortedWeeks[nextWeekIndex];
+    const nextTopics = JSON.parse(nextWeek.topics);
+    const nextTopic = nextTopics[nextTopicIndex];
+
+    if (!nextTopic) return;
+
+    handleExplainTopic(nextTopic, nextWeekIndex, nextTopicIndex);
+  }; */
+  const handlePrevButton = () => {
+    console.log("Clicked Prev");
+    console.log("roadmap:", roadmap);
+    console.log("currentWeekIndex:", currentWeekIndex);
+    console.log("currentTopicIndex:", currentTopicIndex);
+
+    if (!roadmap || !roadmap.weeks) {
+      return;
+    }
+    const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
+    let prevWeekIndex = currentWeekIndex;
+    let prevTopicIndex = currentTopicIndex - 1;
+    if (prevTopicIndex < 0) {
+      prevWeekIndex--;
+      if (prevWeekIndex < 0) {
+        return;
+      }
+      const prevWeekTopics = JSON.parse(sortedWeeks[prevWeekIndex].topics);
+      prevTopicIndex = prevWeekTopics.length - 1;
+    }
+    const prevWeek = sortedWeeks[prevWeekIndex];
+    const prevTopics = JSON.parse(prevWeek.topics);
+    const prevTopic = prevTopics[prevTopicIndex];
+    if (!prevTopic) {
+      console.warn("Previous topic not found");
+      return;
+    }
+    handleExplainTopic(prevTopic, prevWeekIndex, prevTopicIndex);
+  };
+  /* const handleMarkAsCompletedButton = async (roadmapId, weekId, topicIndex) => {
+    console.log("Clicked MarkAsCompleted button");
+    console.log("Current Week:", roadmap?.weeks?.[currentWeekIndex]);
+
+    try {
+      await axios.post(
+        "http://localhost:8080/update-progress",
+        {
+          roadmap_id: roadmapId,
+          week_id: weekId,
+          topic_index: topicIndex,
+          value: true,
+        },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-      setRoadmap(res.data);
-    };
-    fetchRoadmap();
-  }, [roadmapId]);
+      toast.success("🎉 Topic marked as completed!");
 
-  if (!roadmap) return <p>Loading roadmap...</p>;
+      await fetchRoadmap();
+    } catch (err) {
+      return console.error("❌ Error marking topic:", err);
+    }
+  }; */
+  const handleNextButton = () => {
+    console.log("Clicked Next");
+    console.log("roadmap:", roadmap);
+    console.log("currentWeekIndex:", currentWeekIndex);
+    console.log("currentTopicIndex:", currentTopicIndex);
 
-  const handleExplainTopic = async (topic) => {
+    if (!roadmap || !roadmap.weeks) {
+      console.warn("Roadmap or weeks missing");
+      return;
+    }
+
+    const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
+    let nextWeekIndex = currentWeekIndex;
+    let nextTopicIndex = currentTopicIndex + 1;
+
+    const currentWeek = sortedWeeks[currentWeekIndex];
+    if (!currentWeek) {
+      console.warn("Current week not found");
+      return;
+    }
+
+    const topics = JSON.parse(currentWeek.topics);
+
+    if (nextTopicIndex >= topics.length) {
+      nextWeekIndex++;
+      nextTopicIndex = 0;
+    }
+
+    if (nextWeekIndex >= sortedWeeks.length) {
+      console.warn("No more weeks");
+      return;
+    }
+
+    const nextWeek = sortedWeeks[nextWeekIndex];
+    const nextTopics = JSON.parse(nextWeek.topics);
+    const nextTopic = nextTopics[nextTopicIndex];
+
+    console.log("Navigating to:", {
+      week: nextWeekIndex,
+      topic: nextTopic,
+      topicIndex: nextTopicIndex,
+    });
+
+    if (!nextTopic) {
+      console.warn("Next topic not found");
+      return;
+    }
+
+    handleExplainTopic(nextTopic, nextWeekIndex, nextTopicIndex);
+  };
+
+  const handleExplainTopic = async (topic, idx, i) => {
+    setCurrentWeekIndex(idx);
+    setCurrentTopicIndex(i);
     setLoadingTabData(true);
     setSelectedTopic(topic);
     setExplanation("Loading...");
@@ -147,7 +300,7 @@ function LearnPage() {
       <span className="inline-block text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded mb-4">
         Generic
       </span>
-      <ul className="space-y-1">
+      <ul className="space-y-1 ">
         {roadmap.weeks
           .slice()
           .sort((a, b) => a.week - b.week)
@@ -179,11 +332,16 @@ function LearnPage() {
                         }`}
                       >
                         <button
-                          onClick={() => handleExplainTopic(topic)}
+                          onClick={() => handleExplainTopic(topic, idx, i)}
                           className={` cursor-pointer flex items-center text-xs font-mono w-full text-left ${
                             progress[i]
                               ? "text-green-600 line-through"
                               : "text-gray-700"
+                          }  
+                          ${
+                            selectedTopic === topic
+                              ? "bg-orange-100 border-l-4 border-orange-500 font-bold"
+                              : ""
                           }`}
                         >
                           <span className="mr-1 text-base">
@@ -237,6 +395,31 @@ function LearnPage() {
               )}
               <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
                 <ReactMarkdown>{explanation}</ReactMarkdown>
+              </div>
+              <div className=" h-[2vh] w-full flex items-center justify-between p-4 mt-4">
+                <button
+                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
+                  onClick={() => handlePrevButton()}
+                >
+                  Prev ⬅️
+                </button>
+                <button
+                  className="bg-green-100 rounded-full border border-green-500 px-4 py-2"
+                  onClick={() => {
+                    console.log("🟠 Button was clicked");
+
+                    
+                  }}
+                >
+                  Mark As Complete✅
+                </button>
+
+                <button
+                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
+                  onClick={() => handleNextButton()}
+                >
+                  Next ➡️
+                </button>
               </div>
             </>
           )}
@@ -351,7 +534,7 @@ function LearnPage() {
     <>
       {loadingTabData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center justify-center shadow min-w-[30vw] min-h-[30vh]">
+          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center justify-center  min-w-[30vw] min-h-[30vh]">
             <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid mb-4"></div>
             <span className="text-gray-600 font-semibold">Loading...</span>
           </div>
