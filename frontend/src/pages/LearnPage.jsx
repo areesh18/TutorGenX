@@ -19,8 +19,6 @@ function LearnPage() {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
 
-
-
   const fetchRoadmap = useCallback(async () => {
     try {
       const res = await axios.get(
@@ -263,7 +261,7 @@ function LearnPage() {
       console.warn("Next topic not found");
       return;
     }
-
+    setOpenWeek(nextWeekIndex);
     handleExplainTopic(nextTopic, nextWeekIndex, nextTopicIndex);
   };
 
@@ -292,258 +290,287 @@ function LearnPage() {
   };
 
   // Sidebar component
-  const RoadmapSidebar = () => (
-    <aside className="w-80 max-w-xs bg-white rounded-xl border border-gray-100 p-4 shadow-sm self-start overflow-y-auto max-h-[90vh]">
-      <h2 className="text-base font-semibold mb-1 flex items-center gap-2">
-        <span className="inline-block text-xl">🧭</span>
-        {/* {roadmap.goal} */}Roadmap
-      </h2>
-      <span className="inline-block text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded mb-4">
-        Generic
-      </span>
-      <ul className="space-y-1 ">
-        {roadmap.weeks
-          .slice()
-          .sort((a, b) => a.week - b.week)
-          .map((week, idx) => {
-            const topics = JSON.parse(week.topics);
-            const progress = JSON.parse(week.progress);
-            const isOpen = openWeek === idx;
-            return (
-              <li key={week.ID} className="transition-all">
-                <button
-                  className={`flex items-center w-full text-left font-mono font-medium text-gray-800 hover:bg-gray-50 px-2 py-1 rounded transition
-                  ${isOpen ? "bg-gray-50" : ""}
-                `}
-                  onClick={() => setOpenWeek(isOpen ? null : idx)}
+  const RoadmapSidebar = () => {
+    const totalWeeks = roadmap.weeks.length;
+    const compactMode = totalWeeks > 6; // Compact if too many weeks
+
+    return (
+      <aside
+        className={`w-72 bg-white rounded-xl border border-gray-200 shadow-sm self-start p-5 ${
+          compactMode ? "text-sm space-y-2" : "space-y-3"
+        }`}
+      >
+        {/* Header */}
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-800">
+            <span className="text-xl">🧭</span>
+            Roadmap
+          </h2>
+          <span className="inline-block text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">
+            Generic
+          </span>
+        </div>
+
+        {/* Weeks */}
+        <ul className="space-y-1">
+          {roadmap.weeks
+            .slice()
+            .sort((a, b) => a.week - b.week)
+            .map((week, idx) => {
+              const topics = JSON.parse(week.topics);
+              const progress = JSON.parse(week.progress);
+              const isOpen = openWeek === idx;
+
+              return (
+                <li
+                  key={week.ID}
+                  className={`border border-gray-200 rounded-lg ${
+                    compactMode ? "p-2" : "p-3"
+                  } bg-white`}
                 >
-                  <span className="mr-2 text-lg">{isOpen ? "▼" : "▶"}</span>
-                  <span className="mr-2 text-base">📁</span>
-                  {week.week}. {week.title}
-                </button>
-                {isOpen && (
-                  <ul className="ml-8 mt-1 space-y-0.5 border border-gray-200 rounded bg-white py-2 px-2 shadow-sm">
-                    {topics.map((topic, i) => (
-                      <li
-                        key={i}
-                        className={`flex items-center text-xs font-mono ${
-                          progress[i]
-                            ? "text-green-600 line-through"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        <button
-                          onClick={() => handleExplainTopic(topic, idx, i)}
-                          className={` cursor-pointer flex items-center text-xs font-mono w-full text-left ${
-                            progress[i]
-                              ? "text-green-600 line-through"
-                              : "text-gray-700"
-                          }  
-                          ${
-                            selectedTopic === topic
-                              ? "bg-orange-100 border-l-4 border-orange-500 font-bold"
-                              : ""
-                          }`}
-                        >
-                          <span className="mr-1 text-base">
-                            {progress[i] ? "✔️" : "📄"}
-                          </span>
-                          {topic}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-      </ul>
-    </aside>
-  );
+                  {/* Week Title */}
+                  <button
+                    onClick={() => setOpenWeek(isOpen ? null : idx)}
+                    className={`flex items-center w-full text-left font-medium ${
+                      compactMode ? "text-sm" : "text-base"
+                    } text-gray-800`}
+                  >
+                    <span className="mr-2">{isOpen ? "▼" : "▶"}</span>
+                    <span className="mr-2">📁</span>
+                    {week.week}. {week.title}
+                  </button>
+
+                  {/* Topics */}
+                  {isOpen && (
+                    <ul className="mt-2 space-y-1">
+                      {topics.map((topic, i) => (
+                        <li key={i}>
+                          <button
+                            onClick={() => handleExplainTopic(topic, idx, i)}
+                            className={`flex items-center w-full text-left rounded-md px-2 py-1 transition ${
+                              progress[i]
+                                ? "text-green-600 line-through"
+                                : "text-gray-700"
+                            } ${
+                              selectedTopic === topic
+                                ? "bg-orange-100 border-l-4 border-orange-500 font-bold"
+                                : "hover:bg-gray-50"
+                            }`}
+                            style={{
+                              fontSize: compactMode ? "0.75rem" : "0.875rem",
+                            }}
+                          >
+                            <span className="mr-2">
+                              {progress[i] ? "✔️" : "📄"}
+                            </span>
+                            {topic}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+        </ul>
+      </aside>
+    );
+  };
+
   const MainSection = () => (
-    <div className="flex-1 bg-white shadow rounded-xl h-[90vh] max-w-3xl p-6 overflow-y-auto">
-      <h1 className="text-2xl font-bold mb-4">{roadmap.goal}</h1>
-      {/* Tabs */}
-      <div className="flex space-x-6 border-b mb-4">
-        {["Content", "Simplify", "Quiz", "Example"].map((tab) => (
-          <button
-            key={tab}
-            className={`pb-2 px-2 font-semibold ${
-              activeTab === tab.toLowerCase()
-                ? "border-b-2 border-orange-500 text-orange-500"
-                : "text-gray-400"
-            }`}
-            onClick={() => setActiveTab(tab.toLowerCase())}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-      {/* Tab Content */}
-      {activeTab === "content" && (
-        <div>
-          {explanation === "" ? (
-            <p className="text-gray-500">
-              Click a topic and switch to this tab to generate a simplified
-              explanation.
-            </p>
-          ) : (
-            <>
-              {selectedTopic && (
-                <h2 className="text-xl font-semibold mb-2">
-                  📘 {selectedTopic}
-                </h2>
-              )}
-              <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
-                <ReactMarkdown>{explanation}</ReactMarkdown>
-              </div>
-              
-            </>
-          )}
-        </div>
-      )}
-      {activeTab === "quiz" && (
-        <div className="space-y-6">
-          {quiz.length === 0 ? (
-            <p className="text-gray-500">
-              Click a topic and switch to this tab to generate a quiz.
-            </p>
-          ) : (
-            quiz.map((q, idx) => (
-              <div key={idx} className="bg-white p-4 rounded shadow-sm">
-                <h3 className="font-semibold text-base mb-2">
-                  {idx + 1}. {q.question}
-                </h3>
-                <ul className="space-y-2">
-                  {q.options.map((opt, i) => {
-                    const optionLetter = String.fromCharCode(65 + i); // A, B, C...
-                    return (
-                      <li key={i}>
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            name={`q-${idx}`}
-                            value={optionLetter}
-                            checked={selectedAnswers[idx] === optionLetter}
-                            onChange={() =>
-                              setSelectedAnswers((prev) => ({
-                                ...prev,
-                                [idx]: optionLetter,
-                              }))
-                            }
-                          />
-                          <span>
-                            {optionLetter}. {opt}
-                          </span>
-                        </label>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))
-          )}
-          {quiz.length > 0 && (
+    <div className="flex-1 bg-white shadow rounded-xl h-[90vh] max-w-3xl flex flex-col">
+      {/* Header */}
+      <div className="p-6 border-b">
+        <h1 className="text-2xl font-bold mb-4">{roadmap.goal}</h1>
+
+        {/* Tabs */}
+        <div className="flex space-x-6 border-b pb-2">
+          {["Content", "Simplify", "Quiz", "Example"].map((tab) => (
             <button
-              onClick={() => {
-                let score = 0;
-                quiz.forEach((q, idx) => {
-                  if (selectedAnswers[idx] === q.answer) score++;
-                });
-                alert(`You scored ${score} out of ${quiz.length}`);
-              }}
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
+              key={tab}
+              className={`pb-2 px-2 font-semibold transition-colors ${
+                activeTab === tab.toLowerCase()
+                  ? "border-b-2 border-orange-500 text-orange-500"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+              onClick={() => setActiveTab(tab.toLowerCase())}
             >
-              Submit Quiz
+              {tab}
             </button>
-          )}
+          ))}
         </div>
-      )}
+      </div>
 
-      {activeTab === "simplify" && (
-        <div>
-          {simplifiedExp === "" ? (
-            <p className="text-gray-500">
-              Click a topic and switch to this tab to generate a simplified
-              explanation.
-            </p>
-          ) : (
-            <>
-              {selectedTopic && (
-                <h2 className="text-xl font-semibold mb-2">
-                  📘 {selectedTopic} simplified!
-                </h2>
-              )}
-              <div className="prose max-w-none max-h-[60vh] overflow-y-auto bg-white rounded p-4 shadow-inner">
-                <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-      {activeTab === "example" && (
-        <div>
-          {examples.length === 0 ? (
-            <p className="text-gray-500">
-              Click a topic and switch to this tab to generate an example.
-            </p>
-          ) : (
-            examples.map((ex, idx) => (
-              <div key={idx} className="bg-white p-4 rounded shadow mb-4">
-                <h3 className="text-lg font-semibold mb-1">📌 {ex.title}</h3>
-                <p className="mb-2">{ex.explanation}</p>
-                <blockquote className="italic text-blue-600 mb-2">
-                  💡 {ex.highlight}
-                </blockquote>
-                {ex.code && (
-                  <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
-                    <code>{ex.code}</code>
-                  </pre>
+      {/* Main scrollable content */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Content Tab */}
+        {activeTab === "content" && (
+          <div>
+            {explanation === "" ? (
+              <p className="text-gray-500">
+                Click a topic and switch to this tab to generate an explanation.
+              </p>
+            ) : (
+              <>
+                {selectedTopic && (
+                  <h2 className="text-xl font-semibold mb-4">
+                    📘 {selectedTopic}
+                  </h2>
                 )}
-              </div>
-            ))
-          )}
-        </div>
-      )}
-      <div className=" h-[2vh] w-full flex items-center justify-between p-4 mt-4">
-                <button
-                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
-                  onClick={() => handlePrevButton()}
-                >
-                  Prev ⬅️
-                </button>
-                <button
-                  className="bg-green-100 rounded-full border border-green-500 px-4 py-2"
-                  onClick={() => {
-                    console.log("🟠 Button was clicked");
+                <div className="prose max-w-none">
+                  <ReactMarkdown>{explanation}</ReactMarkdown>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
-                    
-                  }}
-                >
-                  Mark As Complete✅
-                </button>
+        {/* Simplify Tab */}
+        {activeTab === "simplify" && (
+          <div>
+            {simplifiedExp === "" ? (
+              <p className="text-gray-500">
+                Click a topic and switch to this tab to generate a simplified
+                explanation.
+              </p>
+            ) : (
+              <>
+                {selectedTopic && (
+                  <h2 className="text-xl font-semibold mb-4">
+                    📘 {selectedTopic} simplified!
+                  </h2>
+                )}
+                <div className="prose max-w-none">
+                  <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
-                <button
-                  className="bg-green-100 rounded-full border border-blue-300 px-4 py-2"
-                  onClick={() => handleNextButton()}
-                >
-                  Next ➡️
-                </button>
-              </div>
+        {/* Quiz Tab */}
+        {activeTab === "quiz" && (
+          <div className="space-y-6">
+            {quiz.length === 0 ? (
+              <p className="text-gray-500">
+                Click a topic and switch to this tab to generate a quiz.
+              </p>
+            ) : (
+              quiz.map((q, idx) => (
+                <div key={idx} className="bg-white p-4 rounded shadow-sm">
+                  <h3 className="font-semibold text-base mb-2">
+                    {idx + 1}. {q.question}
+                  </h3>
+                  <ul className="space-y-2">
+                    {q.options.map((opt, i) => {
+                      const optionLetter = String.fromCharCode(65 + i);
+                      return (
+                        <li key={i}>
+                          <label className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name={`q-${idx}`}
+                              value={optionLetter}
+                              checked={selectedAnswers[idx] === optionLetter}
+                              onChange={() =>
+                                setSelectedAnswers((prev) => ({
+                                  ...prev,
+                                  [idx]: optionLetter,
+                                }))
+                              }
+                            />
+                            <span>
+                              {optionLetter}. {opt}
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))
+            )}
+            {quiz.length > 0 && (
+              <button
+                onClick={() => {
+                  let score = 0;
+                  quiz.forEach((q, idx) => {
+                    if (selectedAnswers[idx] === q.answer) score++;
+                  });
+                  alert(`You scored ${score} out of ${quiz.length}`);
+                }}
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm transition-colors"
+              >
+                Submit Quiz
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Example Tab */}
+        {activeTab === "example" && (
+          <div className="space-y-4">
+            {examples.length === 0 ? (
+              <p className="text-gray-500">
+                Click a topic and switch to this tab to generate an example.
+              </p>
+            ) : (
+              examples.map((ex, idx) => (
+                <div key={idx} className="bg-white p-4 rounded shadow">
+                  <h3 className="text-lg font-semibold mb-1">📌 {ex.title}</h3>
+                  <p className="mb-2">{ex.explanation}</p>
+                  <blockquote className="italic text-blue-600 mb-2">
+                    💡 {ex.highlight}
+                  </blockquote>
+                  {ex.code && (
+                    <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
+                      <code>{ex.code}</code>
+                    </pre>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Sticky bottom nav */}
+      <div className="p-4 border-t bg-white flex items-center justify-between">
+        <button
+          className="bg-white border border-blue-300 text-blue-600 rounded-full px-4 py-2 hover:bg-blue-50 transition"
+          onClick={handlePrevButton}
+        >
+          Prev ⬅️
+        </button>
+        <button
+          className="bg-green-500 hover:bg-green-600 text-white rounded-full px-4 py-2 transition"
+          onClick={() => console.log("✅ Mark as complete clicked")}
+        >
+          Mark As Complete ✅
+        </button>
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 transition"
+          onClick={handleNextButton}
+        >
+          Next ➡️
+        </button>
+      </div>
     </div>
   );
+
   return (
     <>
       {loadingTabData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center justify-center  min-w-[30vw] min-h-[30vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid mb-4"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center justify-center min-w-[30vw] min-h-[30vh]">
+            {/* Loader spinner */}
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600 border-solid mb-4"></div>
             <span className="text-gray-600 font-semibold">Loading...</span>
           </div>
         </div>
       )}
 
-      <div className="flex flex-row justify-between items-center mx-auto px-[10vw] py-8 bg-zinc-100 min-h-screen">
+      <div className="flex flex-row justify-between items-start mx-auto px-[10vw] py-8 bg-blue-50 min-h-screen">
         {/* Main Content */}
         <MainSection />
         {/* Sidebar */}

@@ -44,6 +44,7 @@ func main() {
 	router.Handle("/dashboard", utils.ValidateToken(http.HandlerFunc(handlers.DashboardHandler))).Methods("GET")
 	router.Handle("/roadmap", utils.ValidateToken(http.HandlerFunc(handlers.HandleRoadmap))).Methods("POST")
 	router.Handle("/roadmaps", utils.ValidateToken(http.HandlerFunc(handlers.GetUsersRoadmap))).Methods("GET")
+	router.Handle("/save-roadmap", utils.ValidateToken(http.HandlerFunc(handlers.SaveRoadmap))).Methods("POST")
 	router.HandleFunc("/test-preload", handlers.TestPreload).Methods("GET")
 	router.Handle("/delete-roadmap", utils.ValidateToken(http.HandlerFunc(handlers.DeleteRoadmap))).Methods("DELETE")
 	router.Handle("/delete-all-roadmaps", utils.ValidateToken(http.HandlerFunc(handlers.DeleteAllRoadmaps))).Methods("DELETE")

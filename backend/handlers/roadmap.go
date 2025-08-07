@@ -212,12 +212,12 @@ func DeleteRoadmap(w http.ResponseWriter, r *http.Request) {
 
 func HandleRoadmap(w http.ResponseWriter, r *http.Request) {
 	// Validate JWT
-	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	userEmail := claims["email"].(string)
+	/* userEmail := claims["email"].(string) */
 
 	// Parse request body
 	var req RoadmapRequest
@@ -285,7 +285,7 @@ Goal:
 	}
 
 	// Save roadmap to DB
-	newRoadmap := models.Roadmap{
+	/* newRoadmap := models.Roadmap{
 		UserEmail: userEmail,
 		Goal:      req.Goal,
 	}
@@ -314,13 +314,62 @@ Goal:
 			Topics:    string(topicsJSON),
 			Progress:  string(progressJSON),
 		})
-	}
+	} */
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"goal":    req.Goal,
 		"roadmap": roadmap,
 	})
+}
+func SaveRoadmap(w http.ResponseWriter,r *http.Request){
+	//validating jwt
+	claims,ok:=r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok{
+		http.Error(w,"Unauthorized",http.StatusUnauthorized)
+		return
+	}
+	userEmail := claims["email"].(string)
+	var req struct{
+		Goal string `json:"goal"`
+		Roadmap []RoadmapWeek `json:"roadmap"`
+	}
+	if err:=json.NewDecoder(r.Body).Decode(&req); err!=nil{
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+	// Save roadmap to DB
+	newRoadmap := models.Roadmap{
+		UserEmail: userEmail,
+		Goal:      req.Goal,
+	}
+	if err := db.DB.Create(&newRoadmap).Error; err != nil {
+		http.Error(w, "Failed to save roadmap", http.StatusInternalServerError)
+		return
+	}
+
+	for _, week := range req.Roadmap {
+		topicsJSON, err := json.Marshal(week.Topics)
+		if err != nil {
+			http.Error(w, "Failed to serialize topics", http.StatusInternalServerError)
+			return
+		}
+		progress := make([]bool, len(week.Topics))
+		progressJSON, err := json.Marshal(progress)
+		if err != nil {
+			http.Error(w, "Failed to serialize progress", http.StatusInternalServerError)
+			return
+		}
+
+		db.DB.Create(&models.RoadmapWeek{
+			RoadmapID: newRoadmap.ID,
+			Week:      week.Week,
+			Title:     week.Title,
+			Topics:    string(topicsJSON),
+			Progress:  string(progressJSON),
+		})
+	}
+
 }
 func UpdateProgress(w http.ResponseWriter, r *http.Request) {
 	// Auth check

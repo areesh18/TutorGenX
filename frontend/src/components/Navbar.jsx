@@ -21,35 +21,45 @@ export default function Navbar() {
     navigate("/");
   };
   return (
-    <nav className="bg-gray-900 text-white px-6 py-4 flex justify-between items-center">
-      <h1 className="text-xl font-bold">TutorGenX</h1>
-      <div className="space-x-6">
-        {currentPath != "/" && (
-          <Link to="/" className="hover:text-blue-400">
+    <nav className="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+      {/* Logo */}
+      <h1 className="text-2xl font-extrabold tracking-wide">
+        Tutor<span className="text-blue-400">GenX</span>
+      </h1>
+
+      {/* Links */}
+      <div className="flex items-center space-x-6">
+        {currentPath !== "/" && (
+          <Link
+            to="/"
+            className="hover:text-blue-400 transition-colors duration-200"
+          >
             Home
           </Link>
         )}
 
-        {currentPath != "/dashboard" && (
-          <Link to="/dashboard" className="hover:text-blue-400">
+        {currentPath !== "/dashboard" && (
+          <Link
+            to="/dashboard"
+            className="hover:text-blue-400 transition-colors duration-200"
+          >
             Dashboard
           </Link>
         )}
-        {/* <Link to="/flashcards" className="hover:text-blue-400">Flashcards</Link> */}
-        {/* <Link to="/progress" className="hover:text-blue-400">Progress</Link> */}
 
-        {currentPath != "/login" &&
+        {/* Auth Buttons */}
+        {currentPath !== "/login" &&
           (isLoggedIn ? (
             <button
               onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-all duration-200"
             >
               Logout
             </button>
           ) : (
             <button
               onClick={() => navigate("/login")}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-200"
             >
               Login
             </button>

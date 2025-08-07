@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 function Dashboard() {
@@ -7,26 +7,54 @@ function Dashboard() {
   const [roadmap, setRoadmap] = useState([]);
   const [msg, setMsg] = useState("");
   const [savedRoadmaps, setSavedRoadmaps] = useState([]);
+  const [UnsavedRoadmap, setUnsavedRoadmap] = useState(true);
+  const [newGoal, setNewGoal] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const fetchSavedRoadmaps = useCallback(async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/roadmaps", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setSavedRoadmaps(res.data);
+    } catch (err) {
+      console.error("Error fetching saved roadmaps:", err);
+    }
+  }, [token]);
   useEffect(() => {
-    const fetchSavedRoadmaps = async () => {
-      try {
-        const res = await axios.get("http://localhost:8080/roadmaps", {
+    fetchSavedRoadmaps();
+  }, [token, fetchSavedRoadmaps]);
+  if (!token) return <Navigate to="/login" />;
+  const handleSaveButton = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8080/save-roadmap",
+        {
+          goal: newGoal,
+          roadmap,
+        },
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-        setSavedRoadmaps(res.data);
-      } catch (err) {
-        console.error("Error fetching saved roadmaps:", err);
-      }
-    };
-
-    fetchSavedRoadmaps();
-  }, [token]);
-  if (!token) return <Navigate to="/login" />;
-
+        }
+      );
+      setUnsavedRoadmap(false);
+      setRoadmap([]);
+      setMsg("Roadmap Saved✅");
+      fetchSavedRoadmaps();
+    } catch (err) {
+      console.error("Error saving roadmap:", err);
+      alert("Failed to save roadmap");
+    }
+  };
+  const handleDiscardButton = () => {
+    setNewGoal("");
+    setRoadmap([]);
+    setMsg("Roadmap Discarded");
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMsg("Generating roadmap..");
@@ -41,6 +69,9 @@ function Dashboard() {
         }
       );
       setRoadmap(res.data.roadmap);
+      setUnsavedRoadmap(true);
+      setNewGoal(res.data.goal);
+      /* fetchSavedRoadmaps(); */
       setGoal("");
       setMsg("Roadmap Generated");
     } catch (err) {
@@ -138,172 +169,111 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
-        <h2 className="text-2xl font-bold mb-4 text-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 font-sans tracking-tight">
+      <div className="max-w-2xl mx-auto p-6 rounded-3xl shadow-xl bg-white/90 border border-gray-200/60 backdrop-blur-sm">
+        {/* Title */}
+        <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-900 tracking-tight">
           🎯 Your AI Career Roadmap
         </h2>
 
-        <form onSubmit={handleSubmit} className="mb-6">
+        {/* Input Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="mb-8 bg-gray-50/70 shadow-inner rounded-2xl p-5 border border-gray-200/70 backdrop-blur-sm"
+        >
           <textarea
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
-            placeholder="What do you want to become?"
-            className="w-full p-3 border rounded mb-4"
+            placeholder="e.g. I want to become a data scientist specializing in AI..."
+            className="w-full p-4 border border-gray-300/70 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/80 focus:border-blue-500/70 placeholder-gray-400 resize-none text-gray-700 text-base transition"
             rows={3}
             required
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+            className="mt-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow-md hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 w-full text-lg"
           >
-            Generate Roadmap
+            🚀 Generate My Roadmap
           </button>
         </form>
 
-        {msg && <p className="text-center text-sm mb-4">{msg}</p>}
+        {msg && <p className="text-center text-sm mb-4 text-gray-600">{msg}</p>}
 
+        {/* Generated Roadmap */}
         {roadmap.length > 0 && (
-          <div>
-            <h3 className="text-xl font-semibold mb-2">📅 Weekly Plan</h3>
-            <ul className="space-y-4 ">
+          <div className="bg-white rounded-3xl border border-gray-200/70 p-6 mb-6 shadow-md hover:shadow-2xl transition-all duration-300">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              📅 Weekly Plan
+            </h3>
+
+            <ul className="space-y-4">
               {roadmap.map((week) => (
-                <li key={week.week} className="border  p-4 rounded bg-gray-50">
-                  <h4 className="font-bold ">
-                    Week {week.week}: {week.title}
+                <li
+                  key={week.week}
+                  className="border border-gray-200/70 p-5 rounded-2xl bg-gray-50/60 hover:bg-gray-100/70 transition duration-200"
+                >
+                  <h4 className="font-semibold text-gray-800 text-lg">
+                    Week {week.week}:{" "}
+                    <span className="font-normal">{week.title}</span>
                   </h4>
-                  <ul className="list-disc list-inside mt-2 text-sm text-gray-700">
+                  <ul className="list-disc list-inside mt-3 text-sm text-gray-600 space-y-1">
                     {week.topics.map((topic, i) => (
-                      <li key={i}>{topic}</li>
+                      <li key={i} className="hover:text-blue-600 transition">
+                        {topic}
+                      </li>
                     ))}
                   </ul>
                 </li>
               ))}
             </ul>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-3 mt-6">
+              <button
+                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-5 rounded-xl font-medium shadow hover:from-blue-700 hover:to-blue-800 hover:shadow-lg transition-all duration-200"
+                onClick={() => handleSaveButton()}
+              >
+                💾 Save Roadmap
+              </button>
+              <button
+                className="flex-1 py-2 px-5 rounded-xl font-medium text-red-500 border border-red-300/60 hover:bg-red-50 hover:shadow transition-all duration-200"
+                onClick={() => handleDiscardButton()}
+              >
+                🗑 Discard
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Saved Roadmaps */}
       {savedRoadmaps.length > 0 && (
-        <div className="mt-10  ">
-          <div className="flex justify-between ">
-            <h3 className="text-xl font-semibold mb-2">
+        <div className="mt-10">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
               🗂️ Your Saved Roadmaps
             </h3>
             <button
               onClick={() => handleDeleteAll()}
-              className="text-sm text-red-600 hover:underline ml-2"
+              className="text-xs sm:text-sm text-red-600 hover:text-red-700 hover:underline transition-colors"
             >
               Delete All
             </button>
           </div>
-          {/* <div className="space-y-6 bg-red-600">
-            {savedRoadmaps.map((roadmap, i) => (
-              <div
-                key={roadmap.ID || i}
-                className="border rounded p-4  shadow bg-green-500"
-              >
-                <div className="flex justify-between bg-blue-600">
-                  <p className="text-sm text-gray-600 mb-1">
-                    📅 Created:{" "}
-                    {new Date(roadmap.CreatedAt).toLocaleDateString()}
-                  </p>
-                  <button
-                    onClick={() => handleDelete(roadmap.ID)}
-                    className="text-sm text-red-600 hover:underline ml-2"
-                  >
-                    Delete
-                  </button>
-                </div>
 
-                <h4 className="font-bold text-lg mb-2">{roadmap.goal}</h4>
-                <ul className="space-y-2">
-                  {roadmap.weeks.map((week) => (
-                    <li key={week.ID} className="border p-3 rounded bg-gray-50">
-                      <h5 className="font-semibold">
-                        Week {week.week}: {week.title}
-                      </h5>
-                      <ul className="text-sm text-gray-700 mt-1 space-y-1">
-                        {(() => {
-                          let topics = [];
-                          let progress = [];
-
-                          try {
-                            topics = JSON.parse(week.topics || "[]");
-                          } catch (err) {
-                            console.error("Invalid topics JSON:", week.topics);
-                          }
-
-                          try {
-                            progress = JSON.parse(week.progress || "[]");
-                          } catch (err) {
-                            console.error(
-                              "Invalid progress JSON:",
-                              week.progress
-                            );
-                          }
-
-                          // Ensure progress has same length as topics
-                          while (progress.length < topics.length) {
-                            progress.push(false);
-                          }
-
-                          return topics.map((topic, i) => {
-                            const checked = progress[i];
-
-                            return (
-                              <li
-                                key={i}
-                                className="flex items-center space-x-2"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  onChange={() =>
-                                    handleCheckboxToggle(
-                                      roadmap.ID,
-                                      week.ID,
-                                      i,
-                                      !checked
-                                    )
-                                  }
-                                  className="accent-blue-600"
-                                />
-                                <span
-                                  className={
-                                    checked ? "line-through text-gray-400" : ""
-                                  }
-                                >
-                                  {topic}
-                                </span>
-                              </li>
-                            );
-                          });
-                        })()}
-                      </ul>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div> */}
-
-          <div className=" grid grid-cols-3 ">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {savedRoadmaps.map((roadmap, i) => {
-              // 🔢 1. Calculate progress
               let totalTopics = 0;
               let completedTopics = 0;
 
               roadmap.weeks.forEach((week) => {
                 let topics = [];
                 let progress = [];
-
                 try {
                   topics = JSON.parse(week.topics || "[]");
                   progress = JSON.parse(week.progress || "[]");
                 } catch (err) {
                   console.error("JSON parse error:", err);
                 }
-
                 totalTopics += topics.length;
                 completedTopics += progress.filter((p) => p).length;
               });
@@ -316,45 +286,46 @@ function Dashboard() {
               return (
                 <div
                   key={roadmap.ID || i}
-                  className="bg-white w-[25vw]  rounded-xl border border-gray-100 p-4 mb-6 shadow-sm transition hover:shadow-md max-w-full"
+                  className="bg-white/90 rounded-3xl border border-gray-200/60 p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm"
                 >
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-800 truncate ">
+                      <h2 className="text-lg font-bold text-gray-900 leading-snug">
                         🎯 {roadmap.goal}
                       </h2>
-                      <p className="text-xs text-gray-400">
-                        Created:{" "}
+                      <p className="text-xs text-gray-500">
+                        Created on{" "}
                         {new Date(roadmap.CreatedAt).toLocaleDateString()}
                       </p>
                     </div>
                     <button
                       onClick={() => handleDelete(roadmap.ID)}
-                      className="text-xs text-red-500 hover:underline"
+                      className="text-xs text-red-500 hover:text-red-600 hover:underline transition-colors"
                     >
-                      Delete
+                      ✕ Delete
                     </button>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="mb-3">
-                    <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
+                  {/* Progress */}
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center text-xs text-gray-600 mb-1">
                       <span>
-                        Progress: {completedTopics}/{totalTopics}
+                        Progress:{" "}
+                        <span className="font-medium">{completedTopics}</span> /{" "}
+                        {totalTopics}
                       </span>
-                      <span>{progressPercent}%</span>
+                      <span className="font-semibold">{progressPercent}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
-                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                        className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progressPercent}%` }}
                       ></div>
                     </div>
                   </div>
 
-                  {/* Weeks */}
-                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                  {/* Week List */}
+                  <div className="space-y-3 max-h-56 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300">
                     {roadmap.weeks
                       .slice()
                       .sort((a, b) => a.week - b.week)
@@ -371,15 +342,19 @@ function Dashboard() {
                           progress.push(false);
 
                         return (
-                          <div key={week.ID} className="bg-gray-50 rounded p-2">
-                            <h4 className="font-medium text-gray-700 text-sm mb-1">
-                              Week {week.week}: {week.title}
+                          <div
+                            key={week.ID}
+                            className="bg-gray-50/70 border border-gray-200/70 rounded-xl p-3 hover:border-blue-300 transition"
+                          >
+                            <h4 className="font-semibold text-gray-800 text-sm mb-2">
+                              📅 Week {week.week}:{" "}
+                              <span className="font-normal">{week.title}</span>
                             </h4>
-                            <ul className="space-y-1">
+                            <ul className="space-y-1.5">
                               {topics.map((topic, i) => (
                                 <li
                                   key={i}
-                                  className="flex items-center space-x-2 text-xs"
+                                  className="flex items-center gap-2 text-sm text-gray-700"
                                 >
                                   <input
                                     type="checkbox"
@@ -392,13 +367,13 @@ function Dashboard() {
                                         !progress[i]
                                       )
                                     }
-                                    className="accent-blue-600"
+                                    className="accent-blue-600 cursor-pointer"
                                   />
                                   <span
                                     className={
                                       progress[i]
                                         ? "line-through text-gray-400"
-                                        : ""
+                                        : "hover:text-blue-600 transition"
                                     }
                                   >
                                     {topic}
@@ -410,9 +385,11 @@ function Dashboard() {
                         );
                       })}
                   </div>
+
+                  {/* CTA */}
                   <button
                     onClick={() => navigate(`/learn/${roadmap.ID}`)}
-                    className="mt-3 bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700"
+                    className="mt-4 w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 px-4 rounded-xl font-medium shadow hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
                   >
                     Start Learning →
                   </button>
