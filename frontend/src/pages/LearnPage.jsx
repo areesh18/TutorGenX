@@ -296,7 +296,7 @@ function LearnPage() {
 
     return (
       <aside
-        className={`w-72 bg-white rounded-xl border border-gray-200 shadow-sm self-start p-5 ${
+        className={`w-72 bg-white  rounded-xl border border-gray-200 shadow-sm self-start p-5 ${
           compactMode ? "text-sm space-y-2" : "space-y-3"
         }`}
       >
@@ -378,7 +378,7 @@ function LearnPage() {
   };
 
   const MainSection = () => (
-    <div className="flex-1 bg-white shadow rounded-xl h-[90vh] max-w-3xl flex flex-col">
+    <div className="flex-1 bg-white shadow rounded-xl h-[85vh] max-w-3xl flex flex-col">
       {/* Header */}
       <div className="p-6 border-b">
         <h1 className="text-2xl font-bold mb-4">{roadmap.goal}</h1>
@@ -535,7 +535,7 @@ function LearnPage() {
       </div>
 
       {/* Sticky bottom nav */}
-      <div className="p-4 border-t bg-white flex items-center justify-between">
+      <div className="p-4 border-t  flex items-center justify-between">
         <button
           className="bg-white border border-blue-300 text-blue-600 rounded-full px-4 py-2 hover:bg-blue-50 transition"
           onClick={handlePrevButton}
