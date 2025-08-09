@@ -19,6 +19,8 @@ function LearnPage() {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [updating, setUpdating] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   const fetchRoadmap = useCallback(async () => {
     try {
       const res = await axios.get(
@@ -414,6 +416,62 @@ function LearnPage() {
       </aside>
     );
   };
+  //LeftBarNav
+  // Left Sidebar component
+  const LeftSidebar = () => {
+    return (
+      <div
+        className={`bg-white border-r shadow-sm h-screen transition-all duration-300 ${
+          isSidebarOpen ? "w-64" : "w-16"
+        } flex flex-col justify-between`}
+      >
+        {/* Top Section */}
+        <div>
+          <div className="p-4 flex items-center gap-2">
+            <span className="text-orange-500 text-2xl">🛡️</span>
+            {isSidebarOpen && (
+              <h1 className="text-2xl font-extrabold tracking-wide">
+                Tutor<span className="text-blue-400">GenX</span>
+              </h1>
+            )}
+          </div>
+
+          <nav className="flex flex-col mt-4 space-y-2 px-2">
+            {[
+              { label: "Current Course", icon: "📘", active: true },
+              { label: "Create New Course", icon: "✏️" },
+              { label: "Flashcards", icon: "🗂️" },
+              { label: "Library", icon: "📚" },
+              { label: "Profile", icon: "👤" },
+            ].map((item) => (
+              <button
+                key={item.label}
+                className={`flex items-center gap-3 px-4 py-2 rounded-md text-left transition ${
+                  item.active
+                    ? "bg-orange-100 text-orange-500 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                {isSidebarOpen && <span>{item.label}</span>}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Collapse Button */}
+        <div className="p-4">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="flex items-center justify-center w-full rounded-md p-2 hover:bg-gray-100 text-gray-500"
+          >
+            {isSidebarOpen ? "«" : "»"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   //Main section
   const MainSection = () => (
     <div className="flex-1 bg-white shadow rounded-xl h-[85vh] max-w-3xl flex flex-col">
@@ -610,18 +668,25 @@ function LearnPage() {
       {loadingTabData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center justify-center min-w-[30vw] min-h-[30vh]">
-            {/* Loader spinner */}
             <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600 border-solid mb-4"></div>
             <span className="text-gray-600 font-semibold">Loading...</span>
           </div>
         </div>
       )}
 
-      <div className="flex flex-row justify-between items-start mx-auto px-[10vw] py-8 bg-blue-50 min-h-screen">
-        {/* Main Content */}
-        <MainSection />
-        {/* Sidebar */}
-        <RoadmapSidebar />
+      <div className="flex flex-row min-h-screen">
+        {/* Left Sidebar */}
+        <LeftSidebar />
+
+        {/* Main Content Area */}
+        <div className="  flex-1 bg-blue-50">
+          <div className="flex flex-row justify-between items-start mx-auto px-[5vw] py-8">
+            {/* Main Section (middle) */}
+            <MainSection />
+            {/* Right Sidebar (Roadmap) */}
+            <RoadmapSidebar />
+          </div>
+        </div>
       </div>
     </>
   );
