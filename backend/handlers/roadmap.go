@@ -322,19 +322,19 @@ Goal:
 		"roadmap": roadmap,
 	})
 }
-func SaveRoadmap(w http.ResponseWriter,r *http.Request){
+func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
 	//validating jwt
-	claims,ok:=r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
-	if !ok{
-		http.Error(w,"Unauthorized",http.StatusUnauthorized)
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	userEmail := claims["email"].(string)
-	var req struct{
-		Goal string `json:"goal"`
+	var req struct {
+		Goal    string        `json:"goal"`
 		Roadmap []RoadmapWeek `json:"roadmap"`
 	}
-	if err:=json.NewDecoder(r.Body).Decode(&req); err!=nil{
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
@@ -371,6 +371,73 @@ func SaveRoadmap(w http.ResponseWriter,r *http.Request){
 	}
 
 }
+
+/*
+	 func UpdateProgress(w http.ResponseWriter, r *http.Request) {
+		// Auth check
+		claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		userEmail := claims["email"].(string)
+
+		// Parse input
+		var req struct {
+			RoadmapID  uint `json:"roadmap_id"`
+			WeekID     uint `json:"week_id"`
+			TopicIndex int  `json:"topic_index"`
+			Value      bool `json:"value"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		// Find the roadmap week
+		var week models.RoadmapWeek
+		if err := db.DB.First(&week, req.WeekID).Error; err != nil {
+			http.Error(w, "Week not found", http.StatusNotFound)
+			return
+		}
+
+		// Validate that the week belongs to a roadmap owned by the user
+		var roadmap models.Roadmap
+		if err := db.DB.First(&roadmap, req.RoadmapID).Error; err != nil || roadmap.UserEmail != userEmail {
+			http.Error(w, "Not authorized", http.StatusForbidden)
+			return
+		}
+
+		// Update the progress
+		var progress []bool
+		if week.Progress == "" {
+			// Initialize progress slice with default values
+			progress = make([]bool, 10) // or whatever length makes sense
+		} else {
+			if err := json.Unmarshal([]byte(week.Progress), &progress); err != nil {
+				log.Println("Error parsing week.Progress:", week.Progress, err)
+				http.Error(w, "Failed to parse progress", http.StatusInternalServerError)
+				return
+			}
+		}
+		if req.TopicIndex < 0 || req.TopicIndex >= len(progress) {
+			http.Error(w, "Invalid topic index", http.StatusBadRequest)
+			return
+		}
+		progress[req.TopicIndex] = req.Value
+
+		// Save back to DB
+		progressJSON, _ := json.Marshal(progress)
+		week.Progress = string(progressJSON)
+
+		if err := db.DB.Save(&week).Error; err != nil {
+			http.Error(w, "Failed to update progress", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+*/
 func UpdateProgress(w http.ResponseWriter, r *http.Request) {
 	// Auth check
 	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
@@ -406,26 +473,50 @@ func UpdateProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update the progress
+	// Parse topics JSON to get number of topics
+	var topics []string
+	if err := json.Unmarshal([]byte(week.Topics), &topics); err != nil {
+		log.Println("Failed to parse topics JSON:", err)
+		http.Error(w, "Failed to parse topics", http.StatusInternalServerError)
+		return
+	}
+	topicCount := len(topics)
+
+	// Parse or initialize progress array with length equal to number of topics
 	var progress []bool
 	if week.Progress == "" {
-		// Initialize progress slice with default values
-		progress = make([]bool, 10) // or whatever length makes sense
+		progress = make([]bool, topicCount)
 	} else {
 		if err := json.Unmarshal([]byte(week.Progress), &progress); err != nil {
 			log.Println("Error parsing week.Progress:", week.Progress, err)
 			http.Error(w, "Failed to parse progress", http.StatusInternalServerError)
 			return
 		}
+		// In case progress length is different from topics length (maybe old data),
+		// adjust length safely
+		if len(progress) != topicCount {
+			newProgress := make([]bool, topicCount)
+			copy(newProgress, progress)
+			progress = newProgress
+		}
 	}
-	if req.TopicIndex < 0 || req.TopicIndex >= len(progress) {
+
+	// Validate topic index
+	if req.TopicIndex < 0 || req.TopicIndex >= topicCount {
 		http.Error(w, "Invalid topic index", http.StatusBadRequest)
 		return
 	}
+
+	// Update progress
 	progress[req.TopicIndex] = req.Value
 
 	// Save back to DB
-	progressJSON, _ := json.Marshal(progress)
+	progressJSON, err := json.Marshal(progress)
+	if err != nil {
+		log.Println("Failed to marshal progress:", err)
+		http.Error(w, "Failed to update progress", http.StatusInternalServerError)
+		return
+	}
 	week.Progress = string(progressJSON)
 
 	if err := db.DB.Save(&week).Error; err != nil {

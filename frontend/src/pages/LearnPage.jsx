@@ -18,7 +18,7 @@ function LearnPage() {
   const [loadingTabData, setLoadingTabData] = useState(false); // loading spinner
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
-
+  const [updating, setUpdating] = useState(false);
   const fetchRoadmap = useCallback(async () => {
     try {
       const res = await axios.get(
@@ -139,27 +139,6 @@ function LearnPage() {
   }, [fetchRoadmap]);
 
   if (!roadmap) return <p>Loading roadmap...</p>;
-  /* const handleNextButton = () => {
-    const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
-    let nextWeekIndex = currentWeekIndex;
-    let nextTopicIndex = currentTopicIndex + 1;
-
-    const currentWeek = sortedWeeks[currentWeekIndex];
-    if (!currentWeek) return;
-    const topics = JSON.parse(currentWeek.topics);
-    if (nextTopicIndex >= topics.length) {
-      nextWeekIndex++;
-      nextTopicIndex = 0;
-    }
-    if (nextWeekIndex >= sortedWeeks.length) return;
-    const nextWeek = sortedWeeks[nextWeekIndex];
-    const nextTopics = JSON.parse(nextWeek.topics);
-    const nextTopic = nextTopics[nextTopicIndex];
-
-    if (!nextTopic) return;
-
-    handleExplainTopic(nextTopic, nextWeekIndex, nextTopicIndex);
-  }; */
   const handlePrevButton = () => {
     console.log("Clicked Prev");
     console.log("roadmap:", roadmap);
@@ -190,6 +169,64 @@ function LearnPage() {
     }
     handleExplainTopic(prevTopic, prevWeekIndex, prevTopicIndex);
   };
+  const isCurrentTopicCompleted = () => {
+    if (!roadmap || !roadmap.weeks) return false;
+
+    const week = roadmap.weeks[currentWeekIndex];
+    if (!week) return false;
+
+    let progress = [];
+    try {
+      progress = JSON.parse(week.progress || "[]");
+    } catch {
+      progress = [];
+    }
+
+    return progress[currentTopicIndex] === true;
+  };
+
+  const handleMarkAsCompletedButton = async () => {
+    if (updating) return; // ignore clicks while updating
+    setUpdating(true);
+    try {
+      const week = roadmap.weeks[currentWeekIndex];
+      if (!week) {
+        console.warn("Current week not found");
+        setUpdating(false);
+        return;
+      }
+
+      const currentlyCompleted = isCurrentTopicCompleted();
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        "http://localhost:8080/update-progress",
+        {
+          roadmap_id: roadmap.ID,
+          week_id: week.ID,
+          topic_index: currentTopicIndex,
+          value: !currentlyCompleted, // toggle
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      /* alert(
+        !currentlyCompleted
+          ? "Topic marked as completed!"
+          : "Topic marked as incomplete!"
+      );
+ */
+      await fetchRoadmap();
+    } catch (err) {
+      console.error("❌ Error updating completion status:", err);
+      alert("Failed to update completion status.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   /* const handleMarkAsCompletedButton = async (roadmapId, weekId, topicIndex) => {
     console.log("Clicked MarkAsCompleted button");
     console.log("Current Week:", roadmap?.weeks?.[currentWeekIndex]);
@@ -320,6 +357,7 @@ function LearnPage() {
               const topics = JSON.parse(week.topics);
               const progress = JSON.parse(week.progress);
               const isOpen = openWeek === idx;
+              console.log(`Week ${week.week} progress:`, progress);
 
               return (
                 <li
@@ -376,7 +414,7 @@ function LearnPage() {
       </aside>
     );
   };
-
+  //Main section
   const MainSection = () => (
     <div className="flex-1 bg-white shadow rounded-xl h-[85vh] max-w-3xl flex flex-col">
       {/* Header */}
@@ -535,6 +573,7 @@ function LearnPage() {
       </div>
 
       {/* Sticky bottom nav */}
+
       <div className="p-4 border-t  flex items-center justify-between">
         <button
           className="bg-white border border-blue-300 text-blue-600 rounded-full px-4 py-2 hover:bg-blue-50 transition"
@@ -543,11 +582,19 @@ function LearnPage() {
           Prev ⬅️
         </button>
         <button
-          className="bg-green-500 hover:bg-green-600 text-white rounded-full px-4 py-2 transition"
-          onClick={() => console.log("✅ Mark as complete clicked")}
+          disabled={updating}
+          className={`rounded-full px-4 py-2 transition ${
+            isCurrentTopicCompleted()
+              ? "bg-red-500 hover:bg-red-600 text-white"
+              : "bg-green-500 hover:bg-green-600 text-white"
+          }`}
+          onClick={handleMarkAsCompletedButton}
         >
-          Mark As Complete ✅
+          {isCurrentTopicCompleted()
+            ? "Mark As Incomplete ❌"
+            : "Mark As Complete ✅"}
         </button>
+
         <button
           className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4 py-2 transition"
           onClick={handleNextButton}
