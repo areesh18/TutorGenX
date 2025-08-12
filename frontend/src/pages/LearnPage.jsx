@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import "react-toastify/dist/ReactToastify.css";
-
+import { AnimatePresence } from "framer-motion";
 
 function LearnPage() {
   const { roadmapId } = useParams();
@@ -20,7 +20,8 @@ function LearnPage() {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [updating, setUpdating] = useState(false);
-
+  const [showScore, setShowScore] = useState(false);
+  const [score, setScore] = useState(0);
 
   const fetchRoadmap = useCallback(async () => {
     try {
@@ -136,6 +137,20 @@ function LearnPage() {
       generateQuiz();
     }
   }, [activeTab, explanation, selectedTopic]);
+  useEffect(() => {
+    // This function runs when a key is pressed
+    const onKey = (e) => e.key === "Escape" && setShowScore(false);
+
+    // Attach the function to the 'keydown' event
+    window.addEventListener("keydown", onKey);
+
+    // Cleanup: remove event listener when component unmounts
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  const handleOptionClick = (e, option) => {
+    e.preventDefault(); // stops page reload
+    setSelectedOption(option);
+  };
 
   useEffect(() => {
     fetchRoadmap();
@@ -503,17 +518,26 @@ function LearnPage() {
                   <h3 className="font-semibold text-base mb-2">
                     {idx + 1}. {q.question}
                   </h3>
-                  <ul className="space-y-2">
+                  <ul className="space-y-2 bg-white p-2 rounded">
                     {q.options.map((opt, i) => {
                       const optionLetter = String.fromCharCode(65 + i);
+                      const isCorrect = optionLetter === q.answer;
+                      const isSelected = selectedAnswers[idx] === optionLetter;
+
                       return (
                         <li key={i}>
-                          <label className="flex items-center space-x-2">
+                          <label
+                            className={`flex items-center space-x-2 p-2 rounded cursor-pointer
+            ${showScore && isCorrect ? "bg-green-200" : ""}
+            ${showScore && isSelected && !isCorrect ? "bg-red-200" : ""}
+          `}
+                          >
                             <input
                               type="radio"
                               name={`q-${idx}`}
                               value={optionLetter}
-                              checked={selectedAnswers[idx] === optionLetter}
+                              checked={isSelected}
+                              disabled={showScore} // prevent changes after submission
                               onChange={() =>
                                 setSelectedAnswers((prev) => ({
                                   ...prev,
@@ -532,20 +556,95 @@ function LearnPage() {
                 </div>
               ))
             )}
+
             {quiz.length > 0 && (
               <button
                 onClick={() => {
-                  let score = 0;
+                  // calculate score
+                  let total = 0;
                   quiz.forEach((q, idx) => {
-                    if (selectedAnswers[idx] === q.answer) score++;
+                    if (selectedAnswers[idx] === q.answer) total++;
                   });
-                  alert(`You scored ${score} out of ${quiz.length}`);
+                  setScore(total);
+                  setShowScore(true);
                 }}
                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm transition-colors"
               >
                 Submit Quiz
               </button>
             )}
+
+            {/* Animated Popup (Framer Motion) */}
+            <AnimatePresence>
+              {showScore && (
+                <motion.div
+                  className="fixed inset-0 z-50 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {/* Backdrop */}
+                  <motion.div
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowScore(false)}
+                  />
+
+                  {/* Modal */}
+                  <motion.div
+                    className="relative bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  >
+                    <h2 className="text-2xl font-bold mb-2">
+                      🎉 Quiz Completed!
+                    </h2>
+                    <p className="mb-2 text-gray-600">
+                      You scored <span className="font-semibold">{score}</span>{" "}
+                      out of {quiz.length}.
+                    </p>
+
+                    {/* ✅ Conditional Message */}
+                    {score === quiz.length ? (
+                      <p className="text-green-600 font-medium">
+                        Perfect score! 🏆
+                      </p>
+                    ) : score >= quiz.length / 2 ? (
+                      <p className="text-blue-600 font-medium">
+                        Good job! Keep practicing to improve! 💪
+                      </p>
+                    ) : (
+                      <p className="text-red-600 font-medium">
+                        Don’t give up — you’ll get it next time! 🚀
+                      </p>
+                    )}
+
+                    <div className="flex justify-end gap-3 mt-4">
+                      <button
+                        onClick={() => setShowScore(false)}
+                        className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedAnswers({});
+                          setScore(0);
+                          setShowScore(false);
+                        }}
+                        className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        Try Again
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
@@ -620,18 +719,14 @@ function LearnPage() {
         </div>
       )}
 
-      
-        
+      {/* Main Content Area */}
 
-        {/* Main Content Area */}
-
-        <div className="flex flex-row justify-between  mx-auto px-[10vw] py-4 bg-blue-50 min-h-screen items-start">
-          {/* Main Section (middle) */}
-          <MainSection />
-          {/* Right Sidebar (Roadmap) */}
-          <RoadmapSidebar />
-        </div>
-      
+      <div className="flex flex-row justify-between  mx-auto px-[10vw] py-4 bg-blue-50 min-h-screen items-start">
+        {/* Main Section (middle) */}
+        <MainSection />
+        {/* Right Sidebar (Roadmap) */}
+        <RoadmapSidebar />
+      </div>
     </>
   );
 }
