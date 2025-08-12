@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import "react-toastify/dist/ReactToastify.css";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 function LearnPage() {
   const { roadmapId } = useParams();
@@ -20,7 +20,9 @@ function LearnPage() {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [updating, setUpdating] = useState(false);
-  const [showScore, setShowScore] = useState(false);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+
   const [score, setScore] = useState(0);
 
   const fetchRoadmap = useCallback(async () => {
@@ -147,7 +149,6 @@ function LearnPage() {
     // Cleanup: remove event listener when component unmounts
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-  
 
   useEffect(() => {
     fetchRoadmap();
@@ -525,8 +526,8 @@ function LearnPage() {
                         <li key={i}>
                           <label
                             className={`flex items-center space-x-2 p-2 rounded cursor-pointer
-            ${showScore && isCorrect ? "bg-green-200" : ""}
-            ${showScore && isSelected && !isCorrect ? "bg-red-200" : ""}
+            ${quizSubmitted && isCorrect ? "bg-green-200" : ""}
+            ${quizSubmitted && isSelected && !isCorrect ? "bg-red-200" : ""}
           `}
                           >
                             <input
@@ -534,7 +535,7 @@ function LearnPage() {
                               name={`q-${idx}`}
                               value={optionLetter}
                               checked={isSelected}
-                              disabled={showScore} // prevent changes after submission
+                              disabled={quizSubmitted} // prevent changes after submission
                               onChange={() =>
                                 setSelectedAnswers((prev) => ({
                                   ...prev,
@@ -555,25 +556,42 @@ function LearnPage() {
             )}
 
             {quiz.length > 0 && (
-              <button
-                onClick={() => {
-                  // calculate score
-                  let total = 0;
-                  quiz.forEach((q, idx) => {
-                    if (selectedAnswers[idx] === q.answer) total++;
-                  });
-                  setScore(total);
-                  setShowScore(true);
-                }}
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm transition-colors"
-              >
-                Submit Quiz
-              </button>
+              <>
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => {
+                      // calculate score
+                      let total = 0;
+                      quiz.forEach((q, idx) => {
+                        if (selectedAnswers[idx] === q.answer) total++;
+                      });
+                      setScore(total);
+                      setQuizSubmitted(true);
+                      setShowPopup(true);
+                    }}
+                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm transition-colors"
+                  >
+                    Submit Quiz
+                  </button>
+                  {quizSubmitted && (
+                    <button
+                      className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-sm transition-colors"
+                      onClick={() => {
+                        setSelectedAnswers({});
+                        setScore(0);
+                        setQuizSubmitted(false);
+                      }}
+                    >
+                      Retry
+                    </button>
+                  )}
+                </div>
+              </>
             )}
 
             {/* Animated Popup (Framer Motion) */}
             <AnimatePresence>
-              {showScore && (
+              {showPopup && (
                 <motion.div
                   className="fixed inset-0 z-50 flex items-center justify-center"
                   initial={{ opacity: 0 }}
@@ -586,7 +604,7 @@ function LearnPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    onClick={() => setShowScore(false)}
+                    onClick={() =>setQuizSubmitted(false)}
                   />
 
                   {/* Modal */}
@@ -622,7 +640,7 @@ function LearnPage() {
 
                     <div className="flex justify-end gap-3 mt-4">
                       <button
-                        onClick={() => setShowScore(false)}
+                        onClick={() => setShowPopup(false)}
                         className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
                       >
                         Close
@@ -631,7 +649,7 @@ function LearnPage() {
                         onClick={() => {
                           setSelectedAnswers({});
                           setScore(0);
-                          setShowScore(false);
+                          setQuizSubmitted(false);
                         }}
                         className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
                       >
