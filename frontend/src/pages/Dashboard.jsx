@@ -351,7 +351,7 @@ function Dashboard() {
                               <span className="font-normal">{week.title}</span>
                             </h4>
                             <ul className="space-y-1.5">
-                              {topics.map((topic, i) => (
+                              {/* {topics.map((topic, i) => (
                                 <li
                                   key={i}
                                   className="flex items-center gap-2 text-sm text-gray-700"
@@ -378,6 +378,18 @@ function Dashboard() {
                                   >
                                     {topic}
                                   </span>
+                                </li>
+                              ))} */}
+                              {topics.map((topic, i) => (
+                                <li
+                                  key={i}
+                                  className={`text-sm text-gray-700 ${
+                                    progress[i]
+                                      ? "line-through text-gray-400"
+                                      : "hover:text-blue-600 transition"
+                                  }`}
+                                >
+                                  {topic}
                                 </li>
                               ))}
                             </ul>
