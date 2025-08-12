@@ -147,10 +147,7 @@ function LearnPage() {
     // Cleanup: remove event listener when component unmounts
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-  const handleOptionClick = (e, option) => {
-    e.preventDefault(); // stops page reload
-    setSelectedOption(option);
-  };
+  
 
   useEffect(() => {
     fetchRoadmap();
