@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-export default function Navbar() {
+export default function Navbar({bgClass}) {
   const location = useLocation();
   const currentPath = location.pathname;
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function Navbar() {
     navigate("/");
   };
   return (
-    <nav className="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+    <nav className={`bg-gray-900  px-6 py-4 flex justify-between items-center border-b-2 border-gray-50 ${bgClass}`}>
       {/* Logo */}
       <h1 className="text-2xl font-extrabold tracking-wide">
         Tutor<span className="text-blue-400">GenX</span>
