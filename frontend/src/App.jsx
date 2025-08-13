@@ -22,12 +22,12 @@ function App() {
     switch (location.pathname) {
       case "/":
         return "bg-transparent";
-      case "/signup":
+      /* case "/signup":
         return "bg-green-500";
       case "/login":
         return "bg-purple-500";
       case "/dashboard":
-        return "bg-yellow-500";
+        return "bg-yellow-500"; */
       default:
         return "bg-gray-800";
     }
