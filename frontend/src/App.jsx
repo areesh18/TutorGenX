@@ -20,9 +20,9 @@ function App() {
 
   const getBgColor = () => {
     switch (location.pathname) {
-      case "/":
+      /* case "/":
         return "bg-transparent";
-      /* case "/signup":
+      case "/signup":
         return "bg-green-500";
       case "/login":
         return "bg-purple-500";
