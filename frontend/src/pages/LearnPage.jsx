@@ -141,7 +141,7 @@ function LearnPage() {
   }, [activeTab, explanation, selectedTopic]);
   useEffect(() => {
     // This function runs when a key is pressed
-    const onKey = (e) => e.key === "Escape" && setShowScore(false);
+    const onKey = (e) => e.key === "Escape" 
 
     // Attach the function to the 'keydown' event
     window.addEventListener("keydown", onKey);
