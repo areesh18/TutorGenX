@@ -16,7 +16,7 @@ function Login() {
     }
   }, [navigate]);
 
-  const handleLogin = async (e) => {
+  /* const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await axios.post("http://localhost:8080/login", {
@@ -38,8 +38,48 @@ function Login() {
       setEmail("");
       setPassword("");
     }
-  };
+  }; */
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("http://localhost:8080/login", {
+        email,
+        password,
+      });
+
+      const token = res.data.token;
+      const userName = res.data.name; // "Arees" from  API response
+
+      console.log("Received token:", token);
+      console.log("User name:", userName);
+
+      // Store token
+      localStorage.setItem("token", token);
+
+      // Store user data
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          name: userName, // "Arees" from API
+          email: email, // email from form input
+        })
+      );
+
+      setMsg("Login Successful");
+      setEmail("");
+      setPassword("");
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1100);
+    } catch (err) {
+      console.error(err);
+      setMsg("Login failed");
+      setEmail("");
+      setPassword("");
+    }
+  };
   return (
     <div
       className="min-h-screen font-sans flex flex-col items-center justify-center p-4"
