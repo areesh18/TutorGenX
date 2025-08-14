@@ -113,7 +113,7 @@ export default function Navbar({ bgClass }) {
                     <p className="text-sm font-medium truncate">{user?.email}</p>
                   </div>
                   
-                  <Link
+                  {/* <Link
                     to="/profile"
                     className="flex items-center space-x-2 px-4 py-2 text-sm hover:bg-gray-700 transition-colors"
                     onClick={() => setShowUserMenu(false)}
@@ -129,9 +129,9 @@ export default function Navbar({ bgClass }) {
                   >
                     <Cog6ToothIcon className="w-4 h-4" />
                     <span>Settings</span>
-                  </Link>
+                  </Link> */}
                   
-                  <hr className="border-gray-700 my-1" />
+                  {/* <hr className="border-gray-700 my-1" /> */}
                   
                   <button
                     onClick={handleLogout}
@@ -195,8 +195,8 @@ export default function Navbar({ bgClass }) {
                   </div>
                 </div>
                 
-                <NavLink to="/profile" icon={UserCircleIcon}>Profile</NavLink>
-                <NavLink to="/settings" icon={Cog6ToothIcon}>Settings</NavLink>
+                {/* <NavLink to="/profile" icon={UserCircleIcon}>Profile</NavLink>
+                <NavLink to="/settings" icon={Cog6ToothIcon}>Settings</NavLink> */}
                 
                 <button
                   onClick={handleLogout}
