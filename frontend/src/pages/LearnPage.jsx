@@ -141,7 +141,7 @@ function LearnPage() {
   }, [activeTab, explanation, selectedTopic]);
   useEffect(() => {
     // This function runs when a key is pressed
-    const onKey = (e) => e.key === "Escape" 
+    const onKey = (e) => e.key === "Escape" && setShowScore(false);
 
     // Attach the function to the 'keydown' event
     window.addEventListener("keydown", onKey);
@@ -156,7 +156,7 @@ function LearnPage() {
 
   if (!roadmap) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-      <motion.div
+      <div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         className="text-center"
@@ -166,7 +166,7 @@ function LearnPage() {
           <div className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
         </div>
         <p className="text-white text-lg font-medium">Loading roadmap...</p>
-      </motion.div>
+      </div>
     </div>
   );
   
@@ -364,9 +364,7 @@ function LearnPage() {
 
     return (
       <motion.aside
-        initial={{ x: 300, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        
         className={`w-80 bg-gradient-to-b from-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl self-start p-6 ${
           compactMode ? "text-sm space-y-3" : "space-y-4"
         }`}
@@ -378,33 +376,27 @@ function LearnPage() {
       >
         {/* Header */}
         <div className="mb-6">
-          <motion.h2 
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
+          <h2 
+            
             className="text-xl font-bold flex items-center gap-3 text-white mb-2"
           >
             <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
               🧭
             </div>
             Roadmap
-          </motion.h2>
-          <motion.span 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.4, type: "spring" }}
+          </h2>
+          <span 
+            
             className="inline-block text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-purple-300 px-3 py-1 rounded-full font-medium"
           >
             Generic
-          </motion.span>
+          </span>
         </div>
 
         {/* Weeks */}
         <motion.ul 
           className="space-y-2"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          
         >
           {roadmap.weeks
             .slice()
@@ -419,9 +411,7 @@ function LearnPage() {
               return (
                 <motion.li
                   key={week.ID}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 * idx }}
+                  
                   className={`border border-slate-600/50 rounded-xl ${
                     compactMode ? "p-3" : "p-4"
                   } bg-gradient-to-r from-slate-700/30 to-slate-600/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300`}
@@ -449,7 +439,7 @@ function LearnPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <motion.div 
+                        <div 
                           className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
                           initial={{ width: 0 }}
                           animate={{ width: `${progressPercentage}%` }}
@@ -518,10 +508,8 @@ function LearnPage() {
 
   //Main section
   const MainSection = () => (
-    <motion.div 
-      initial={{ y: 50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
+    <div 
+      
       className="flex-1 mr-6 rounded-2xl h-[90vh] max-w-4xl flex flex-col overflow-hidden"
       style={{
         background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)',
@@ -532,23 +520,19 @@ function LearnPage() {
     >
       {/* Header */}
       <div className="p-8 border-b border-slate-700/50">
-        <motion.h1 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
+        <h1 
+          
           className="text-3xl font-bold mb-6 bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent"
         >
           {roadmap.goal}
-        </motion.h1>
+        </h1>
 
         {/* Tabs */}
         <div className="flex space-x-1 bg-slate-800/50 p-1 rounded-xl border border-slate-600/30">
           {["Content", "Simplify", "Quiz", "Example"].map((tab, index) => (
             <motion.button
               key={tab}
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 * index }}
+              
               className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all duration-300 relative overflow-hidden ${
                 activeTab === tab.toLowerCase()
                   ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/25"
@@ -559,7 +543,7 @@ function LearnPage() {
               whileTap={{ scale: 0.95 }}
             >
               {activeTab === tab.toLowerCase() && (
-                <motion.div
+                <div
                   layoutId="activeTab"
                   className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg"
                   style={{ zIndex: -1 }}
@@ -575,10 +559,8 @@ function LearnPage() {
       <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
         {/* Content Tab */}
         {activeTab === "content" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+          <div
+            
           >
             {explanation === "" ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -592,21 +574,18 @@ function LearnPage() {
             ) : (
               <>
                 {selectedTopic && (
-                  <motion.h2 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
+                  <h2 
+                    
                     className="text-2xl font-bold mb-6 text-white flex items-center gap-3"
                   >
                     <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-sm">
                       📘
                     </div>
                     {selectedTopic}
-                  </motion.h2>
+                  </h2>
                 )}
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
+                <div 
+                  
                   className="prose prose-invert prose-lg max-w-none"
                   style={{
                     '--tw-prose-body': '#e2e8f0',
@@ -618,18 +597,16 @@ function LearnPage() {
                   }}
                 >
                   <ReactMarkdown>{explanation}</ReactMarkdown>
-                </motion.div>
+                </div>
               </>
             )}
-          </motion.div>
+          </div>
         )}
 
         {/* Simplify Tab */}
         {activeTab === "simplify" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+          <div
+            
           >
             {simplifiedExp === "" ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -643,21 +620,18 @@ function LearnPage() {
             ) : (
               <>
                 {selectedTopic && (
-                  <motion.h2 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
+                  <h2 
+                    
                     className="text-2xl font-bold mb-6 text-white flex items-center gap-3"
                   >
                     <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-sm">
                       🎯
                     </div>
                     {selectedTopic} simplified!
-                  </motion.h2>
+                  </h2>
                 )}
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
+                <div 
+                  
                   className="prose prose-invert prose-lg max-w-none"
                   style={{
                     '--tw-prose-body': '#e2e8f0',
@@ -669,18 +643,16 @@ function LearnPage() {
                   }}
                 >
                   <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
-                </motion.div>
+                </div>
               </>
             )}
-          </motion.div>
+          </div>
         )}
 
         {/* Quiz Tab */}
         {activeTab === "quiz" && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+          <div 
+            
             className="space-y-6"
           >
             {quiz.length === 0 ? (
@@ -694,11 +666,9 @@ function LearnPage() {
               </div>
             ) : (
               quiz.map((q, idx) => (
-                <motion.div 
+                <div 
                   key={idx} 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * idx }}
+                  
                   className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
                 >
                   <h3 className="font-bold text-lg mb-4 text-white flex items-center gap-3">
@@ -753,15 +723,13 @@ function LearnPage() {
                       );
                     })}
                   </ul>
-                </motion.div>
+                </div>
               ))
             )}
 
             {quiz.length > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+              <div 
+                
                 className="flex justify-between items-center"
               >
                 <motion.button
@@ -783,8 +751,7 @@ function LearnPage() {
                 </motion.button>
                 {quizSubmitted && (
                   <motion.button
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    
                     className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                     onClick={() => {
                       setSelectedAnswers({});
@@ -797,20 +764,20 @@ function LearnPage() {
                     Retry 🔄
                   </motion.button>
                 )}
-              </motion.div>
+              </div>
             )}
 
             {/* Animated Popup (Framer Motion) */}
             <AnimatePresence>
               {showPopup && (
-                <motion.div
+                <div
                   className="fixed inset-0 z-50 flex items-center justify-center"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
                   {/* Backdrop */}
-                  <motion.div
+                  <div
                     className="absolute inset-0 bg-black/70 backdrop-blur-md"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -819,7 +786,7 @@ function LearnPage() {
                   />
 
                   {/* Modal */}
-                  <motion.div
+                  <div
                     className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl border border-slate-700/50"
                     initial={{ scale: 0.5, opacity: 0, rotateX: -15 }}
                     animate={{ scale: 1, opacity: 1, rotateX: 0 }}
@@ -827,23 +794,23 @@ function LearnPage() {
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
                     <div className="text-center">
-                      <motion.div
+                      <div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                         className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4"
                       >
                         🎉
-                      </motion.div>
+                      </div>
                       
-                      <motion.h2 
+                      <h2 
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
                         className="text-2xl font-bold mb-3 text-white"
                       >
                         Quiz Completed!
-                      </motion.h2>
+                      </h2>
                       
                       <motion.p 
                         initial={{ y: 20, opacity: 0 }}
@@ -855,7 +822,7 @@ function LearnPage() {
                       </motion.p>
 
                       {/* ✅ Conditional Message */}
-                      <motion.div
+                      <div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.5 }}
@@ -873,9 +840,9 @@ function LearnPage() {
                             Don't give up — you'll get it! <span className="text-2xl">🚀</span>
                           </p>
                         )}
-                      </motion.div>
+                      </div>
 
-                      <motion.div 
+                      <div 
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.6 }}
@@ -898,21 +865,19 @@ function LearnPage() {
                         >
                           Try Again
                         </button>
-                      </motion.div>
+                      </div>
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
         )}
 
         {/* Example Tab */}
         {activeTab === "example" && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+          <div 
+            
             className="space-y-6"
           >
             {examples.length === 0 ? (
@@ -926,11 +891,9 @@ function LearnPage() {
               </div>
             ) : (
               examples.map((ex, idx) => (
-                <motion.div 
+                <div 
                   key={idx} 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * idx }}
+                  
                   className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
                 >
                   <h3 className="text-xl font-bold mb-3 text-white flex items-center gap-3">
@@ -941,35 +904,29 @@ function LearnPage() {
                   </h3>
                   <p className="mb-4 text-gray-300 leading-relaxed">{ex.explanation}</p>
                   <motion.blockquote 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
+                    
                     className="italic text-cyan-400 mb-4 pl-4 border-l-4 border-cyan-400/50 bg-cyan-400/5 py-2 rounded-r-lg"
                   >
                     💡 {ex.highlight}
                   </motion.blockquote>
                   {ex.code && (
                     <motion.pre 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
+                      
                       className="bg-slate-900/80 p-4 rounded-lg text-sm overflow-x-auto border border-slate-700/50 shadow-inner"
                     >
                       <code className="text-green-400">{ex.code}</code>
                     </motion.pre>
                   )}
-                </motion.div>
+                </div>
               ))
             )}
-          </motion.div>
+          </div>
         )}
       </div>
 
       {/* Sticky bottom nav */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
+      <div 
+        
         className="p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex items-center justify-between"
       >
         <motion.button
@@ -1020,20 +977,20 @@ function LearnPage() {
           Next
           <span className="text-lg">➡️</span>
         </motion.button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 
   return (
     <>
       {loadingTabData && (
-        <motion.div 
+        <div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
         >
-          <motion.div 
+          <div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-10 flex flex-col items-center justify-center min-w-[25vw] border border-slate-700/50"
@@ -1044,8 +1001,8 @@ function LearnPage() {
             </div>
             <span className="text-white font-semibold text-lg">Generating content...</span>
             <span className="text-gray-400 text-sm mt-2">This may take a moment</span>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
 
       {/* Main Content Area */}
