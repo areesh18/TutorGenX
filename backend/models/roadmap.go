@@ -6,6 +6,7 @@ type Roadmap struct {
 	gorm.Model
 	UserEmail string        `json:"user_email"`
 	Goal      string        `json:"goal"`
+	Title     string        `json:"title"` // Add this line
 	Weeks     []RoadmapWeek `json:"weeks" gorm:"foreignKey:RoadmapID"`
 }
 

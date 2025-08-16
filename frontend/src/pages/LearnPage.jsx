@@ -56,7 +56,6 @@ function LearnPage() {
       }
     }
   }, [roadmap, selectedTopic]);
-
   useEffect(() => {
     const generateExample = async () => {
       setLoadingTabData(true);
@@ -270,31 +269,6 @@ function LearnPage() {
     }
   };
 
-  /* const handleMarkAsCompletedButton = async (roadmapId, weekId, topicIndex) => {
-    console.log("Clicked MarkAsCompleted button");
-    console.log("Current Week:", roadmap?.weeks?.[currentWeekIndex]);
-
-    try {
-      await axios.post(
-        "http://localhost:8080/update-progress",
-        {
-          roadmap_id: roadmapId,
-          week_id: weekId,
-          topic_index: topicIndex,
-          value: true,
-        },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      toast.success("🎉 Topic marked as completed!");
-
-      await fetchRoadmap();
-    } catch (err) {
-      return console.error("❌ Error marking topic:", err);
-    }
-  }; */
-
   const handleNextButton = () => {
     console.log("Clicked Next");
     console.log("roadmap:", roadmap);
@@ -346,30 +320,6 @@ function LearnPage() {
     handleExplainTopic(nextTopic, nextWeekIndex, nextTopicIndex);
   };
 
-  /* const handleExplainTopic = async (topic, idx, i) => {
-    setCurrentWeekIndex(idx);
-    setCurrentTopicIndex(i);
-    setLoadingTabData(true);
-    setSelectedTopic(topic);
-    setExplanation("Loading...");
-    setSidebarOpen(false); // Close mobile sidebar when topic is selected
-
-    try {
-      const res = await axios.post(
-        "http://localhost:8080/explain-topic",
-        { topic },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      setExplanation(res.data.explanation);
-    } catch (err) {
-      setExplanation("Failed to fetch explanation.");
-      console.error(err);
-    } finally {
-      setLoadingTabData(false);
-    }
-  }; */
   const handleExplainTopic = async (topic, weekIndex, topicIndex) => {
     setCurrentWeekIndex(weekIndex);
     setCurrentTopicIndex(topicIndex);
@@ -622,7 +572,7 @@ function LearnPage() {
           </button>
 
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent text-center lg:text-left flex-1 lg:flex-none">
-            {roadmap.goal}
+            {roadmap?.title || "Learning Roadmap"}
           </h1>
         </div>
 

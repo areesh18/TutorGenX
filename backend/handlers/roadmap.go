@@ -398,7 +398,8 @@ Goal:
 		"roadmap": roadmap,
 	})
 }
-func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
+
+/* func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
 	//validating jwt
 	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
@@ -446,6 +447,69 @@ func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+} */
+
+func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
+	//validating jwt
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userEmail := claims["email"].(string)
+
+	var req struct {
+		Goal    string        `json:"goal"`
+		Title   string        `json:"title"` // Add this line
+		Roadmap []RoadmapWeek `json:"roadmap"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Save roadmap to DB
+	newRoadmap := models.Roadmap{
+		UserEmail: userEmail,
+		Goal:      req.Goal,
+		Title:     req.Title, // Add this line
+	}
+
+	if err := db.DB.Create(&newRoadmap).Error; err != nil {
+		http.Error(w, "Failed to save roadmap", http.StatusInternalServerError)
+		return
+	}
+
+	for _, week := range req.Roadmap {
+		topicsJSON, err := json.Marshal(week.Topics)
+		if err != nil {
+			http.Error(w, "Failed to serialize topics", http.StatusInternalServerError)
+			return
+		}
+		progress := make([]bool, len(week.Topics))
+		progressJSON, err := json.Marshal(progress)
+		if err != nil {
+			http.Error(w, "Failed to serialize progress", http.StatusInternalServerError)
+			return
+		}
+
+		db.DB.Create(&models.RoadmapWeek{
+			RoadmapID: newRoadmap.ID,
+			Week:      week.Week,
+			Title:     week.Title,
+			Topics:    string(topicsJSON),
+			Progress:  string(progressJSON),
+		})
+	}
+
+	// Optional: Send success response with the created roadmap ID
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Roadmap saved successfully",
+		"id":      newRoadmap.ID,
+		"title":   newRoadmap.Title,
+	})
 }
 
 func GetUsersRoadmap(w http.ResponseWriter, r *http.Request) {
@@ -490,6 +554,89 @@ func GetSingleRoadmap(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(roadmap)
+}
+func GoalNameHandler(w http.ResponseWriter, r *http.Request) {
+	// Auth check
+	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	//parse request body
+	var req struct {
+		GoalReq string `json:"goalreq"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.GoalReq == "" {
+		http.Error(w, "Invalid request: topic is required", http.StatusBadRequest)
+		return
+	}
+	// Groq API setup
+	apiKey := os.Getenv("GROQ_API_KEY")
+	if apiKey == "" {
+		http.Error(w, "GROQ_API_KEY not set", http.StatusInternalServerError)
+		return
+	}
+
+	cfg := openai.DefaultConfig(apiKey)
+	cfg.BaseURL = "https://api.groq.com/openai/v1"
+	client := openai.NewClientWithConfig(cfg)
+
+	//prompt
+	prompt := fmt.Sprintf(`You are an AI assistant that generates professional, engaging, and descriptive names for learning roadmaps based on user input.
+Task
+Transform the user's raw input into a polished roadmap title that is:
+
+Professional: Suitable for a learning platform
+Clear: Immediately conveys the learning goal
+Engaging: Motivating and appealing to learners
+Concise: 3-8 words maximum
+Action-oriented: Uses strong verbs when appropriate
+
+Guidelines
+
+Capitalize properly (Title Case)
+Remove casual language, typos, and grammatical errors
+Focus on the core learning objective
+Use industry-standard terminology
+Make it specific enough to be meaningful
+Avoid overly generic terms
+
+Examples
+User Input: "i want to be a data analyst"
+Generated Title: "Data Analyst Career Path"
+User Input: "learn machine learning for beginners"
+Generated Title: "Machine Learning Fundamentals"
+User Input: "become full stack developer"
+Generated Title: "Full-Stack Development Mastery"
+User Input: "want to learn python programming"
+Generated Title: "Python Programming Journey"
+User Input: "digital marketing course"
+Generated Title: "Digital Marketing Specialist Track"
+Your Task
+Generate a single, well-formatted roadmap title based on the user's input. Return only the title, nothing else.
+User Input: %s`, req.GoalReq)
+
+	// Call Groq
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: "llama-3.3-70b-versatile",
+			Messages: []openai.ChatCompletionMessage{
+				{Role: openai.ChatMessageRoleUser, Content: prompt},
+			},
+		},
+	)
+	if err != nil {
+		http.Error(w, "Failed to fetch explanation: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	title := resp.Choices[0].Message.Content
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"title": title,
+	})
+
 }
 func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
 	// Auth check

@@ -49,6 +49,7 @@ func main() {
 	router.Handle("/delete-roadmap", utils.ValidateToken(http.HandlerFunc(handlers.DeleteRoadmap))).Methods("DELETE")
 	router.Handle("/delete-all-roadmaps", utils.ValidateToken(http.HandlerFunc(handlers.DeleteAllRoadmaps))).Methods("DELETE")
 	router.Handle("/update-progress", utils.ValidateToken(http.HandlerFunc(handlers.HandleMarkAsCompleted))).Methods("POST")
+	router.Handle("/generateTitle", utils.ValidateToken(http.HandlerFunc(handlers.GoalNameHandler))).Methods("POST")
 	router.Handle("/roadmap/{id}", utils.ValidateToken(http.HandlerFunc(handlers.GetSingleRoadmap))).Methods("GET")
 	router.Handle("/explain-topic", utils.ValidateToken(http.HandlerFunc(handlers.ExplainTopicHandler))).Methods("POST")
 	router.Handle("/quiz", utils.ValidateToken(http.HandlerFunc(handlers.GenerateQuiz))).Methods("POST")

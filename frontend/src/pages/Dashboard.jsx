@@ -5,6 +5,7 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
 function Dashboard() {
+  const [generatedTitle,setGeneratedTitle]=useState("");
   const [goal, setGoal] = useState("");
   const [roadmap, setRoadmap] = useState([]);
   const [msg, setMsg] = useState("");
@@ -14,6 +15,9 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const userData = localStorage.getItem("user");
+  const user = userData ? JSON.parse(userData) : null;
+  const userName = user?.name || user?.email?.split("@")[0] || "User";
 
   const fetchSavedRoadmaps = useCallback(async () => {
     try {
@@ -33,13 +37,70 @@ function Dashboard() {
   }, [token, fetchSavedRoadmaps]);
 
   if (!token) return <Navigate to="/login" />;
+const handleSaveButton = async () => {
+  try {
+    let finalTitle = newGoal; // fallback
 
-  const handleSaveButton = async () => {
     try {
+      const titleRes = await axios.post(
+        "http://localhost:8080/generateTitle",
+        { goalreq: newGoal },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      finalTitle = titleRes.data.title;
+      setGeneratedTitle(finalTitle); // updates UI later
+    } catch (titleErr) {
+      console.error("Failed to generate title:", titleErr);
+    }
+
+    // ✅ Use local variable
+    await axios.post(
+      "http://localhost:8080/save-roadmap",
+      {
+        goal: newGoal,
+        title: finalTitle,
+        roadmap,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setUnsavedRoadmap(false);
+    setRoadmap([]);
+    setMsg("Roadmap Saved✅");
+    fetchSavedRoadmaps();
+  } catch (err) {
+    console.error("Error saving roadmap:", err);
+    alert("Failed to save roadmap");
+  }
+};
+
+  /* const handleSaveButton = async () => {
+    try {
+      // Generate title first
+       setGeneratedTitle(newGoal); // fallback
+      try {
+        const titleRes = await axios.post(
+          `http://localhost:8080/generateTitle`,
+          {
+            goalreq: newGoal,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setGeneratedTitle (titleRes.data.title); 
+      } catch (titleErr) {
+        console.error("Failed to generate title:", titleErr);
+      }
+
+      // Save roadmap with the generated title
       await axios.post(
         "http://localhost:8080/save-roadmap",
         {
           goal: newGoal,
+          title: generatedTitle, // Send title to backend
           roadmap,
         },
         {
@@ -48,6 +109,7 @@ function Dashboard() {
           },
         }
       );
+
       setUnsavedRoadmap(false);
       setRoadmap([]);
       setMsg("Roadmap Saved✅");
@@ -56,8 +118,7 @@ function Dashboard() {
       console.error("Error saving roadmap:", err);
       alert("Failed to save roadmap");
     }
-  };
-
+  }; */
   const handleDiscardButton = () => {
     setNewGoal("");
     setRoadmap([]);
@@ -181,49 +242,62 @@ function Dashboard() {
   return (
     <>
       {loading && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
         >
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-10 flex flex-col items-center justify-center min-w-[25vw] border border-slate-700/50"
           >
             <div className="relative mb-6">
               <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
-              <div className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+              <div
+                className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin"
+                style={{
+                  animationDirection: "reverse",
+                  animationDuration: "1.5s",
+                }}
+              ></div>
             </div>
-            <span className="text-white font-semibold text-lg">Generating roadmap...</span>
-            <span className="text-gray-400 text-sm mt-2">This may take a moment</span>
+            <span className="text-white font-semibold text-lg">
+              Generating roadmap...
+            </span>
+            <span className="text-gray-400 text-sm mt-2">
+              This may take a moment
+            </span>
           </motion.div>
         </motion.div>
       )}
 
-      <div 
+      <div
         className="min-h-screen p-6 font-sans"
         style={{
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)',
-          backgroundSize: '400% 400%',
-          animation: 'gradientShift 15s ease infinite',
+          background:
+            "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)",
+          backgroundSize: "400% 400%",
+          animation: "gradientShift 15s ease infinite",
         }}
       >
         {/* Main Content Card */}
-        <motion.div 
+        <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="max-w-2xl mx-auto p-8 rounded-2xl border border-slate-700/50"
           style={{
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)',
-            backdropFilter: 'blur(20px)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            background:
+              "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+            boxShadow:
+              "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
           }}
         >
           {/* Title */}
-          <motion.h2 
+          <motion.h2
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -232,12 +306,12 @@ function Dashboard() {
             <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center">
               🎯
             </div>
-            Your AI Career Roadmap
+            {userName}'s Learning Assistant
           </motion.h2>
 
           {/* Input Form */}
-          <motion.form 
-            onSubmit={handleSubmit} 
+          <motion.form
+            onSubmit={handleSubmit}
             className="mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -265,15 +339,13 @@ function Dashboard() {
                   Generating...
                 </>
               ) : (
-                <>
-                  🚀 Generate My Roadmap
-                </>
+                <>🚀 Generate My Roadmap</>
               )}
             </motion.button>
           </motion.form>
 
           {msg && (
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-center text-sm mb-4 text-slate-300"
@@ -285,17 +357,18 @@ function Dashboard() {
           {/* Generated Roadmap */}
           <AnimatePresence>
             {roadmap.length > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -30, scale: 0.95 }}
                 transition={{ duration: 0.5 }}
                 className="bg-slate-700/50 rounded-2xl border border-slate-600/50 p-6 mb-6 backdrop-blur-sm"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(51, 65, 85, 0.4) 0%, rgba(30, 41, 59, 0.6) 100%)',
+                  background:
+                    "linear-gradient(135deg, rgba(51, 65, 85, 0.4) 0%, rgba(30, 41, 59, 0.6) 100%)",
                 }}
               >
-                <motion.h3 
+                <motion.h3
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
@@ -317,7 +390,7 @@ function Dashboard() {
                       className="border border-slate-600/50 p-5 rounded-xl bg-gradient-to-r from-slate-600/30 to-slate-700/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300"
                       whileHover={{ scale: 1.02, y: -2 }}
                     >
-                      <motion.h4 
+                      <motion.h4
                         initial={{ y: 10, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 + 0.1 * index }}
@@ -326,15 +399,15 @@ function Dashboard() {
                         <span className="text-xl">📚</span>
                         Week {week.week}: {week.title}
                       </motion.h4>
-                      <motion.ul 
+                      <motion.ul
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 + 0.1 * index }}
                         className="space-y-2"
                       >
                         {week.topics.map((topic, i) => (
-                          <motion.li 
-                            key={i} 
+                          <motion.li
+                            key={i}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.4 + 0.05 * i }}
@@ -350,7 +423,7 @@ function Dashboard() {
                   ))}
                 </ul>
 
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
@@ -381,13 +454,13 @@ function Dashboard() {
         {/* Saved Roadmaps */}
         <AnimatePresence>
           {savedRoadmaps.length > 0 && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
               className="mt-8 max-w-7xl mx-auto"
             >
-              <motion.div 
+              <motion.div
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
@@ -409,7 +482,7 @@ function Dashboard() {
                 </motion.button>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -445,13 +518,14 @@ function Dashboard() {
                       transition={{ delay: 0.1 * i, duration: 0.4 }}
                       className="rounded-2xl border border-slate-700/50 p-6 transition-all duration-300 hover:border-slate-600/70"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)',
-                        backdropFilter: 'blur(20px)',
-                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+                        background:
+                          "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)",
+                        backdropFilter: "blur(20px)",
+                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
                       }}
                       whileHover={{ y: -5, scale: 1.02 }}
                     >
-                      <motion.div 
+                      <motion.div
                         initial={{ y: -10, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 + 0.1 * i }}
@@ -459,10 +533,14 @@ function Dashboard() {
                       >
                         <div className="flex-1">
                           <h2 className="text-lg font-bold text-white leading-tight mb-2 flex items-center gap-2">
-                            🎯 {roadmap.goal}
+                            🎯{" "}
+                            {generatedTitle ||
+                              roadmap.goal ||
+                              "Learning Roadmap"}
                           </h2>
                           <p className="text-xs text-slate-400">
-                            Created on {new Date(roadmap.CreatedAt).toLocaleDateString()}
+                            Created on{" "}
+                            {new Date(roadmap.CreatedAt).toLocaleDateString()}
                           </p>
                         </div>
                         <motion.button
@@ -476,15 +554,19 @@ function Dashboard() {
                       </motion.div>
 
                       {/* Progress */}
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 + 0.1 * i }}
                         className="mb-5"
                       >
                         <div className="flex justify-between items-center text-xs text-slate-300 mb-2">
-                          <span>Progress: {completedTopics} / {totalTopics}</span>
-                          <span className="font-semibold text-white">{progressPercent}%</span>
+                          <span>
+                            Progress: {completedTopics} / {totalTopics}
+                          </span>
+                          <span className="font-semibold text-white">
+                            {progressPercent}%
+                          </span>
                         </div>
                         <div className="w-full bg-slate-600/50 rounded-full h-2.5 overflow-hidden">
                           <motion.div
@@ -497,7 +579,7 @@ function Dashboard() {
                       </motion.div>
 
                       {/* Week List */}
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 + 0.1 * i }}
@@ -527,7 +609,7 @@ function Dashboard() {
                                 className="bg-slate-700/40 border border-slate-600/30 rounded-xl p-4 backdrop-blur-sm hover:bg-slate-600/40 transition-all duration-300"
                                 whileHover={{ x: 4 }}
                               >
-                                <motion.h4 
+                                <motion.h4
                                   initial={{ y: -5, opacity: 0 }}
                                   animate={{ y: 0, opacity: 1 }}
                                   transition={{ delay: 0.2 + 0.1 * weekIndex }}
@@ -535,7 +617,7 @@ function Dashboard() {
                                 >
                                   📚 Week {week.week}: {week.title}
                                 </motion.h4>
-                                <motion.ul 
+                                <motion.ul
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
                                   transition={{ delay: 0.3 + 0.1 * weekIndex }}
@@ -554,11 +636,18 @@ function Dashboard() {
                                       }`}
                                       whileHover={{ x: 2 }}
                                     >
-                                      <motion.span 
-                                        className={`w-1.5 h-1.5 rounded-full ${progress[topicIndex] ? 'bg-green-500' : 'bg-slate-500'}`}
+                                      <motion.span
+                                        className={`w-1.5 h-1.5 rounded-full ${
+                                          progress[topicIndex]
+                                            ? "bg-green-500"
+                                            : "bg-slate-500"
+                                        }`}
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        transition={{ delay: 0.1 + 0.05 * topicIndex, type: "spring" }}
+                                        transition={{
+                                          delay: 0.1 + 0.05 * topicIndex,
+                                          type: "spring",
+                                        }}
                                       />
                                       {topic}
                                     </motion.li>
@@ -569,7 +658,6 @@ function Dashboard() {
                           })}
                       </motion.div>
 
-                      
                       <motion.button
                         onClick={() => navigate(`/learn/${roadmap.ID}`)}
                         className="mt-5 w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -592,10 +680,15 @@ function Dashboard() {
 
       <style jsx>{`
         @keyframes gradientShift {
-          0%, 100% { background-position: 0% 50% }
-          50% { background-position: 100% 50% }
+          0%,
+          100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
