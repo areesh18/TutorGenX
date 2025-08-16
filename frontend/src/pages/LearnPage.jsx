@@ -144,7 +144,7 @@ function LearnPage() {
 
   useEffect(() => {
     // This function runs when a key is pressed
-    const onKey = (e) => e.key === "Escape" && setShowScore(false);
+    const onKey = (e) => e.key === "Escape" && setShowPopup(false);
 
     // Attach the function to the 'keydown' event
     window.addEventListener("keydown", onKey);
@@ -157,22 +157,29 @@ function LearnPage() {
     fetchRoadmap();
   }, [fetchRoadmap]);
 
-  if (!roadmap) return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-      <div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center"
-      >
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+  if (!roadmap)
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4"></div>
+            <div
+              className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin mx-auto"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
+          </div>
+          <p className="text-white text-lg font-medium">Loading roadmap...</p>
         </div>
-        <p className="text-white text-lg font-medium">Loading roadmap...</p>
       </div>
-    </div>
-  );
-  
+    );
+
   const handlePrevButton = () => {
     console.log("Clicked Prev");
     console.log("roadmap:", roadmap);
@@ -207,7 +214,10 @@ function LearnPage() {
   const isCurrentTopicCompleted = () => {
     if (!roadmap || !roadmap.weeks) return false;
 
-    const week = roadmap.weeks[currentWeekIndex];
+    // Use sorted weeks to get the correct week
+    const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
+    const week = sortedWeeks[currentWeekIndex];
+
     if (!week) return false;
 
     let progress = [];
@@ -219,13 +229,16 @@ function LearnPage() {
 
     return progress[currentTopicIndex] === true;
   };
-
   const handleMarkAsCompletedButton = async () => {
     if (updating) return; // ignore clicks while updating
     setUpdating(true);
+
     try {
-      const week = roadmap.weeks[currentWeekIndex];
-      if (!week) {
+      // Get the correct week using sorted weeks
+      const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
+      const currentWeek = sortedWeeks[currentWeekIndex];
+
+      if (!currentWeek) {
         console.warn("Current week not found");
         setUpdating(false);
         return;
@@ -238,7 +251,7 @@ function LearnPage() {
         "http://localhost:8080/update-progress",
         {
           roadmap_id: roadmap.ID,
-          week_id: week.ID,
+          week_id: currentWeek.ID, // Use the correct week ID from sorted array
           topic_index: currentTopicIndex,
           value: !currentlyCompleted, // toggle
         },
@@ -247,15 +260,10 @@ function LearnPage() {
         }
       );
 
-      /* alert(
-        !currentlyCompleted
-          ? "Topic marked as completed!"
-          : "Topic marked as incomplete!"
-      );
- */
+      // Refresh the roadmap data
       await fetchRoadmap();
     } catch (err) {
-      console.error("❌ Error updating completion status:", err);
+      console.error("⚠️ Error updating completion status:", err);
       alert("Failed to update completion status.");
     } finally {
       setUpdating(false);
@@ -338,7 +346,7 @@ function LearnPage() {
     handleExplainTopic(nextTopic, nextWeekIndex, nextTopicIndex);
   };
 
-  const handleExplainTopic = async (topic, idx, i) => {
+  /* const handleExplainTopic = async (topic, idx, i) => {
     setCurrentWeekIndex(idx);
     setCurrentTopicIndex(i);
     setLoadingTabData(true);
@@ -361,8 +369,31 @@ function LearnPage() {
     } finally {
       setLoadingTabData(false);
     }
-  };
+  }; */
+  const handleExplainTopic = async (topic, weekIndex, topicIndex) => {
+    setCurrentWeekIndex(weekIndex);
+    setCurrentTopicIndex(topicIndex);
+    setLoadingTabData(true);
+    setSelectedTopic(topic);
+    setExplanation("Loading...");
+    setSidebarOpen(false); // Close mobile sidebar when topic is selected
 
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/explain-topic",
+        { topic },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      setExplanation(res.data.explanation);
+    } catch (err) {
+      setExplanation("Failed to fetch explanation.");
+      console.error(err);
+    } finally {
+      setLoadingTabData(false);
+    }
+  };
   // Sidebar component
   const RoadmapSidebar = () => {
     const totalWeeks = roadmap.weeks.length;
@@ -372,15 +403,15 @@ function LearnPage() {
       <>
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
-        
+
         <motion.aside
           className={`
-            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             lg:translate-x-0 transition-transform duration-300
             fixed lg:sticky top-0 left-0 z-50 lg:z-auto
             w-80 sm:w-96 lg:w-80 xl:w-96
@@ -393,9 +424,10 @@ function LearnPage() {
             ${compactMode ? "text-sm space-y-3" : "space-y-4"}
           `}
           style={{
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(148, 163, 184, 0.1)',
+            background:
+              "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(148, 163, 184, 0.1)",
           }}
         >
           {/* Mobile close button */}
@@ -403,8 +435,18 @@ function LearnPage() {
             className="lg:hidden absolute top-4 right-4 text-white hover:text-red-400 transition-colors z-10"
             onClick={() => setSidebarOpen(false)}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
@@ -431,7 +473,8 @@ function LearnPage() {
                 const progress = JSON.parse(week.progress);
                 const isOpen = openWeek === idx;
                 const completedTopics = progress.filter(Boolean).length;
-                const progressPercentage = (completedTopics / topics.length) * 100;
+                const progressPercentage =
+                  (completedTopics / topics.length) * 100;
 
                 return (
                   <motion.li
@@ -445,25 +488,29 @@ function LearnPage() {
                     <button
                       onClick={() => setOpenWeek(isOpen ? null : idx)}
                       className={`flex items-center justify-between w-full text-left font-semibold ${
-                        compactMode ? "text-xs sm:text-sm" : "text-sm sm:text-base"
+                        compactMode
+                          ? "text-xs sm:text-sm"
+                          : "text-sm sm:text-base"
                       } text-white group`}
                     >
                       <div className="flex items-center min-w-0">
-                        <motion.span 
+                        <motion.span
                           className="mr-2 sm:mr-3 text-cyan-400 flex-shrink-0"
                           animate={{ rotate: isOpen ? 90 : 0 }}
                           transition={{ duration: 0.2 }}
                         >
                           ▶
                         </motion.span>
-                        <span className="mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0">📁</span>
+                        <span className="mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0">
+                          📁
+                        </span>
                         <span className="group-hover:text-cyan-300 transition-colors truncate">
                           {week.week}. {week.title}
                         </span>
                       </div>
                       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
                         <div className="w-8 sm:w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
-                          <motion.div 
+                          <motion.div
                             className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercentage}%` }}
@@ -479,7 +526,7 @@ function LearnPage() {
                     {/* Topics */}
                     <AnimatePresence>
                       {isOpen && (
-                        <motion.ul 
+                        <motion.ul
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
@@ -487,14 +534,16 @@ function LearnPage() {
                           className="mt-3 sm:mt-4 space-y-1 sm:space-y-2 overflow-hidden"
                         >
                           {topics.map((topic, i) => (
-                            <motion.li 
+                            <motion.li
                               key={i}
                               initial={{ x: -20, opacity: 0 }}
                               animate={{ x: 0, opacity: 1 }}
                               transition={{ delay: 0.1 * i }}
                             >
                               <motion.button
-                                onClick={() => handleExplainTopic(topic, idx, i)}
+                                onClick={() =>
+                                  handleExplainTopic(topic, idx, i)
+                                }
                                 className={`flex items-center w-full text-left rounded-xl px-2 sm:px-3 py-2 transition-all duration-200 ${
                                   progress[i]
                                     ? "text-green-400 bg-green-500/10 border border-green-500/20"
@@ -513,7 +562,11 @@ function LearnPage() {
                                 <span className="mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0">
                                   {progress[i] ? "✅" : "📄"}
                                 </span>
-                                <span className={`${progress[i] ? "line-through opacity-75" : ""} truncate`}>
+                                <span
+                                  className={`${
+                                    progress[i] ? "line-through opacity-75" : ""
+                                  } truncate`}
+                                >
                                   {topic}
                                 </span>
                               </motion.button>
@@ -533,13 +586,15 @@ function LearnPage() {
 
   //Main section
   const MainSection = () => (
-    <div 
+    <div
       className="flex-1 rounded-none lg:rounded-2xl h-screen lg:h-[90vh] max-w-none lg:max-w-4xl flex flex-col overflow-hidden lg:mr-6"
       style={{
-        background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(148, 163, 184, 0.1)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        background:
+          "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
+        backdropFilter: "blur(20px)",
+        border: "1px solid rgba(148, 163, 184, 0.1)",
+        boxShadow:
+          "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
       }}
     >
       {/* Header */}
@@ -550,12 +605,22 @@ function LearnPage() {
             className="lg:hidden flex items-center gap-2 text-white hover:text-cyan-400 transition-colors"
             onClick={() => setSidebarOpen(true)}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
             <span className="text-sm font-medium">Menu</span>
           </button>
-          
+
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent text-center lg:text-left flex-1 lg:flex-none">
             {roadmap.goal}
           </h1>
@@ -599,7 +664,8 @@ function LearnPage() {
                   📘
                 </div>
                 <p className="text-gray-400 text-base sm:text-lg px-4">
-                  Click a topic and switch to this tab to generate an explanation.
+                  Click a topic and switch to this tab to generate an
+                  explanation.
                 </p>
               </div>
             ) : (
@@ -612,15 +678,15 @@ function LearnPage() {
                     <span className="break-words">{selectedTopic}</span>
                   </h2>
                 )}
-                <div 
+                <div
                   className="prose prose-invert prose-sm sm:prose-lg max-w-none"
                   style={{
-                    '--tw-prose-body': '#e2e8f0',
-                    '--tw-prose-headings': '#ffffff',
-                    '--tw-prose-links': '#06b6d4',
-                    '--tw-prose-code': '#06b6d4',
-                    '--tw-prose-pre-bg': 'rgba(15, 23, 42, 0.6)',
-                    '--tw-prose-pre-code': '#e2e8f0',
+                    "--tw-prose-body": "#e2e8f0",
+                    "--tw-prose-headings": "#ffffff",
+                    "--tw-prose-links": "#06b6d4",
+                    "--tw-prose-code": "#06b6d4",
+                    "--tw-prose-pre-bg": "rgba(15, 23, 42, 0.6)",
+                    "--tw-prose-pre-code": "#e2e8f0",
                   }}
                 >
                   <ReactMarkdown>{explanation}</ReactMarkdown>
@@ -639,7 +705,8 @@ function LearnPage() {
                   🎯
                 </div>
                 <p className="text-gray-400 text-base sm:text-lg px-4">
-                  Click a topic and switch to this tab to generate a simplified explanation.
+                  Click a topic and switch to this tab to generate a simplified
+                  explanation.
                 </p>
               </div>
             ) : (
@@ -649,18 +716,20 @@ function LearnPage() {
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
                       🎯
                     </div>
-                    <span className="break-words">{selectedTopic} simplified!</span>
+                    <span className="break-words">
+                      {selectedTopic} simplified!
+                    </span>
                   </h2>
                 )}
-                <div 
+                <div
                   className="prose prose-invert prose-sm sm:prose-lg max-w-none"
                   style={{
-                    '--tw-prose-body': '#e2e8f0',
-                    '--tw-prose-headings': '#ffffff',
-                    '--tw-prose-links': '#10b981',
-                    '--tw-prose-code': '#10b981',
-                    '--tw-prose-pre-bg': 'rgba(15, 23, 42, 0.6)',
-                    '--tw-prose-pre-code': '#e2e8f0',
+                    "--tw-prose-body": "#e2e8f0",
+                    "--tw-prose-headings": "#ffffff",
+                    "--tw-prose-links": "#10b981",
+                    "--tw-prose-code": "#10b981",
+                    "--tw-prose-pre-bg": "rgba(15, 23, 42, 0.6)",
+                    "--tw-prose-pre-code": "#e2e8f0",
                   }}
                 >
                   <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
@@ -684,8 +753,8 @@ function LearnPage() {
               </div>
             ) : (
               quiz.map((q, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-4 sm:p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
                 >
                   <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 text-white flex items-center gap-2 sm:gap-3">
@@ -701,17 +770,17 @@ function LearnPage() {
                       const isSelected = selectedAnswers[idx] === optionLetter;
 
                       return (
-                        <motion.li 
+                        <motion.li
                           key={i}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           <label
                             className={`flex items-center space-x-2 sm:space-x-3 p-3 sm:p-4 rounded-lg cursor-pointer transition-all duration-300 border text-sm sm:text-base ${
-                              quizSubmitted && isCorrect 
-                                ? "bg-green-500/20 border-green-400/50 text-green-300" 
-                                : quizSubmitted && isSelected && !isCorrect 
-                                ? "bg-red-500/20 border-red-400/50 text-red-300" 
+                              quizSubmitted && isCorrect
+                                ? "bg-green-500/20 border-green-400/50 text-green-300"
+                                : quizSubmitted && isSelected && !isCorrect
+                                ? "bg-red-500/20 border-red-400/50 text-red-300"
                                 : isSelected
                                 ? "bg-cyan-500/20 border-cyan-400/50 text-cyan-300"
                                 : "bg-slate-700/30 border-slate-600/30 text-gray-300 hover:bg-slate-600/40 hover:border-slate-500/40"
@@ -732,7 +801,9 @@ function LearnPage() {
                               className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 bg-slate-700 border-slate-600 focus:ring-cyan-500 focus:ring-2"
                             />
                             <span className="flex items-center gap-2 min-w-0">
-                              <span className="font-semibold flex-shrink-0">{optionLetter}.</span>
+                              <span className="font-semibold flex-shrink-0">
+                                {optionLetter}.
+                              </span>
                               <span className="break-words">{opt}</span>
                             </span>
                           </label>
@@ -810,13 +881,17 @@ function LearnPage() {
                       <div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                        transition={{
+                          delay: 0.2,
+                          type: "spring",
+                          stiffness: 200,
+                        }}
                         className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xl sm:text-2xl mx-auto mb-4"
                       >
                         🎉
                       </div>
-                      
-                      <h2 
+
+                      <h2
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
@@ -824,14 +899,18 @@ function LearnPage() {
                       >
                         Quiz Completed!
                       </h2>
-                      
-                      <motion.p 
+
+                      <motion.p
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
                         className="mb-4 text-gray-300 text-base sm:text-lg text-center"
                       >
-                        You scored <span className="font-bold text-cyan-400 text-lg sm:text-xl">{score}</span> out of {quiz.length}.
+                        You scored{" "}
+                        <span className="font-bold text-cyan-400 text-lg sm:text-xl">
+                          {score}
+                        </span>{" "}
+                        out of {quiz.length}.
                       </motion.p>
 
                       {/* ✅ Conditional Message */}
@@ -842,20 +921,23 @@ function LearnPage() {
                       >
                         {score === quiz.length ? (
                           <p className="text-green-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
-                            Perfect score! <span className="text-xl sm:text-2xl">🏆</span>
+                            Perfect score!{" "}
+                            <span className="text-xl sm:text-2xl">🏆</span>
                           </p>
                         ) : score >= quiz.length / 2 ? (
                           <p className="text-blue-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
-                            Good job! Keep practicing! <span className="text-xl sm:text-2xl">💪</span>
+                            Good job! Keep practicing!{" "}
+                            <span className="text-xl sm:text-2xl">💪</span>
                           </p>
                         ) : (
                           <p className="text-orange-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
-                            Don't give up — you'll get it! <span className="text-xl sm:text-2xl">🚀</span>
+                            Don't give up — you'll get it!{" "}
+                            <span className="text-xl sm:text-2xl">🚀</span>
                           </p>
                         )}
                       </div>
 
-                      <div 
+                      <div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.6 }}
@@ -901,8 +983,8 @@ function LearnPage() {
               </div>
             ) : (
               examples.map((ex, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-4 sm:p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
                 >
                   <h3 className="text-lg sm:text-xl font-bold mb-3 text-white flex items-center gap-2 sm:gap-3">
@@ -911,7 +993,9 @@ function LearnPage() {
                     </div>
                     <span className="break-words">{ex.title}</span>
                   </h3>
-                  <p className="mb-4 text-gray-300 leading-relaxed text-sm sm:text-base">{ex.explanation}</p>
+                  <p className="mb-4 text-gray-300 leading-relaxed text-sm sm:text-base">
+                    {ex.explanation}
+                  </p>
                   <motion.blockquote className="italic text-cyan-400 mb-4 pl-3 sm:pl-4 border-l-4 border-cyan-400/50 bg-cyan-400/5 py-2 rounded-r-lg text-sm sm:text-base">
                     💡 {ex.highlight}
                   </motion.blockquote>
@@ -938,14 +1022,14 @@ function LearnPage() {
           <span className="text-lg">⬅️</span>
           Previous
         </motion.button>
-        
+
         <motion.button
           disabled={updating}
           className={`w-full sm:w-auto px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base ${
             isCurrentTopicCompleted()
               ? "bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
               : "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-          } ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
+          } ${updating ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={handleMarkAsCompletedButton}
           whileHover={!updating ? { scale: 1.05 } : {}}
           whileTap={!updating ? { scale: 0.95 } : {}}
@@ -984,34 +1068,45 @@ function LearnPage() {
   return (
     <>
       {loadingTabData && (
-        <div 
+        <div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
         >
-          <div 
+          <div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 sm:p-10 flex flex-col items-center justify-center min-w-[80vw] sm:min-w-[25vw] border border-slate-700/50"
           >
             <div className="relative mb-4 sm:mb-6">
               <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
-              <div className="absolute inset-0 w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+              <div
+                className="absolute inset-0 w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin"
+                style={{
+                  animationDirection: "reverse",
+                  animationDuration: "1.5s",
+                }}
+              ></div>
             </div>
-            <span className="text-white font-semibold text-base sm:text-lg">Generating content...</span>
-            <span className="text-gray-400 text-xs sm:text-sm mt-2">This may take a moment</span>
+            <span className="text-white font-semibold text-base sm:text-lg">
+              Generating content...
+            </span>
+            <span className="text-gray-400 text-xs sm:text-sm mt-2">
+              This may take a moment
+            </span>
           </div>
         </div>
       )}
 
       {/* Main Content Area */}
-      <div 
+      <div
         className="min-h-screen flex flex-col lg:flex-row justify-between mx-auto px-4 sm:px-8 py-4 sm:py-6 items-start gap-4 sm:gap-6"
         style={{
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)',
-          backgroundSize: '400% 400%',
-          animation: 'gradientShift 15s ease infinite',
+          background:
+            "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)",
+          backgroundSize: "400% 400%",
+          animation: "gradientShift 15s ease infinite",
         }}
       >
         {/* Main Section (top on mobile, left on desktop) */}
@@ -1022,10 +1117,15 @@ function LearnPage() {
 
       <style jsx>{`
         @keyframes gradientShift {
-          0%, 100% { background-position: 0% 50% }
-          50% { background-position: 100% 50% }
+          0%,
+          100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
@@ -1045,16 +1145,22 @@ function LearnPage() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(180deg, #0891b2 0%, #2563eb 100%);
         }
-        
+
         /* Mobile responsive adjustments */
         @media (max-width: 1023px) {
           .prose {
             font-size: 0.875rem;
             line-height: 1.5;
           }
-          .prose h1 { font-size: 1.5rem; }
-          .prose h2 { font-size: 1.25rem; }
-          .prose h3 { font-size: 1.125rem; }
+          .prose h1 {
+            font-size: 1.5rem;
+          }
+          .prose h2 {
+            font-size: 1.25rem;
+          }
+          .prose h3 {
+            font-size: 1.125rem;
+          }
         }
       `}</style>
     </>

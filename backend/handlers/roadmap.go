@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"tutor_genX/db"
@@ -139,6 +138,83 @@ Respond ONLY with JSON in this format:
 		})
 	}
 */
+type MarkAsCompletedRequest struct {
+	RoadmapID  uint `json:"roadmap_id"`
+	WeekID     uint `json:"week_id"`
+	TopicIndex int  `json:"topic_index"`
+	Value      bool `json:"value"` // true to mark complete, false to mark incomplete
+}
+
+func HandleMarkAsCompleted(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userEmail := claims["email"].(string)
+	var req MarkAsCompletedRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// ✅ Get the roadmap week belonging to this user
+	var week models.RoadmapWeek
+	if err := db.DB.
+		Joins("JOIN roadmaps ON roadmaps.id = roadmap_weeks.roadmap_id").
+		Where("roadmap_weeks.id = ? AND roadmaps.user_email = ?", req.WeekID, userEmail).
+		First(&week).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			http.Error(w, "Week not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Error fetching roadmap week", http.StatusInternalServerError)
+		return
+	}
+
+	// ✅ Decode JSON progress (stored as string in DB)
+	var progress []bool
+	if week.Progress != "" {
+		if err := json.Unmarshal([]byte(week.Progress), &progress); err != nil {
+			http.Error(w, "Failed to parse progress", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// ✅ Ensure progress slice is long enough
+	if req.TopicIndex >= len(progress) {
+		newProgress := make([]bool, req.TopicIndex+1)
+		copy(newProgress, progress)
+		progress = newProgress
+	}
+
+	// ✅ Set topic completion status based on the value sent from frontend
+	progress[req.TopicIndex] = req.Value
+
+	// ✅ Convert back to JSON string
+	progressJSON, err := json.Marshal(progress)
+	if err != nil {
+		http.Error(w, "Failed to encode progress", http.StatusInternalServerError)
+		return
+	}
+	week.Progress = string(progressJSON)
+
+	// ✅ Save update
+	if err := db.DB.Save(&week).Error; err != nil {
+		http.Error(w, "Error updating progress", http.StatusInternalServerError)
+		return
+	}
+
+	// ✅ Respond with success message
+	response := map[string]interface{}{
+		"message": "Progress updated successfully",
+		"week":    week,
+		"status":  req.Value,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
 func DeleteAllRoadmaps(w http.ResponseWriter, r *http.Request) {
 	// Step 1: Get user email from JWT claims
 	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
@@ -370,161 +446,6 @@ func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-}
-
-/*
-	 func UpdateProgress(w http.ResponseWriter, r *http.Request) {
-		// Auth check
-		claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
-		if !ok {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-		userEmail := claims["email"].(string)
-
-		// Parse input
-		var req struct {
-			RoadmapID  uint `json:"roadmap_id"`
-			WeekID     uint `json:"week_id"`
-			TopicIndex int  `json:"topic_index"`
-			Value      bool `json:"value"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
-			return
-		}
-
-		// Find the roadmap week
-		var week models.RoadmapWeek
-		if err := db.DB.First(&week, req.WeekID).Error; err != nil {
-			http.Error(w, "Week not found", http.StatusNotFound)
-			return
-		}
-
-		// Validate that the week belongs to a roadmap owned by the user
-		var roadmap models.Roadmap
-		if err := db.DB.First(&roadmap, req.RoadmapID).Error; err != nil || roadmap.UserEmail != userEmail {
-			http.Error(w, "Not authorized", http.StatusForbidden)
-			return
-		}
-
-		// Update the progress
-		var progress []bool
-		if week.Progress == "" {
-			// Initialize progress slice with default values
-			progress = make([]bool, 10) // or whatever length makes sense
-		} else {
-			if err := json.Unmarshal([]byte(week.Progress), &progress); err != nil {
-				log.Println("Error parsing week.Progress:", week.Progress, err)
-				http.Error(w, "Failed to parse progress", http.StatusInternalServerError)
-				return
-			}
-		}
-		if req.TopicIndex < 0 || req.TopicIndex >= len(progress) {
-			http.Error(w, "Invalid topic index", http.StatusBadRequest)
-			return
-		}
-		progress[req.TopicIndex] = req.Value
-
-		// Save back to DB
-		progressJSON, _ := json.Marshal(progress)
-		week.Progress = string(progressJSON)
-
-		if err := db.DB.Save(&week).Error; err != nil {
-			http.Error(w, "Failed to update progress", http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-	}
-*/
-func UpdateProgress(w http.ResponseWriter, r *http.Request) {
-	// Auth check
-	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	userEmail := claims["email"].(string)
-
-	// Parse input
-	var req struct {
-		RoadmapID  uint `json:"roadmap_id"`
-		WeekID     uint `json:"week_id"`
-		TopicIndex int  `json:"topic_index"`
-		Value      bool `json:"value"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	// Find the roadmap week
-	var week models.RoadmapWeek
-	if err := db.DB.First(&week, req.WeekID).Error; err != nil {
-		http.Error(w, "Week not found", http.StatusNotFound)
-		return
-	}
-
-	// Validate that the week belongs to a roadmap owned by the user
-	var roadmap models.Roadmap
-	if err := db.DB.First(&roadmap, req.RoadmapID).Error; err != nil || roadmap.UserEmail != userEmail {
-		http.Error(w, "Not authorized", http.StatusForbidden)
-		return
-	}
-
-	// Parse topics JSON to get number of topics
-	var topics []string
-	if err := json.Unmarshal([]byte(week.Topics), &topics); err != nil {
-		log.Println("Failed to parse topics JSON:", err)
-		http.Error(w, "Failed to parse topics", http.StatusInternalServerError)
-		return
-	}
-	topicCount := len(topics)
-
-	// Parse or initialize progress array with length equal to number of topics
-	var progress []bool
-	if week.Progress == "" {
-		progress = make([]bool, topicCount)
-	} else {
-		if err := json.Unmarshal([]byte(week.Progress), &progress); err != nil {
-			log.Println("Error parsing week.Progress:", week.Progress, err)
-			http.Error(w, "Failed to parse progress", http.StatusInternalServerError)
-			return
-		}
-		// In case progress length is different from topics length (maybe old data),
-		// adjust length safely
-		if len(progress) != topicCount {
-			newProgress := make([]bool, topicCount)
-			copy(newProgress, progress)
-			progress = newProgress
-		}
-	}
-
-	// Validate topic index
-	if req.TopicIndex < 0 || req.TopicIndex >= topicCount {
-		http.Error(w, "Invalid topic index", http.StatusBadRequest)
-		return
-	}
-
-	// Update progress
-	progress[req.TopicIndex] = req.Value
-
-	// Save back to DB
-	progressJSON, err := json.Marshal(progress)
-	if err != nil {
-		log.Println("Failed to marshal progress:", err)
-		http.Error(w, "Failed to update progress", http.StatusInternalServerError)
-		return
-	}
-	week.Progress = string(progressJSON)
-
-	if err := db.DB.Save(&week).Error; err != nil {
-		http.Error(w, "Failed to update progress", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func GetUsersRoadmap(w http.ResponseWriter, r *http.Request) {

@@ -569,7 +569,7 @@ function Dashboard() {
                           })}
                       </motion.div>
 
-                      {/* CTA */}
+                      
                       <motion.button
                         onClick={() => navigate(`/learn/${roadmap.ID}`)}
                         className="mt-5 w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
