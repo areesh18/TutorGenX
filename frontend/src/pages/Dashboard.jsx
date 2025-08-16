@@ -534,8 +534,7 @@ const handleSaveButton = async () => {
                         <div className="flex-1">
                           <h2 className="text-lg font-bold text-white leading-tight mb-2 flex items-center gap-2">
                             🎯{" "}
-                            {generatedTitle ||
-                              roadmap.goal ||
+                            {roadmap?.title||
                               "Learning Roadmap"}
                           </h2>
                           <p className="text-xs text-slate-400">
