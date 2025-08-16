@@ -568,7 +568,7 @@ function LearnPage() {
                 d="M4 6h16M4 12h16M4 18h16"
               />
             </svg>
-            <span className="text-sm font-medium">Menu</span>
+            <span className="text-sm font-medium">Roadmap</span>
           </button>
 
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent text-center lg:text-left flex-1 lg:flex-none">
@@ -742,12 +742,13 @@ function LearnPage() {
                               value={optionLetter}
                               checked={isSelected}
                               disabled={quizSubmitted} // prevent changes after submission
-                              onChange={() =>
+                              onChange={(e) => {
+                                e.preventDefault();
                                 setSelectedAnswers((prev) => ({
                                   ...prev,
                                   [idx]: optionLetter,
-                                }))
-                              }
+                                }));
+                              }}
                               className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 bg-slate-700 border-slate-600 focus:ring-cyan-500 focus:ring-2"
                             />
                             <span className="flex items-center gap-2 min-w-0">
