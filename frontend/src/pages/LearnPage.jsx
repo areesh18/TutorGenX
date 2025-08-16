@@ -22,6 +22,7 @@ function LearnPage() {
   const [updating, setUpdating] = useState(false);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
 
   const [score, setScore] = useState(0);
 
@@ -111,6 +112,7 @@ function LearnPage() {
       generateSimplifiedExp();
     }
   }, [activeTab, explanation, selectedTopic]);
+
   useEffect(() => {
     const generateQuiz = async () => {
       setLoadingTabData(true);
@@ -139,6 +141,7 @@ function LearnPage() {
       generateQuiz();
     }
   }, [activeTab, explanation, selectedTopic]);
+
   useEffect(() => {
     // This function runs when a key is pressed
     const onKey = (e) => e.key === "Escape" && setShowScore(false);
@@ -156,7 +159,7 @@ function LearnPage() {
 
   if (!roadmap) return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-      <motion.div
+      <div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         className="text-center"
@@ -166,7 +169,7 @@ function LearnPage() {
           <div className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
         </div>
         <p className="text-white text-lg font-medium">Loading roadmap...</p>
-      </motion.div>
+      </div>
     </div>
   );
   
@@ -200,6 +203,7 @@ function LearnPage() {
     }
     handleExplainTopic(prevTopic, prevWeekIndex, prevTopicIndex);
   };
+
   const isCurrentTopicCompleted = () => {
     if (!roadmap || !roadmap.weeks) return false;
 
@@ -282,6 +286,7 @@ function LearnPage() {
       return console.error("❌ Error marking topic:", err);
     }
   }; */
+
   const handleNextButton = () => {
     console.log("Clicked Next");
     console.log("roadmap:", roadmap);
@@ -339,6 +344,7 @@ function LearnPage() {
     setLoadingTabData(true);
     setSelectedTopic(topic);
     setExplanation("Loading...");
+    setSidebarOpen(false); // Close mobile sidebar when topic is selected
 
     try {
       const res = await axios.post(
@@ -363,166 +369,172 @@ function LearnPage() {
     const compactMode = totalWeeks > 6; // Compact if too many weeks
 
     return (
-      <motion.aside
-        initial={{ x: 300, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className={`w-80 bg-gradient-to-b from-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl self-start p-6 ${
-          compactMode ? "text-sm space-y-3" : "space-y-4"
-        }`}
-        style={{
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(148, 163, 184, 0.1)',
-        }}
-      >
-        {/* Header */}
-        <div className="mb-6">
-          <motion.h2 
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-xl font-bold flex items-center gap-3 text-white mb-2"
-          >
-            <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
-              🧭
-            </div>
-            Roadmap
-          </motion.h2>
-          <motion.span 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.4, type: "spring" }}
-            className="inline-block text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-purple-300 px-3 py-1 rounded-full font-medium"
-          >
-            Generic
-          </motion.span>
-        </div>
-
-        {/* Weeks */}
-        <motion.ul 
-          className="space-y-2"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
+      <>
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
+        <motion.aside
+          className={`
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            lg:translate-x-0 transition-transform duration-300
+            fixed lg:sticky top-0 left-0 z-50 lg:z-auto
+            w-80 sm:w-96 lg:w-80 xl:w-96
+            h-screen lg:h-[90vh] 
+            bg-gradient-to-b from-slate-800/90 to-slate-900/90 
+            backdrop-blur-xl rounded-none lg:rounded-2xl 
+            border-r lg:border border-slate-700/50 
+            shadow-2xl self-start p-4 sm:p-6 
+            overflow-y-auto
+            ${compactMode ? "text-sm space-y-3" : "space-y-4"}
+          `}
+          style={{
+            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(148, 163, 184, 0.1)',
+          }}
         >
-          {roadmap.weeks
-            .slice()
-            .sort((a, b) => a.week - b.week)
-            .map((week, idx) => {
-              const topics = JSON.parse(week.topics);
-              const progress = JSON.parse(week.progress);
-              const isOpen = openWeek === idx;
-              const completedTopics = progress.filter(Boolean).length;
-              const progressPercentage = (completedTopics / topics.length) * 100;
+          {/* Mobile close button */}
+          <button
+            className="lg:hidden absolute top-4 right-4 text-white hover:text-red-400 transition-colors z-10"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
 
-              return (
-                <motion.li
-                  key={week.ID}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 * idx }}
-                  className={`border border-slate-600/50 rounded-xl ${
-                    compactMode ? "p-3" : "p-4"
-                  } bg-gradient-to-r from-slate-700/30 to-slate-600/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300`}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                >
-                  {/* Week Title */}
-                  <button
-                    onClick={() => setOpenWeek(isOpen ? null : idx)}
-                    className={`flex items-center justify-between w-full text-left font-semibold ${
-                      compactMode ? "text-sm" : "text-base"
-                    } text-white group`}
+          {/* Header */}
+          <div className="mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-3 text-white mb-2">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center text-xs sm:text-base">
+                🧭
+              </div>
+              <span className="truncate">Roadmap</span>
+            </h2>
+            <span className="inline-block text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-purple-300 px-3 py-1 rounded-full font-medium">
+              Generic
+            </span>
+          </div>
+
+          {/* Weeks */}
+          <motion.ul className="space-y-2">
+            {roadmap.weeks
+              .slice()
+              .sort((a, b) => a.week - b.week)
+              .map((week, idx) => {
+                const topics = JSON.parse(week.topics);
+                const progress = JSON.parse(week.progress);
+                const isOpen = openWeek === idx;
+                const completedTopics = progress.filter(Boolean).length;
+                const progressPercentage = (completedTopics / topics.length) * 100;
+
+                return (
+                  <motion.li
+                    key={week.ID}
+                    className={`border border-slate-600/50 rounded-xl ${
+                      compactMode ? "p-2 sm:p-3" : "p-3 sm:p-4"
+                    } bg-gradient-to-r from-slate-700/30 to-slate-600/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300`}
+                    whileHover={{ scale: 1.02, y: -2 }}
                   >
-                    <div className="flex items-center">
-                      <motion.span 
-                        className="mr-3 text-cyan-400"
-                        animate={{ rotate: isOpen ? 90 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        ▶
-                      </motion.span>
-                      <span className="mr-3 text-lg">📁</span>
-                      <span className="group-hover:text-cyan-300 transition-colors">
-                        {week.week}. {week.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <motion.div 
-                          className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${progressPercentage}%` }}
-                          transition={{ duration: 1, delay: 0.2 }}
-                        />
+                    {/* Week Title */}
+                    <button
+                      onClick={() => setOpenWeek(isOpen ? null : idx)}
+                      className={`flex items-center justify-between w-full text-left font-semibold ${
+                        compactMode ? "text-xs sm:text-sm" : "text-sm sm:text-base"
+                      } text-white group`}
+                    >
+                      <div className="flex items-center min-w-0">
+                        <motion.span 
+                          className="mr-2 sm:mr-3 text-cyan-400 flex-shrink-0"
+                          animate={{ rotate: isOpen ? 90 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          ▶
+                        </motion.span>
+                        <span className="mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0">📁</span>
+                        <span className="group-hover:text-cyan-300 transition-colors truncate">
+                          {week.week}. {week.title}
+                        </span>
                       </div>
-                      <span className="text-xs text-gray-400 min-w-[3rem]">
-                        {completedTopics}/{topics.length}
-                      </span>
-                    </div>
-                  </button>
+                      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
+                        <div className="w-8 sm:w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
+                          <motion.div 
+                            className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPercentage}%` }}
+                            transition={{ duration: 1, delay: 0.2 }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-400 min-w-[2rem] sm:min-w-[3rem]">
+                          {completedTopics}/{topics.length}
+                        </span>
+                      </div>
+                    </button>
 
-                  {/* Topics */}
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.ul 
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="mt-4 space-y-2 overflow-hidden"
-                      >
-                        {topics.map((topic, i) => (
-                          <motion.li 
-                            key={i}
-                            initial={{ x: -20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            transition={{ delay: 0.1 * i }}
-                          >
-                            <motion.button
-                              onClick={() => handleExplainTopic(topic, idx, i)}
-                              className={`flex items-center w-full text-left rounded-xl px-3 py-2 transition-all duration-200 ${
-                                progress[i]
-                                  ? "text-green-400 bg-green-500/10 border border-green-500/20"
-                                  : "text-gray-300 hover:text-white hover:bg-slate-600/30"
-                              } ${
-                                selectedTopic === topic
-                                  ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-l-4 border-l-cyan-400 font-bold shadow-lg"
-                                  : ""
-                              }`}
-                              style={{
-                                fontSize: compactMode ? "0.75rem" : "0.875rem",
-                              }}
-                              whileHover={{ x: 4 }}
-                              whileTap={{ scale: 0.98 }}
+                    {/* Topics */}
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.ul 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="mt-3 sm:mt-4 space-y-1 sm:space-y-2 overflow-hidden"
+                        >
+                          {topics.map((topic, i) => (
+                            <motion.li 
+                              key={i}
+                              initial={{ x: -20, opacity: 0 }}
+                              animate={{ x: 0, opacity: 1 }}
+                              transition={{ delay: 0.1 * i }}
                             >
-                              <span className="mr-3 text-base">
-                                {progress[i] ? "✅" : "📄"}
-                              </span>
-                              <span className={progress[i] ? "line-through opacity-75" : ""}>
-                                {topic}
-                              </span>
-                            </motion.button>
-                          </motion.li>
-                        ))}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
-                </motion.li>
-              );
-            })}
-        </motion.ul>
-      </motion.aside>
+                              <motion.button
+                                onClick={() => handleExplainTopic(topic, idx, i)}
+                                className={`flex items-center w-full text-left rounded-xl px-2 sm:px-3 py-2 transition-all duration-200 ${
+                                  progress[i]
+                                    ? "text-green-400 bg-green-500/10 border border-green-500/20"
+                                    : "text-gray-300 hover:text-white hover:bg-slate-600/30"
+                                } ${
+                                  selectedTopic === topic
+                                    ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-l-4 border-l-cyan-400 font-bold shadow-lg"
+                                    : ""
+                                }`}
+                                style={{
+                                  fontSize: compactMode ? "0.7rem" : "0.875rem",
+                                }}
+                                whileHover={{ x: 4 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                <span className="mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0">
+                                  {progress[i] ? "✅" : "📄"}
+                                </span>
+                                <span className={`${progress[i] ? "line-through opacity-75" : ""} truncate`}>
+                                  {topic}
+                                </span>
+                              </motion.button>
+                            </motion.li>
+                          ))}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </motion.li>
+                );
+              })}
+          </motion.ul>
+        </motion.aside>
+      </>
     );
   };
 
   //Main section
   const MainSection = () => (
-    <motion.div 
-      initial={{ y: 50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="flex-1 mr-6 rounded-2xl h-[90vh] max-w-4xl flex flex-col overflow-hidden"
+    <div 
+      className="flex-1 rounded-none lg:rounded-2xl h-screen lg:h-[90vh] max-w-none lg:max-w-4xl flex flex-col overflow-hidden lg:mr-6"
       style={{
         background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)',
         backdropFilter: 'blur(20px)',
@@ -531,25 +543,30 @@ function LearnPage() {
       }}
     >
       {/* Header */}
-      <div className="p-8 border-b border-slate-700/50">
-        <motion.h1 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-3xl font-bold mb-6 bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent"
-        >
-          {roadmap.goal}
-        </motion.h1>
+      <div className="p-4 sm:p-6 lg:p-8 border-b border-slate-700/50">
+        {/* Mobile menu button and title */}
+        <div className="flex items-center justify-between mb-4 lg:mb-6">
+          <button
+            className="lg:hidden flex items-center gap-2 text-white hover:text-cyan-400 transition-colors"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span className="text-sm font-medium">Menu</span>
+          </button>
+          
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent text-center lg:text-left flex-1 lg:flex-none">
+            {roadmap.goal}
+          </h1>
+        </div>
 
         {/* Tabs */}
-        <div className="flex space-x-1 bg-slate-800/50 p-1 rounded-xl border border-slate-600/30">
+        <div className="flex space-x-1 bg-slate-800/50 p-1 rounded-xl border border-slate-600/30 overflow-x-auto">
           {["Content", "Simplify", "Quiz", "Example"].map((tab, index) => (
             <motion.button
               key={tab}
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 * index }}
-              className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all duration-300 relative overflow-hidden ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 sm:py-3 font-semibold rounded-lg transition-all duration-300 relative overflow-hidden text-sm sm:text-base ${
                 activeTab === tab.toLowerCase()
                   ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/25"
                   : "text-gray-400 hover:text-white hover:bg-slate-700/50"
@@ -559,7 +576,7 @@ function LearnPage() {
               whileTap={{ scale: 0.95 }}
             >
               {activeTab === tab.toLowerCase() && (
-                <motion.div
+                <div
                   layoutId="activeTab"
                   className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg"
                   style={{ zIndex: -1 }}
@@ -572,42 +589,31 @@ function LearnPage() {
       </div>
 
       {/* Main scrollable content */}
-      <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+      <div className="flex-1 text-zinc-100 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 custom-scrollbar">
         {/* Content Tab */}
         {activeTab === "content" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
+          <div>
             {explanation === "" ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mb-4">
+              <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl">
                   📘
                 </div>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-base sm:text-lg px-4">
                   Click a topic and switch to this tab to generate an explanation.
                 </p>
               </div>
             ) : (
               <>
                 {selectedTopic && (
-                  <motion.h2 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    className="text-2xl font-bold mb-6 text-white flex items-center gap-3"
-                  >
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-sm">
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
                       📘
                     </div>
-                    {selectedTopic}
-                  </motion.h2>
+                    <span className="break-words">{selectedTopic}</span>
+                  </h2>
                 )}
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="prose prose-invert prose-lg max-w-none"
+                <div 
+                  className="prose prose-invert prose-sm sm:prose-lg max-w-none"
                   style={{
                     '--tw-prose-body': '#e2e8f0',
                     '--tw-prose-headings': '#ffffff',
@@ -618,47 +624,36 @@ function LearnPage() {
                   }}
                 >
                   <ReactMarkdown>{explanation}</ReactMarkdown>
-                </motion.div>
+                </div>
               </>
             )}
-          </motion.div>
+          </div>
         )}
 
         {/* Simplify Tab */}
         {activeTab === "simplify" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
+          <div>
             {simplifiedExp === "" ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 text-2xl">
+              <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
                   🎯
                 </div>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-base sm:text-lg px-4">
                   Click a topic and switch to this tab to generate a simplified explanation.
                 </p>
               </div>
             ) : (
               <>
                 {selectedTopic && (
-                  <motion.h2 
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    className="text-2xl font-bold mb-6 text-white flex items-center gap-3"
-                  >
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-sm">
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
                       🎯
                     </div>
-                    {selectedTopic} simplified!
-                  </motion.h2>
+                    <span className="break-words">{selectedTopic} simplified!</span>
+                  </h2>
                 )}
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="prose prose-invert prose-lg max-w-none"
+                <div 
+                  className="prose prose-invert prose-sm sm:prose-lg max-w-none"
                   style={{
                     '--tw-prose-body': '#e2e8f0',
                     '--tw-prose-headings': '#ffffff',
@@ -669,45 +664,37 @@ function LearnPage() {
                   }}
                 >
                   <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
-                </motion.div>
+                </div>
               </>
             )}
-          </motion.div>
+          </div>
         )}
 
         {/* Quiz Tab */}
         {activeTab === "quiz" && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="space-y-6"
-          >
+          <div className="space-y-4 sm:space-y-6">
             {quiz.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 text-2xl">
+              <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
                   🧠
                 </div>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-base sm:text-lg px-4">
                   Click a topic and switch to this tab to generate a quiz.
                 </p>
               </div>
             ) : (
               quiz.map((q, idx) => (
-                <motion.div 
+                <div 
                   key={idx} 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * idx }}
-                  className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
+                  className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-4 sm:p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
                 >
-                  <h3 className="font-bold text-lg mb-4 text-white flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-sm font-bold">
+                  <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 text-white flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold">
                       {idx + 1}
                     </div>
-                    {q.question}
+                    <span className="break-words">{q.question}</span>
                   </h3>
-                  <ul className="space-y-3">
+                  <ul className="space-y-2 sm:space-y-3">
                     {q.options.map((opt, i) => {
                       const optionLetter = String.fromCharCode(65 + i);
                       const isCorrect = optionLetter === q.answer;
@@ -720,7 +707,7 @@ function LearnPage() {
                           whileTap={{ scale: 0.98 }}
                         >
                           <label
-                            className={`flex items-center space-x-3 p-4 rounded-lg cursor-pointer transition-all duration-300 border ${
+                            className={`flex items-center space-x-2 sm:space-x-3 p-3 sm:p-4 rounded-lg cursor-pointer transition-all duration-300 border text-sm sm:text-base ${
                               quizSubmitted && isCorrect 
                                 ? "bg-green-500/20 border-green-400/50 text-green-300" 
                                 : quizSubmitted && isSelected && !isCorrect 
@@ -742,28 +729,23 @@ function LearnPage() {
                                   [idx]: optionLetter,
                                 }))
                               }
-                              className="w-5 h-5 text-cyan-400 bg-slate-700 border-slate-600 focus:ring-cyan-500 focus:ring-2"
+                              className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 bg-slate-700 border-slate-600 focus:ring-cyan-500 focus:ring-2"
                             />
-                            <span className="flex items-center gap-2">
-                              <span className="font-semibold">{optionLetter}.</span>
-                              <span>{opt}</span>
+                            <span className="flex items-center gap-2 min-w-0">
+                              <span className="font-semibold flex-shrink-0">{optionLetter}.</span>
+                              <span className="break-words">{opt}</span>
                             </span>
                           </label>
                         </motion.li>
                       );
                     })}
                   </ul>
-                </motion.div>
+                </div>
               ))
             )}
 
             {quiz.length > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex justify-between items-center"
-              >
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <motion.button
                   onClick={() => {
                     // calculate score
@@ -775,7 +757,7 @@ function LearnPage() {
                     setQuizSubmitted(true);
                     setShowPopup(true);
                   }}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 sm:px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -783,9 +765,7 @@ function LearnPage() {
                 </motion.button>
                 {quizSubmitted && (
                   <motion.button
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 sm:px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-sm sm:text-base"
                     onClick={() => {
                       setSelectedAnswers({});
                       setScore(0);
@@ -797,20 +777,20 @@ function LearnPage() {
                     Retry 🔄
                   </motion.button>
                 )}
-              </motion.div>
+              </div>
             )}
 
             {/* Animated Popup (Framer Motion) */}
             <AnimatePresence>
               {showPopup && (
-                <motion.div
+                <div
                   className="fixed inset-0 z-50 flex items-center justify-center"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 >
                   {/* Backdrop */}
-                  <motion.div
+                  <div
                     className="absolute inset-0 bg-black/70 backdrop-blur-md"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -819,71 +799,71 @@ function LearnPage() {
                   />
 
                   {/* Modal */}
-                  <motion.div
-                    className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl border border-slate-700/50"
+                  <div
+                    className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md mx-4 shadow-2xl border border-slate-700/50"
                     initial={{ scale: 0.5, opacity: 0, rotateX: -15 }}
                     animate={{ scale: 1, opacity: 1, rotateX: 0 }}
                     exit={{ scale: 0.5, opacity: 0, rotateX: 15 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
                     <div className="text-center">
-                      <motion.div
+                      <div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                        className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4"
+                        className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xl sm:text-2xl mx-auto mb-4"
                       >
                         🎉
-                      </motion.div>
+                      </div>
                       
-                      <motion.h2 
+                      <h2 
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-2xl font-bold mb-3 text-white"
+                        className="text-xl sm:text-2xl font-bold mb-3 text-white"
                       >
                         Quiz Completed!
-                      </motion.h2>
+                      </h2>
                       
                       <motion.p 
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="mb-4 text-gray-300 text-lg"
+                        className="mb-4 text-gray-300 text-base sm:text-lg text-center"
                       >
-                        You scored <span className="font-bold text-cyan-400 text-xl">{score}</span> out of {quiz.length}.
+                        You scored <span className="font-bold text-cyan-400 text-lg sm:text-xl">{score}</span> out of {quiz.length}.
                       </motion.p>
 
                       {/* ✅ Conditional Message */}
-                      <motion.div
+                      <div
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.5 }}
                       >
                         {score === quiz.length ? (
-                          <p className="text-green-400 font-semibold text-lg flex items-center justify-center gap-2">
-                            Perfect score! <span className="text-2xl">🏆</span>
+                          <p className="text-green-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
+                            Perfect score! <span className="text-xl sm:text-2xl">🏆</span>
                           </p>
                         ) : score >= quiz.length / 2 ? (
-                          <p className="text-blue-400 font-semibold text-lg flex items-center justify-center gap-2">
-                            Good job! Keep practicing! <span className="text-2xl">💪</span>
+                          <p className="text-blue-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
+                            Good job! Keep practicing! <span className="text-xl sm:text-2xl">💪</span>
                           </p>
                         ) : (
-                          <p className="text-orange-400 font-semibold text-lg flex items-center justify-center gap-2">
-                            Don't give up — you'll get it! <span className="text-2xl">🚀</span>
+                          <p className="text-orange-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
+                            Don't give up — you'll get it! <span className="text-xl sm:text-2xl">🚀</span>
                           </p>
                         )}
-                      </motion.div>
+                      </div>
 
-                      <motion.div 
+                      <div 
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.6 }}
-                        className="flex justify-center gap-4 mt-6"
+                        className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6"
                       >
                         <button
                           onClick={() => setShowPopup(false)}
-                          className="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition-colors"
+                          className="px-4 sm:px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition-colors text-sm sm:text-base"
                         >
                           Close
                         </button>
@@ -894,86 +874,63 @@ function LearnPage() {
                             setQuizSubmitted(false);
                             setShowPopup(false);
                           }}
-                          className="px-6 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all"
+                          className="px-4 sm:px-6 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all text-sm sm:text-base"
                         >
                           Try Again
                         </button>
-                      </motion.div>
+                      </div>
                     </div>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
         )}
 
         {/* Example Tab */}
         {activeTab === "example" && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="space-y-6"
-          >
+          <div className="space-y-4 sm:space-y-6">
             {examples.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mb-4 text-2xl">
+              <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
                   💡
                 </div>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-base sm:text-lg px-4">
                   Click a topic and switch to this tab to generate an example.
                 </p>
               </div>
             ) : (
               examples.map((ex, idx) => (
-                <motion.div 
+                <div 
                   key={idx} 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * idx }}
-                  className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
+                  className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-4 sm:p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
                 >
-                  <h3 className="text-xl font-bold mb-3 text-white flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-sm">
+                  <h3 className="text-lg sm:text-xl font-bold mb-3 text-white flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
                       📌
                     </div>
-                    {ex.title}
+                    <span className="break-words">{ex.title}</span>
                   </h3>
-                  <p className="mb-4 text-gray-300 leading-relaxed">{ex.explanation}</p>
-                  <motion.blockquote 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="italic text-cyan-400 mb-4 pl-4 border-l-4 border-cyan-400/50 bg-cyan-400/5 py-2 rounded-r-lg"
-                  >
+                  <p className="mb-4 text-gray-300 leading-relaxed text-sm sm:text-base">{ex.explanation}</p>
+                  <motion.blockquote className="italic text-cyan-400 mb-4 pl-3 sm:pl-4 border-l-4 border-cyan-400/50 bg-cyan-400/5 py-2 rounded-r-lg text-sm sm:text-base">
                     💡 {ex.highlight}
                   </motion.blockquote>
                   {ex.code && (
-                    <motion.pre 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                      className="bg-slate-900/80 p-4 rounded-lg text-sm overflow-x-auto border border-slate-700/50 shadow-inner"
-                    >
+                    <motion.pre className="bg-slate-900/80 p-3 sm:p-4 rounded-lg text-xs sm:text-sm overflow-x-auto border border-slate-700/50 shadow-inner">
                       <code className="text-green-400">{ex.code}</code>
                     </motion.pre>
                   )}
-                </motion.div>
+                </div>
               ))
             )}
-          </motion.div>
+          </div>
         )}
       </div>
 
       {/* Sticky bottom nav */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex items-center justify-between"
-      >
+      <div className="p-4 sm:p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
         <motion.button
-          className="flex items-center gap-2 bg-slate-700/50 hover:bg-slate-600/60 border border-slate-600/50 text-white rounded-xl px-6 py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-700/50 hover:bg-slate-600/60 border border-slate-600/50 text-white rounded-xl px-4 sm:px-6 py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base"
           onClick={handlePrevButton}
           whileHover={{ scale: 1.05, x: -5 }}
           whileTap={{ scale: 0.95 }}
@@ -984,7 +941,7 @@ function LearnPage() {
         
         <motion.button
           disabled={updating}
-          className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl ${
+          className={`w-full sm:w-auto px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base ${
             isCurrentTopicCompleted()
               ? "bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
               : "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
@@ -994,17 +951,17 @@ function LearnPage() {
           whileTap={!updating ? { scale: 0.95 } : {}}
         >
           {updating ? (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               Updating...
             </span>
           ) : isCurrentTopicCompleted() ? (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <span className="text-lg">❌</span>
               Mark Incomplete
             </span>
           ) : (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <span className="text-lg">✅</span>
               Mark Complete
             </span>
@@ -1012,7 +969,7 @@ function LearnPage() {
         </motion.button>
 
         <motion.button
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl px-6 py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl px-4 sm:px-6 py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base"
           onClick={handleNextButton}
           whileHover={{ scale: 1.05, x: 5 }}
           whileTap={{ scale: 0.95 }}
@@ -1020,46 +977,46 @@ function LearnPage() {
           Next
           <span className="text-lg">➡️</span>
         </motion.button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 
   return (
     <>
       {loadingTabData && (
-        <motion.div 
+        <div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
         >
-          <motion.div 
+          <div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-10 flex flex-col items-center justify-center min-w-[25vw] border border-slate-700/50"
+            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 sm:p-10 flex flex-col items-center justify-center min-w-[80vw] sm:min-w-[25vw] border border-slate-700/50"
           >
-            <div className="relative mb-6">
-              <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
-              <div className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+            <div className="relative mb-4 sm:mb-6">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
             </div>
-            <span className="text-white font-semibold text-lg">Generating content...</span>
-            <span className="text-gray-400 text-sm mt-2">This may take a moment</span>
-          </motion.div>
-        </motion.div>
+            <span className="text-white font-semibold text-base sm:text-lg">Generating content...</span>
+            <span className="text-gray-400 text-xs sm:text-sm mt-2">This may take a moment</span>
+          </div>
+        </div>
       )}
 
       {/* Main Content Area */}
       <div 
-        className="min-h-screen flex flex-row justify-between mx-auto px-8 py-6 items-start gap-6"
+        className="min-h-screen flex flex-col lg:flex-row justify-between mx-auto px-4 sm:px-8 py-4 sm:py-6 items-start gap-4 sm:gap-6"
         style={{
           background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)',
           backgroundSize: '400% 400%',
           animation: 'gradientShift 15s ease infinite',
         }}
       >
-        {/* Main Section (left) */}
+        {/* Main Section (top on mobile, left on desktop) */}
         <MainSection />
-        {/* Right Sidebar (Roadmap) */}
+        {/* Right Sidebar (bottom on mobile, right on desktop) */}
         <RoadmapSidebar />
       </div>
 
@@ -1070,7 +1027,12 @@ function LearnPage() {
         }
         
         .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
+          width: 6px;
+        }
+        @media (min-width: 640px) {
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: rgba(51, 65, 85, 0.3);
@@ -1082,6 +1044,17 @@ function LearnPage() {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(180deg, #0891b2 0%, #2563eb 100%);
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 1023px) {
+          .prose {
+            font-size: 0.875rem;
+            line-height: 1.5;
+          }
+          .prose h1 { font-size: 1.5rem; }
+          .prose h2 { font-size: 1.25rem; }
+          .prose h3 { font-size: 1.125rem; }
         }
       `}</style>
     </>
