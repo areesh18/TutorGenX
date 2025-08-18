@@ -217,6 +217,7 @@ function LearnPage() {
       console.warn("Previous topic not found");
       return;
     }
+    setOpenWeek(prevWeekIndex);
     handleExplainTopic(prevTopic, prevWeekIndex, prevTopicIndex);
   };
 
