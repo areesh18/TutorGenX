@@ -23,7 +23,17 @@ function LearnPage() {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
+const [showHint, setShowHint] = useState(true);
 
+useEffect(() => {
+  const timer = setTimeout(() => setShowHint(false), 5000);
+  return () => clearTimeout(timer);
+}, []);
+
+const handleRoadmapClick = () => {
+  setShowHint(false);
+  setSidebarOpen(true);
+};
   const [score, setScore] = useState(0);
 
   const fetchRoadmap = useCallback(async () => {
@@ -535,9 +545,9 @@ function LearnPage() {
   };
 
   //Main section
-  const MainSection = () => (
+const MainSection = () => (
     <div
-      className="flex-1 rounded-none lg:rounded-2xl h-screen lg:h-[90vh] max-w-none lg:max-w-4xl flex flex-col overflow-hidden lg:mr-6"
+      className="flex-1 rounded-none lg:rounded-2xl h-[100dvh] lg:h-[90vh] max-w-none lg:max-w-4xl flex flex-col overflow-hidden lg:mr-6"
       style={{
         background:
           "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
@@ -548,30 +558,47 @@ function LearnPage() {
       }}
     >
       {/* Header */}
-      <div className="p-4 sm:p-6 lg:p-8 border-b border-slate-700/50">
+      <div className="p-4 sm:p-6 lg:p-8 border-b border-slate-700/50 flex-shrink-0">
         {/* Mobile menu button and title */}
-        <div className="flex items-center justify-between mb-4 lg:mb-6">
+        <div className="flex items-center mb-4 lg:mb-6">
           <button
-            className="lg:hidden flex items-center gap-2 text-white hover:text-cyan-400 transition-colors"
-            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden flex items-center gap-1 text-white hover:text-cyan-400 transition-all duration-300 mr-3 group relative"
+            onClick={handleRoadmapClick}
+          ></button>
+          <button
+            className="lg:hidden flex items-center gap-1 text-white hover:text-cyan-400 transition-all duration-300 mr-3 group relative"
+            onClick={handleRoadmapClick}
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-            <span className="text-sm font-medium">Roadmap</span>
+            {/* Hint tooltip - only shows when showHint is true */}
+            {showHint && (
+              <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shadow-xl z-50 animate-bounce">
+                <div className="flex items-center gap-1">
+                  <span>👆</span>
+                  <span>Tap for Roadmap</span>
+                </div>
+                {/* Arrow pointing up */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-cyan-500"></div>
+              </div>
+            )}
+
+            <div className="w-7 h-7 bg-gradient-to-br from-slate-700 via-slate-600 to-slate-800 rounded-xl flex items-center justify-center shadow-lg border border-slate-500/30 group-hover:border-cyan-400/50 group-hover:shadow-cyan-400/25 group-hover:scale-105 transition-all duration-300">
+              <svg
+                className="w-4 h-4 text-slate-300 group-hover:text-cyan-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <circle cx="12" cy="5" r="1" />
+                <circle cx="12" cy="19" r="1" />
+                <path d="M12 8v1m0 6v1" strokeLinecap="round" />
+                <path d="M9 9l-1.5-1.5M15 15l1.5 1.5M6 12H4m16 0h-2M9 15l-1.5 1.5M15 9l1.5-1.5" strokeLinecap="round" />
+              </svg>
+            </div>
           </button>
 
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent text-center lg:text-left flex-1 lg:flex-none">
+          <h1 className="text-base sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent flex-1 lg:flex-none">
             {roadmap?.title || "Learning Roadmap"}
           </h1>
         </div>
@@ -604,7 +631,7 @@ function LearnPage() {
       </div>
 
       {/* Main scrollable content */}
-      <div className="flex-1 text-zinc-100 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 custom-scrollbar">
+      <div className="flex-1 text-zinc-100 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 custom-scrollbar max-h-0" style={{ maxHeight: 'calc(100vh - 200px)' }}>
         {/* Content Tab */}
         {activeTab === "content" && (
           <div>
@@ -962,60 +989,66 @@ function LearnPage() {
         )}
       </div>
 
-      {/* Sticky bottom nav */}
-      <div className="p-4 sm:p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-        <motion.button
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-700/50 hover:bg-slate-600/60 border border-slate-600/50 text-white rounded-xl px-4 sm:px-6 py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base"
-          onClick={handlePrevButton}
-          whileHover={{ scale: 1.05, x: -5 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <span className="text-lg">⬅️</span>
-          Previous
-        </motion.button>
+      {/* Sticky bottom nav - MORE COMPACT FOR MOBILE */}
+      <div className="p-2 sm:p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex-shrink-0">
+        <div className="flex items-center justify-between gap-1 sm:gap-3">
+          <motion.button
+            className="flex items-center justify-center gap-1 sm:gap-2 bg-slate-700/50 hover:bg-slate-600/60 border border-slate-600/50 text-white rounded-lg sm:rounded-xl px-2 sm:px-6 py-2 sm:py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto"
+            onClick={handlePrevButton}
+            whileHover={{ scale: 1.05, x: -5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-sm sm:text-lg">⬅️</span>
+            <span className="hidden xs:inline sm:inline">Previous</span>
+            <span className="xs:hidden sm:hidden">Prev</span>
+          </motion.button>
 
-        <motion.button
-          disabled={updating}
-          className={`w-full sm:w-auto px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base ${
-            isCurrentTopicCompleted()
-              ? "bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
-              : "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-          } ${updating ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={handleMarkAsCompletedButton}
-          whileHover={!updating ? { scale: 1.05 } : {}}
-          whileTap={!updating ? { scale: 0.95 } : {}}
-        >
-          {updating ? (
-            <span className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              Updating...
-            </span>
-          ) : isCurrentTopicCompleted() ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">❌</span>
-              Mark Incomplete
-            </span>
-          ) : (
-            <span className="flex items-center justify-center gap-2">
-              <span className="text-lg">✅</span>
-              Mark Complete
-            </span>
-          )}
-        </motion.button>
+          <motion.button
+            disabled={updating}
+            className={`px-2 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto ${
+              isCurrentTopicCompleted()
+                ? "bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
+                : "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+            } ${updating ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={handleMarkAsCompletedButton}
+            whileHover={!updating ? { scale: 1.05 } : {}}
+            whileTap={!updating ? { scale: 0.95 } : {}}
+          >
+            {updating ? (
+              <span className="flex items-center justify-center gap-1 sm:gap-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span className="hidden xs:inline">Updating...</span>
+                <span className="xs:hidden">...</span>
+              </span>
+            ) : isCurrentTopicCompleted() ? (
+              <span className="flex items-center justify-center gap-1 sm:gap-2">
+                <span className="text-sm sm:text-lg">❌</span>
+                <span className="hidden xs:inline sm:inline">Mark Incomplete</span>
+                <span className="xs:hidden sm:hidden">Incomplete</span>
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-1 sm:gap-2">
+                <span className="text-sm sm:text-lg">✅</span>
+                <span className="hidden xs:inline sm:inline">Mark Complete</span>
+                <span className="xs:hidden sm:hidden">Complete</span>
+              </span>
+            )}
+          </motion.button>
 
-        <motion.button
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl px-4 sm:px-6 py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base"
-          onClick={handleNextButton}
-          whileHover={{ scale: 1.05, x: 5 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Next
-          <span className="text-lg">➡️</span>
-        </motion.button>
+          <motion.button
+            className="flex items-center justify-center gap-1 sm:gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg sm:rounded-xl px-2 sm:px-6 py-2 sm:py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto"
+            onClick={handleNextButton}
+            whileHover={{ scale: 1.05, x: 5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="hidden xs:inline sm:inline">Next</span>
+            <span className="xs:hidden sm:hidden">Next</span>
+            <span className="text-sm sm:text-lg">➡️</span>
+          </motion.button>
+        </div>
       </div>
     </div>
   );
-
   return (
     <>
       {loadingTabData && (
