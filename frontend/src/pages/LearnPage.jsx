@@ -4,6 +4,8 @@ import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"; // theme (you can pick another)
 
 function LearnPage() {
   const { roadmapId } = useParams();
@@ -679,17 +681,37 @@ function LearnPage() {
                   </h2>
                 )}
                 <div
-                  className="prose prose-invert prose-sm sm:prose-lg max-w-none w-full overflow-x-hidden"
-                  style={{
-                    "--tw-prose-body": "#e2e8f0",
-                    "--tw-prose-headings": "#ffffff",
-                    "--tw-prose-links": "#06b6d4",
-                    "--tw-prose-code": "#06b6d4",
-                    "--tw-prose-pre-bg": "rgba(15, 23, 42, 0.6)",
-                    "--tw-prose-pre-code": "#e2e8f0",
-                  }}
+                  className="prose prose-invert prose-sm sm:prose-lg max-w-none w-full overflow-x-hidden 
+             prose-h2:text-2xl prose-h2:font-bold prose-h2:text-white prose-h2:mb-4 
+             prose-h3:text-xl prose-h3:text-blue-400 prose-h3:mb-2
+             prose-p:text-base prose-p:leading-7 prose-p:mb-4"
                 >
-                  <ReactMarkdown>{explanation}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      code({ node, inline, className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || "");
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={oneDark}
+                            language={match[1]}
+                            PreTag="div"
+                            {...props}
+                          >
+                            {String(children).replace(/\n$/, "")}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code
+                            className="bg-gray-800 px-1 py-0.5 rounded"
+                            {...props}
+                          >
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  >
+                    {explanation}
+                  </ReactMarkdown>
                 </div>
               </>
             )}
@@ -722,17 +744,64 @@ function LearnPage() {
                   </h2>
                 )}
                 <div
-                  className="prose prose-invert prose-sm sm:prose-lg max-w-none"
+                  className="prose prose-invert prose-sm sm:prose-lg max-w-none w-full overflow-x-hidden"
                   style={{
                     "--tw-prose-body": "#e2e8f0",
                     "--tw-prose-headings": "#ffffff",
-                    "--tw-prose-links": "#10b981",
-                    "--tw-prose-code": "#10b981",
+                    "--tw-prose-links": "#06b6d4",
+                    "--tw-prose-code": "#06b6d4",
                     "--tw-prose-pre-bg": "rgba(15, 23, 42, 0.6)",
                     "--tw-prose-pre-code": "#e2e8f0",
+                    // --- New styles for readability ---
+                    "--tw-prose-p": {
+                      "margin-top": "1em",
+                      "margin-bottom": "1em",
+                      "line-height": "1.8", // Increased line height
+                    },
+                    "--tw-prose-h2": {
+                      "margin-top": "2em",
+                      "margin-bottom": "1em",
+                    },
+                    "--tw-prose-h3": {
+                      "margin-top": "1.5em",
+                      "margin-bottom": "0.5em",
+                    },
+                    "--tw-prose-ul": {
+                      "margin-top": "1em",
+                      "margin-bottom": "1em",
+                    },
+                    "--tw-prose-ol": {
+                      "margin-top": "1em",
+                      "margin-bottom": "1em",
+                    },
                   }}
                 >
-                  <ReactMarkdown>{simplifiedExp}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      code({ node, inline, className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || "");
+                        return !inline && match ? (
+                          <SyntaxHighlighter
+                            style={oneDark}
+                            language={match[1]}
+                            PreTag="div"
+                            {...props}
+                          >
+                            {String(children).replace(/\n$/, "")}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code
+                            className="bg-gray-800 px-1 py-0.5 rounded"
+                            {...props}
+                          >
+                            {children}
+                          </code>
+                        );
+                      },
+                    }}
+                  >
+                    {simplifiedExp}
+                  </ReactMarkdown>
                 </div>
               </>
             )}
@@ -1208,6 +1277,52 @@ function LearnPage() {
         .prose code {
           overflow-wrap: break-word;
           word-break: break-all;
+        }
+        /* Add this to the existing <style jsx> block */
+        .prose-invert h1,
+        .prose-invert h2,
+        .prose-invert h3,
+        .prose-invert h4,
+        .prose-invert h5,
+        .prose-invert h6 {
+          color: #fff;
+          line-height: 1.25;
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+        }
+
+        .prose-invert p {
+          color: #e2e8f0;
+          line-height: 1.8;
+          margin-top: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .prose-invert ul,
+        .prose-invert ol {
+          padding-left: 1.5rem;
+          margin-top: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .prose-invert li {
+          margin-bottom: 0.5rem;
+        }
+
+        .prose-invert pre {
+          margin-top: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
+        .prose table {
+          display: block;
+          width: 100%;
+          overflow-x: auto;
+        }
+
+        .prose table th,
+        .prose table td {
+          white-space: nowrap;
+          padding: 0.5em 1em;
         }
       `}</style>
     </>
