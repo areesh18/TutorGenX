@@ -5,7 +5,7 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
 function Dashboard() {
-  const [generatedTitle,setGeneratedTitle]=useState("");
+  const [generatedTitle, setGeneratedTitle] = useState("");
   const [goal, setGoal] = useState("");
   const [roadmap, setRoadmap] = useState([]);
   const [msg, setMsg] = useState("");
@@ -37,42 +37,46 @@ function Dashboard() {
   }, [token, fetchSavedRoadmaps]);
 
   if (!token) return <Navigate to="/login" />;
-const handleSaveButton = async () => {
-  try {
-    let finalTitle = newGoal; // fallback
-
+  const handleSaveButton = async () => {
     try {
-      const titleRes = await axios.post(
-        "http://localhost:8080/generateTitle",
-        { goalreq: newGoal },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      let finalTitle = newGoal; // fallback
+
+      try {
+        const titleRes = await axios.post(
+          "http://localhost:8080/generateTitle",
+          { goalreq: newGoal },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        finalTitle = titleRes.data.title;
+        setGeneratedTitle(finalTitle); // updates UI later
+      } catch (titleErr) {
+        console.error("Failed to generate title:", titleErr);
+      }
+
+      // ✅ Use local variable
+      await axios.post(
+        "http://localhost:8080/save-roadmap",
+        {
+          goal: newGoal,
+          title: finalTitle,
+          roadmap,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      finalTitle = titleRes.data.title;
-      setGeneratedTitle(finalTitle); // updates UI later
-    } catch (titleErr) {
-      console.error("Failed to generate title:", titleErr);
+
+      setUnsavedRoadmap(false);
+      setRoadmap([]);
+      setMsg("Roadmap Saved✅");
+      fetchSavedRoadmaps();
+    } catch (err) {
+      console.error("Error saving roadmap:", err);
+      alert("Failed to save roadmap");
     }
-
-    // ✅ Use local variable
-    await axios.post(
-      "http://localhost:8080/save-roadmap",
-      {
-        goal: newGoal,
-        title: finalTitle,
-        roadmap,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    setUnsavedRoadmap(false);
-    setRoadmap([]);
-    setMsg("Roadmap Saved✅");
-    fetchSavedRoadmaps();
-  } catch (err) {
-    console.error("Error saving roadmap:", err);
-    alert("Failed to save roadmap");
-  }
-};
+  };
 
   /* const handleSaveButton = async () => {
     try {
@@ -274,7 +278,7 @@ const handleSaveButton = async () => {
       )}
 
       <div
-        className="min-h-screen p-6 font-sans"
+        className="min-h-screen p-3 sm:p-4 md:p-6 font-sans"
         style={{
           background:
             "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)",
@@ -287,7 +291,7 @@ const handleSaveButton = async () => {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto p-8 rounded-2xl border border-slate-700/50"
+          className="max-w-2xl mx-auto p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-slate-700/50"
           style={{
             background:
               "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
@@ -301,18 +305,20 @@ const handleSaveButton = async () => {
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent flex items-center justify-center gap-3"
+            className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3"
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center text-base sm:text-lg md:text-xl">
               🎯
             </div>
-            {userName}'s Learning Assistant
+            <span className="text-center break-words">
+              {userName}'s Learning Assistant
+            </span>
           </motion.h2>
 
           {/* Input Form */}
           <motion.form
             onSubmit={handleSubmit}
-            className="mb-8"
+            className="mb-4 sm:mb-6 md:mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -321,15 +327,15 @@ const handleSaveButton = async () => {
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. I want to become a data scientist specializing in AI..."
-              className="w-full p-4 border border-slate-600 rounded-xl bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-base transition-all duration-300"
-              rows={3}
+              className="w-full p-3 sm:p-4 border border-slate-600 rounded-lg sm:rounded-xl bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm sm:text-base transition-all duration-300"
+              rows={2}
               required
-              whileFocus={{ scale: 1.02 }}
+              whileFocus={{ scale: 1.01 }}
             />
             <motion.button
               type="submit"
               disabled={loading}
-              className="mt-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 w-full text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-3 sm:mt-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 w-full text-sm sm:text-base md:text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               whileHover={!loading ? { scale: 1.02 } : {}}
               whileTap={!loading ? { scale: 0.98 } : {}}
             >
@@ -362,7 +368,7 @@ const handleSaveButton = async () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -30, scale: 0.95 }}
                 transition={{ duration: 0.5 }}
-                className="bg-slate-700/50 rounded-2xl border border-slate-600/50 p-6 mb-6 backdrop-blur-sm"
+                className="bg-slate-700/50 rounded-xl sm:rounded-2xl border border-slate-600/50 p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 backdrop-blur-sm"
                 style={{
                   background:
                     "linear-gradient(135deg, rgba(51, 65, 85, 0.4) 0%, rgba(30, 41, 59, 0.6) 100%)",
@@ -372,9 +378,9 @@ const handleSaveButton = async () => {
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="text-2xl font-bold text-white mb-6 flex items-center gap-3"
+                  className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4 md:mb-6 flex items-center gap-2 sm:gap-3"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-sm sm:text-base">
                     📅
                   </div>
                   Weekly Plan
@@ -387,17 +393,21 @@ const handleSaveButton = async () => {
                       initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * index, duration: 0.4 }}
-                      className="border border-slate-600/50 p-5 rounded-xl bg-gradient-to-r from-slate-600/30 to-slate-700/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300"
-                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="border border-slate-600/50 p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl bg-gradient-to-r from-slate-600/30 to-slate-700/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300"
+                      whileHover={{ scale: 1.01, y: -1 }}
                     >
                       <motion.h4
                         initial={{ y: 10, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 + 0.1 * index }}
-                        className="font-semibold text-white text-lg mb-3 flex items-center gap-3"
+                        className="font-semibold text-white text-sm sm:text-base md:text-lg mb-2 sm:mb-3 flex items-center gap-2 sm:gap-3"
                       >
-                        <span className="text-xl">📚</span>
-                        Week {week.week}: {week.title}
+                        <span className="text-base sm:text-lg md:text-xl">
+                          📚
+                        </span>
+                        <span className="break-words">
+                          Week {week.week}: {week.title}
+                        </span>
                       </motion.h4>
                       <motion.ul
                         initial={{ opacity: 0 }}
@@ -427,10 +437,10 @@ const handleSaveButton = async () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="flex flex-col sm:flex-row sm:justify-between gap-3 mt-6"
+                  className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 mt-4 sm:mt-6"
                 >
                   <motion.button
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-5 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-2.5 sm:py-3 px-4 sm:px-5 rounded-lg sm:rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base"
                     onClick={() => handleSaveButton()}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -458,7 +468,7 @@ const handleSaveButton = async () => {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-8 max-w-7xl mx-auto"
+              className="mt-6 sm:mt-8 max-w-7xl mx-auto"
             >
               <motion.div
                 initial={{ y: -20, opacity: 0 }}
@@ -466,11 +476,11 @@ const handleSaveButton = async () => {
                 transition={{ delay: 0.4 }}
                 className="flex justify-between items-center mb-6"
               >
-                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center text-sm sm:text-base">
                     📁
                   </div>
-                  Your Saved Roadmaps
+                  <span className="break-words">Your Saved Roadmaps</span>
                 </h3>
                 <motion.button
                   onClick={() => handleDeleteAll()}
@@ -483,7 +493,7 @@ const handleSaveButton = async () => {
               </motion.div>
 
               <motion.div
-                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -516,7 +526,7 @@ const handleSaveButton = async () => {
                       initial={{ opacity: 0, y: 30, scale: 0.9 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{ delay: 0.1 * i, duration: 0.4 }}
-                      className="rounded-2xl border border-slate-700/50 p-6 transition-all duration-300 hover:border-slate-600/70"
+                      className="rounded-xl sm:rounded-2xl border border-slate-700/50 p-3 sm:p-4 md:p-6 transition-all duration-300 hover:border-slate-600/70"
                       style={{
                         background:
                           "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)",
@@ -533,9 +543,7 @@ const handleSaveButton = async () => {
                       >
                         <div className="flex-1">
                           <h2 className="text-lg font-bold text-white leading-tight mb-2 flex items-center gap-2">
-                            🎯{" "}
-                            {roadmap?.title||
-                              "Learning Roadmap"}
+                            🎯 {roadmap?.title || "Learning Roadmap"}
                           </h2>
                           <p className="text-xs text-slate-400">
                             Created on{" "}
