@@ -1,14 +1,14 @@
 // src/components/Navbar.jsx
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { 
-  UserCircleIcon, 
-  Cog6ToothIcon, 
+import {
+  UserCircleIcon,
+  Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   ChartBarIcon,
   HomeIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Navbar({ bgClass }) {
@@ -40,15 +40,23 @@ export default function Navbar({ bgClass }) {
   const isActivePath = (path) => currentPath === path;
 
   const NavLink = ({ to, children, icon: Icon, external = false }) => {
-    const baseClasses = "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium";
+    const baseClasses =
+      "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium";
     const activeClasses = "bg-blue-600 text-white";
     const inactiveClasses = "hover:bg-gray-800 hover:text-blue-400";
-    
-    const linkClasses = `${baseClasses} ${isActivePath(to) ? activeClasses : inactiveClasses}`;
+
+    const linkClasses = `${baseClasses} ${
+      isActivePath(to) ? activeClasses : inactiveClasses
+    }`;
 
     if (external) {
       return (
-        <a href={to} className={linkClasses} target="_blank" rel="noopener noreferrer">
+        <a
+          href={to}
+          className={linkClasses}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {Icon && <Icon className="w-4 h-4" />}
           <span>{children}</span>
         </a>
@@ -64,11 +72,13 @@ export default function Navbar({ bgClass }) {
   };
 
   return (
-    <nav className={`bg-gray-900 text-white px-4 sm:px-6 py-4 shadow-lg border-b border-gray-700 ${bgClass}`}>
+    <nav
+      className={`bg-gray-900 text-white px-4 sm:px-6 py-4 shadow-lg border-b border-gray-700 ${bgClass}`}
+    >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <h1 className="text-2xl font-extrabold tracking-wide hover:scale-105 transition-transform duration-200">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-wide hover:scale-105 transition-transform duration-200">
             Tutor<span className="text-blue-400">GenX</span>
           </h1>
         </Link>
@@ -77,10 +87,14 @@ export default function Navbar({ bgClass }) {
         <div className="hidden md:flex items-center space-x-4">
           {/* Navigation Links */}
           <div className="flex items-center space-x-2">
-            <NavLink to="/" icon={HomeIcon}>Home</NavLink>
-            
+            <NavLink to="/" icon={HomeIcon}>
+              Home
+            </NavLink>
+
             {isLoggedIn && (
-              <NavLink to="/dashboard" icon={ChartBarIcon}>Dashboard</NavLink>
+              <NavLink to="/dashboard" icon={ChartBarIcon}>
+                Dashboard
+              </NavLink>
             )}
           </div>
 
@@ -89,30 +103,39 @@ export default function Navbar({ bgClass }) {
             <div className="relative ml-6">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-2 bg-gray-800 rounded-lg px-3 py-2 hover:bg-gray-700 transition-colors duration-200"
+                className="flex items-center space-x-2 bg-gray-800 rounded-lg px-3 py-2.5 hover:bg-gray-700 transition-colors duration-200 min-h-[44px]"
               >
-                <UserCircleIcon className="w-6 h-6" />
-                <span className="text-sm font-medium">
-                  {user?.name || user?.email || 'User'}
+                <UserCircleIcon className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-medium truncate max-w-[120px] sm:max-w-none">
+                  {user?.name || user?.email || "User"}
                 </span>
                 <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    showUserMenu ? "rotate-180" : ""
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
 
               {/* User Dropdown */}
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 py-1 z-50">
                   <div className="px-4 py-2 border-b border-gray-700">
                     <p className="text-sm text-gray-300">Signed in as</p>
-                    <p className="text-sm font-medium truncate">{user?.email}</p>
+                    <p className="text-sm font-medium truncate">
+                      {user?.email}
+                    </p>
                   </div>
-                  
+
                   {/* <Link
                     to="/profile"
                     className="flex items-center space-x-2 px-4 py-2 text-sm hover:bg-gray-700 transition-colors"
@@ -130,9 +153,9 @@ export default function Navbar({ bgClass }) {
                     <Cog6ToothIcon className="w-4 h-4" />
                     <span>Settings</span>
                   </Link> */}
-                  
+
                   {/* <hr className="border-gray-700 my-1" /> */}
-                  
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-2 w-full text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors text-red-400 hover:text-red-300"
@@ -145,16 +168,16 @@ export default function Navbar({ bgClass }) {
             </div>
           ) : (
             currentPath !== "/login" && (
-              <div className="flex space-x-2 ml-6">
+              <div className="flex space-x-1 sm:space-x-2 ml-4 sm:ml-6">
                 <button
                   onClick={() => navigate("/signup")}
-                  className="px-4 py-2 text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
+                  className="px-2 sm:px-4 py-2 text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200 text-sm sm:text-base"
                 >
                   Sign up
                 </button>
                 <button
                   onClick={() => navigate("/login")}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                  className="bg-blue-600 text-white px-2 sm:px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm sm:text-base"
                 >
                   Login
                 </button>
@@ -165,7 +188,7 @@ export default function Navbar({ bgClass }) {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-gray-800 transition-colors"
+          className="md:hidden p-2 rounded-lg hover:bg-gray-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? (
@@ -178,12 +201,16 @@ export default function Navbar({ bgClass }) {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden mt-4 pb-4 border-t border-gray-700">
-          <div className="flex flex-col space-y-2 pt-4">
-            <NavLink to="/" icon={HomeIcon}>Home</NavLink>
-            
+        <div className="md:hidden mt-3 sm:mt-4 pb-3 sm:pb-4 border-t border-gray-700">
+          <div className="flex flex-col space-y-1 sm:space-y-2 pt-3 sm:pt-4">
+            <NavLink to="/" icon={HomeIcon}>
+              Home
+            </NavLink>
+
             {isLoggedIn && (
-              <NavLink to="/dashboard" icon={ChartBarIcon}>Dashboard</NavLink>
+              <NavLink to="/dashboard" icon={ChartBarIcon}>
+                Dashboard
+              </NavLink>
             )}
 
             {isLoggedIn ? (
@@ -194,10 +221,10 @@ export default function Navbar({ bgClass }) {
                     <p className="text-sm font-medium">{user?.email}</p>
                   </div>
                 </div>
-                
+
                 {/* <NavLink to="/profile" icon={UserCircleIcon}>Profile</NavLink>
                 <NavLink to="/settings" icon={Cog6ToothIcon}>Settings</NavLink> */}
-                
+
                 <button
                   onClick={handleLogout}
                   className="flex items-center space-x-2 px-3 py-2 text-left text-red-400 hover:text-red-300 hover:bg-gray-800 rounded-lg transition-colors"
@@ -208,13 +235,13 @@ export default function Navbar({ bgClass }) {
               </>
             ) : (
               currentPath !== "/login" && (
-                <div className="border-t border-gray-700 pt-2 mt-2 space-y-2">
+                <div className="border-t border-gray-700 pt-2 mt-2 space-y-1 sm:space-y-2">
                   <button
                     onClick={() => {
                       navigate("/signup");
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-blue-400 hover:text-blue-300 hover:bg-gray-800 rounded-lg transition-colors"
+                    className="w-full text-left px-3 py-2.5 text-blue-400 hover:text-blue-300 hover:bg-gray-800 rounded-lg transition-colors text-sm sm:text-base min-h-[44px] flex items-center"
                   >
                     Sign up
                   </button>
@@ -223,7 +250,7 @@ export default function Navbar({ bgClass }) {
                       navigate("/login");
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full text-left bg-blue-600 text-white px-3 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="w-full text-left bg-blue-600 text-white px-3 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm sm:text-base min-h-[44px] flex items-center"
                   >
                     Login
                   </button>

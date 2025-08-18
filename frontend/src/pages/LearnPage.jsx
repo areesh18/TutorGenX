@@ -23,17 +23,17 @@ function LearnPage() {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
-const [showHint, setShowHint] = useState(true);
+  const [showHint, setShowHint] = useState(true);
 
-useEffect(() => {
-  const timer = setTimeout(() => setShowHint(false), 5000);
-  return () => clearTimeout(timer);
-}, []);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHint(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
-const handleRoadmapClick = () => {
-  setShowHint(false);
-  setSidebarOpen(true);
-};
+  const handleRoadmapClick = () => {
+    setShowHint(false);
+    setSidebarOpen(true);
+  };
   const [score, setScore] = useState(0);
 
   const fetchRoadmap = useCallback(async () => {
@@ -168,11 +168,11 @@ const handleRoadmapClick = () => {
 
   if (!roadmap)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4">
+        <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          className="text-center max-w-xs sm:max-w-sm"
         >
           <div className="relative">
             <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4"></div>
@@ -185,7 +185,7 @@ const handleRoadmapClick = () => {
             ></div>
           </div>
           <p className="text-white text-lg font-medium">Loading roadmap...</p>
-        </div>
+        </motion.div>
       </div>
     );
 
@@ -371,18 +371,18 @@ const handleRoadmapClick = () => {
 
         <motion.aside
           className={`
-            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-            lg:translate-x-0 transition-transform duration-300
-            fixed lg:sticky top-0 left-0 z-50 lg:z-auto
-            w-80 sm:w-96 lg:w-80 xl:w-96
-            h-screen lg:h-[90vh] 
-            bg-gradient-to-b from-slate-800/90 to-slate-900/90 
-            backdrop-blur-xl rounded-none lg:rounded-2xl 
-            border-r lg:border border-slate-700/50 
-            shadow-2xl self-start p-4 sm:p-6 
-            overflow-y-auto
-            ${compactMode ? "text-sm space-y-3" : "space-y-4"}
-          `}
+  ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+  lg:translate-x-0 transition-transform duration-300
+  fixed lg:sticky top-0 left-0 z-50 lg:z-auto
+  w-[85vw] xs:w-80 sm:w-96 lg:w-80 xl:w-96
+  h-screen lg:h-[90vh] 
+  bg-gradient-to-b from-slate-800/90 to-slate-900/90 
+  backdrop-blur-xl rounded-none lg:rounded-2xl 
+  border-r lg:border border-slate-700/50 
+  shadow-2xl self-start p-3 xs:p-4 sm:p-6 
+  overflow-y-auto
+  ${compactMode ? "text-sm space-y-2 xs:space-y-3" : "space-y-3 xs:space-y-4"}
+`}
           style={{
             background:
               "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)",
@@ -411,14 +411,14 @@ const handleRoadmapClick = () => {
           </button>
 
           {/* Header */}
-          <div className="mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-3 text-white mb-2">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center text-xs sm:text-base">
+          <div className="mb-3 xs:mb-4 sm:mb-6">
+            <h2 className="text-base xs:text-lg sm:text-xl font-bold flex items-center gap-2 xs:gap-3 text-white mb-2">
+              <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center text-sm xs:text-base flex-shrink-0">
                 🧭
               </div>
-              <span className="truncate">Roadmap</span>
+              <span className="truncate min-w-0">Roadmap</span>
             </h2>
-            <span className="inline-block text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-purple-300 px-3 py-1 rounded-full font-medium">
+            <span className="inline-block text-xs xs:text-sm bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-purple-300 px-2 xs:px-3 py-1 rounded-full font-medium">
               Generic
             </span>
           </div>
@@ -440,18 +440,19 @@ const handleRoadmapClick = () => {
                   <motion.li
                     key={week.ID}
                     className={`border border-slate-600/50 rounded-xl ${
-                      compactMode ? "p-2 sm:p-3" : "p-3 sm:p-4"
-                    } bg-gradient-to-r from-slate-700/30 to-slate-600/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300`}
-                    whileHover={{ scale: 1.02, y: -2 }}
+                      compactMode ? "p-2 xs:p-3 sm:p-3" : "p-3 xs:p-4 sm:p-4"
+                    } bg-gradient-to-r from-slate-700/30 to-slate-600/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 active:from-slate-500/50 active:to-slate-400/40 transition-all duration-300 touch-manipulation`}
+                    whileHover={{ scale: 1.01, y: -1 }}
+                    whileTap={{ scale: 0.99 }}
                   >
                     {/* Week Title */}
                     <button
                       onClick={() => setOpenWeek(isOpen ? null : idx)}
                       className={`flex items-center justify-between w-full text-left font-semibold ${
                         compactMode
-                          ? "text-xs sm:text-sm"
-                          : "text-sm sm:text-base"
-                      } text-white group`}
+                          ? "text-xs xs:text-sm sm:text-sm"
+                          : "text-sm xs:text-base sm:text-base"
+                      } text-white group min-h-[44px] py-2 touch-manipulation`}
                     >
                       <div className="flex items-center min-w-0">
                         <motion.span
@@ -504,28 +505,31 @@ const handleRoadmapClick = () => {
                                 onClick={() =>
                                   handleExplainTopic(topic, idx, i)
                                 }
-                                className={`flex items-center w-full text-left rounded-xl px-2 sm:px-3 py-2 transition-all duration-200 ${
+                                className={`flex items-center w-full text-left rounded-xl px-2 xs:px-3 sm:px-3 py-2.5 xs:py-3 transition-all duration-200 min-h-[44px] touch-manipulation ${
                                   progress[i]
-                                    ? "text-green-400 bg-green-500/10 border border-green-500/20"
-                                    : "text-gray-300 hover:text-white hover:bg-slate-600/30"
+                                    ? "text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/15 active:bg-green-500/20"
+                                    : "text-gray-300 hover:text-white hover:bg-slate-600/30 active:bg-slate-500/40"
                                 } ${
                                   selectedTopic === topic
                                     ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-l-4 border-l-cyan-400 font-bold shadow-lg"
                                     : ""
                                 }`}
                                 style={{
-                                  fontSize: compactMode ? "0.7rem" : "0.875rem",
+                                  fontSize: compactMode
+                                    ? "0.75rem"
+                                    : "0.875rem",
+                                  lineHeight: compactMode ? "1.2" : "1.4",
                                 }}
-                                whileHover={{ x: 4 }}
+                                whileHover={{ x: 2 }}
                                 whileTap={{ scale: 0.98 }}
                               >
-                                <span className="mr-2 sm:mr-3 text-sm sm:text-base flex-shrink-0">
+                                <span className="mr-2 xs:mr-3 text-base xs:text-lg flex-shrink-0">
                                   {progress[i] ? "✅" : "📄"}
                                 </span>
                                 <span
                                   className={`${
                                     progress[i] ? "line-through opacity-75" : ""
-                                  } truncate`}
+                                  } truncate break-words hyphens-auto leading-tight`}
                                 >
                                   {topic}
                                 </span>
@@ -545,9 +549,9 @@ const handleRoadmapClick = () => {
   };
 
   //Main section
-const MainSection = () => (
+  const MainSection = () => (
     <div
-      className="flex-1 rounded-none lg:rounded-2xl h-[100dvh] lg:h-[90vh] max-w-none lg:max-w-4xl flex flex-col overflow-hidden lg:mr-6"
+      className="flex-1 rounded-none lg:rounded-2xl h-[100svh] lg:h-[90vh] w-full max-w-none lg:max-w-4xl flex flex-col overflow-hidden lg:mr-6 min-h-0"
       style={{
         background:
           "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
@@ -562,26 +566,23 @@ const MainSection = () => (
         {/* Mobile menu button and title */}
         <div className="flex items-center mb-4 lg:mb-6">
           <button
-            className="lg:hidden flex items-center gap-1 text-white hover:text-cyan-400 transition-all duration-300 mr-3 group relative"
-            onClick={handleRoadmapClick}
-          ></button>
-          <button
-            className="lg:hidden flex items-center gap-1 text-white hover:text-cyan-400 transition-all duration-300 mr-3 group relative"
+            className="lg:hidden flex items-center gap-1 text-white hover:text-cyan-400 active:text-cyan-300 transition-all duration-300 mr-2 xs:mr-3 group relative touch-manipulation min-h-[44px] min-w-[44px]"
             onClick={handleRoadmapClick}
           >
             {/* Hint tooltip - only shows when showHint is true */}
             {showHint && (
-              <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap shadow-xl z-50 animate-bounce">
+              <div className="absolute -bottom-14 xs:-bottom-12 left-0 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-2 xs:px-3 py-1.5 xs:py-2 rounded-lg text-xs font-bold whitespace-nowrap shadow-xl z-50 animate-bounce">
                 <div className="flex items-center gap-1">
-                  <span>👆</span>
-                  <span>Tap for Roadmap</span>
+                  <span className="text-sm">👆</span>
+                  <span className="text-[10px] xs:text-xs">
+                    Tap for Roadmap
+                  </span>
                 </div>
-                {/* Arrow pointing up */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-cyan-500"></div>
+                <div className="absolute bottom-full left-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-cyan-500"></div>
               </div>
             )}
 
-            <div className="w-7 h-7 bg-gradient-to-br from-slate-700 via-slate-600 to-slate-800 rounded-xl flex items-center justify-center shadow-lg border border-slate-500/30 group-hover:border-cyan-400/50 group-hover:shadow-cyan-400/25 group-hover:scale-105 transition-all duration-300">
+            <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-slate-700 via-slate-600 to-slate-800 rounded-xl flex items-center justify-center shadow-lg border border-slate-500/30 group-hover:border-cyan-400/50 group-hover:shadow-cyan-400/25 group-hover:scale-105 group-active:scale-95 transition-all duration-300">
               <svg
                 className="w-4 h-4 text-slate-300 group-hover:text-cyan-300"
                 fill="none"
@@ -593,7 +594,10 @@ const MainSection = () => (
                 <circle cx="12" cy="5" r="1" />
                 <circle cx="12" cy="19" r="1" />
                 <path d="M12 8v1m0 6v1" strokeLinecap="round" />
-                <path d="M9 9l-1.5-1.5M15 15l1.5 1.5M6 12H4m16 0h-2M9 15l-1.5 1.5M15 9l1.5-1.5" strokeLinecap="round" />
+                <path
+                  d="M9 9l-1.5-1.5M15 15l1.5 1.5M6 12H4m16 0h-2M9 15l-1.5 1.5M15 9l1.5-1.5"
+                  strokeLinecap="round"
+                />
               </svg>
             </div>
           </button>
@@ -631,7 +635,14 @@ const MainSection = () => (
       </div>
 
       {/* Main scrollable content */}
-      <div className="flex-1 text-zinc-100 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 custom-scrollbar max-h-0" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+      <div
+        className="flex-1 text-zinc-100 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-8 space-y-3 sm:space-y-4 md:space-y-6 custom-scrollbar w-full"
+        style={{
+          height: "calc(100vh - 280px)",
+          minHeight: "300px",
+          maxHeight: "calc(100vh - 280px)",
+        }}
+      >
         {/* Content Tab */}
         {activeTab === "content" && (
           <div>
@@ -656,7 +667,7 @@ const MainSection = () => (
                   </h2>
                 )}
                 <div
-                  className="prose prose-invert prose-sm sm:prose-lg max-w-none"
+                  className="prose prose-invert prose-sm sm:prose-lg max-w-none w-full overflow-x-hidden"
                   style={{
                     "--tw-prose-body": "#e2e8f0",
                     "--tw-prose-headings": "#ffffff",
@@ -848,8 +859,8 @@ const MainSection = () => (
                   />
 
                   {/* Modal */}
-                  <div
-                    className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md mx-4 shadow-2xl border border-slate-700/50"
+                  <motion.div
+                    className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4 sm:p-6 md:p-8 w-full max-w-xs sm:max-w-sm md:max-w-md mx-3 sm:mx-4 shadow-2xl border border-slate-700/50"
                     initial={{ scale: 0.5, opacity: 0, rotateX: -15 }}
                     animate={{ scale: 1, opacity: 1, rotateX: 0 }}
                     exit={{ scale: 0.5, opacity: 0, rotateX: 15 }}
@@ -940,7 +951,7 @@ const MainSection = () => (
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
               )}
             </AnimatePresence>
@@ -990,7 +1001,7 @@ const MainSection = () => (
       </div>
 
       {/* Sticky bottom nav - MORE COMPACT FOR MOBILE */}
-      <div className="p-2 sm:p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex-shrink-0">
+      <div className="p-3 sm:p-4 md:p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex-shrink-0">
         <div className="flex items-center justify-between gap-1 sm:gap-3">
           <motion.button
             className="flex items-center justify-center gap-1 sm:gap-2 bg-slate-700/50 hover:bg-slate-600/60 border border-slate-600/50 text-white rounded-lg sm:rounded-xl px-2 sm:px-6 py-2 sm:py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto"
@@ -1023,13 +1034,17 @@ const MainSection = () => (
             ) : isCurrentTopicCompleted() ? (
               <span className="flex items-center justify-center gap-1 sm:gap-2">
                 <span className="text-sm sm:text-lg">❌</span>
-                <span className="hidden xs:inline sm:inline">Mark Incomplete</span>
+                <span className="hidden xs:inline sm:inline">
+                  Mark Incomplete
+                </span>
                 <span className="xs:hidden sm:hidden">Incomplete</span>
               </span>
             ) : (
               <span className="flex items-center justify-center gap-1 sm:gap-2">
                 <span className="text-sm sm:text-lg">✅</span>
-                <span className="hidden xs:inline sm:inline">Mark Complete</span>
+                <span className="hidden xs:inline sm:inline">
+                  Mark Complete
+                </span>
                 <span className="xs:hidden sm:hidden">Complete</span>
               </span>
             )}
@@ -1085,7 +1100,7 @@ const MainSection = () => (
 
       {/* Main Content Area */}
       <div
-        className="min-h-screen flex flex-col lg:flex-row justify-between mx-auto px-4 sm:px-8 py-4 sm:py-6 items-start gap-4 sm:gap-6"
+        className="min-h-screen flex flex-col lg:flex-row justify-between mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 items-start gap-2 sm:gap-4 md:gap-6 overflow-x-hidden"
         style={{
           background:
             "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)",
@@ -1145,6 +1160,43 @@ const MainSection = () => (
           .prose h3 {
             font-size: 1.125rem;
           }
+        }
+        @media (max-width: 374px) {
+          .prose {
+            font-size: 0.75rem;
+            line-height: 1.4;
+          }
+          .prose h1 {
+            font-size: 1.25rem;
+          }
+          .prose h2 {
+            font-size: 1.125rem;
+          }
+          .prose h3 {
+            font-size: 1rem;
+          }
+        }
+
+        @media (min-height: 800px) and (max-width: 768px) {
+          .main-content-height {
+            height: calc(100vh - 250px) !important;
+          }
+        }
+        /* Prevent horizontal overflow */
+        .prose * {
+          max-width: 100%;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+        }
+
+        .prose pre {
+          overflow-x: auto;
+          max-width: 100%;
+        }
+
+        .prose code {
+          overflow-wrap: break-word;
+          word-break: break-all;
         }
       `}</style>
     </>
