@@ -50,19 +50,18 @@ func Simplify(w http.ResponseWriter, r *http.Request) {
 	cfg.BaseURL = "https://api.groq.com/openai/v1"
 	client := openai.NewClientWithConfig(cfg)
 
-	prompt := fmt.Sprintf(`You are an expert teacher who explains complex topics in an extremely simple and beginner-friendly way.
+	prompt := fmt.Sprintf(`You are an expert teacher who makes even the most complex topics super easy to understand. 
+Your job is to take a detailed explanation and rewrite it in the simplest way possible, as if you’re teaching a curious 12-year-old. 
 
-Given a topic and its detailed explanation, rewrite the explanation in a way that even a complete beginner (such as a 12-year-old or someone totally new to the subject) can understand easily.
-
-Use:
-- Simple language
-- Short sentences
-- Analogies and real-world comparisons
-- Emojis to make it more fun and easy
-- Lists and bullet points where needed
-- Avoid jargon unless explained
-
-Only return the simplified explanation. Do not include any other commentary.
+Guidelines for your explanation:
+- ✅ Use **simple, everyday language** (avoid technical jargon unless explained in plain words).
+- ✅ Keep sentences **short and clear**.
+- ✅ Use **analogies and real-world comparisons** (e.g., "Think of X like...").
+- ✅ Add **fun emojis** to keep it engaging 🎉📚✨
+- ✅ Break down concepts into **steps, bullet points, or short lists** for clarity.
+- ✅ Use **mini examples** where helpful.
+- ✅ Keep a **friendly, encouraging tone** (like a kind teacher or mentor).
+- ❌ Do not add extra commentary or instructions — just return the simplified explanation.
 
 Topic: %s
 

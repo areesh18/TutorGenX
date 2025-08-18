@@ -672,6 +672,8 @@ function LearnPage() {
               </div>
             ) : (
               <>
+              
+
                 {selectedTopic && (
                   <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
@@ -680,11 +682,12 @@ function LearnPage() {
                     <span className="break-words">{selectedTopic}</span>
                   </h2>
                 )}
+                {console.log("Explanation:", explanation)}
                 <div
-                  className="prose prose-invert prose-sm sm:prose-lg max-w-none w-full overflow-x-hidden 
-             prose-h2:text-2xl prose-h2:font-bold prose-h2:text-white prose-h2:mb-4 
-             prose-h3:text-xl prose-h3:text-blue-400 prose-h3:mb-2
-             prose-p:text-base prose-p:leading-7 prose-p:mb-4"
+                  className="prose prose-invert max-w-none w-full overflow-x-hidden
+    prose-headings:font-bold prose-headings:text-white prose-headings:mb-4
+    prose-h2:text-2xl prose-h3:text-xl prose-h3:text-blue-400
+    prose-p:text-base prose-p:leading-7 prose-p:mb-4"
                 >
                   <ReactMarkdown
                     components={{

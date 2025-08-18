@@ -56,27 +56,28 @@ func GenerateExamples(w http.ResponseWriter, r *http.Request) {
 	prompt := fmt.Sprintf(`
 You are an expert educator.
 
-Given a topic and its explanation, generate 2–3 beginner-friendly examples that help the user understand the concept better.
+Given a topic and its explanation, generate 2–3 beginner-friendly examples that make the concept crystal clear.
 
-⚠️ Respond with ONLY a JSON object using this format:
+⚠️ Respond with ONLY a JSON object in this exact format (no markdown, no extra text):
 
 {
   "examples": [
     {
       "title": "Short descriptive title",
-      "explanation": "Clear explanation of the example.",
-      "highlight": "A relatable analogy, insight, or fun fact to aid understanding.",
-      "code": "Optional technical example like code or formula (only if relevant). Leave empty if not needed."
+      "explanation": "Step-by-step explanation of the example in very simple language.",
+      "highlight": "A relatable analogy, fun fact, or real-world comparison that makes the example memorable.",
+      "code": "Optional: a small technical example (code snippet, formula, or calculation) if it genuinely helps understanding. Leave as an empty string if not needed."
     }
   ]
 }
 
 Guidelines:
-- Use very simple language.
-- Use relatable analogies or real-life examples.
-- Only include the "code" field if it adds real value.
-- Do NOT include any markdown formatting, backticks, or extra commentary.
-- Format the response strictly as JSON.
+- Use **very simple, clear language** (as if explaining to a 12-year-old).
+- Keep sentences short and direct.
+- Use **relatable analogies, daily life comparisons, or fun facts** in the "highlight".
+- Each example should explain one angle of the topic (not just repeat the same idea).
+- The "code" field should only be filled when it adds real value — keep it minimal and relevant.
+- Do NOT include markdown formatting, backticks, or commentary outside the JSON.
 
 Topic: %s
 

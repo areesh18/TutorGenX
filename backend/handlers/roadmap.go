@@ -667,7 +667,14 @@ func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
 	client := openai.NewClientWithConfig(cfg)
 
 	// Prompt
-	prompt := fmt.Sprintf(`Explain the following topic like you're teaching a beginner, using examples, analogies, and diagrams where needed.
+	prompt := fmt.Sprintf(`Explain the following topic like you're teaching a beginner. Your explanation should be clear, concise, and easy to read.
+
+Use the following Markdown formatting to structure your response:
+- Use **bold** text for key terms.
+- Use headings (## and ###) to break the content into logical sections.
+- Use bullet points (*) or numbered lists (1.) for step-by-step instructions or to list related concepts.
+- Where a diagram might be useful, use a Markdown table or a bulleted list to show the relationships or structure.
+- Use code blocks (`+"```"+`) for any code snippets or technical examples.
 
 Topic: %s`, req.Topic)
 
