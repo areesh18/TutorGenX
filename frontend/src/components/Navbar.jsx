@@ -40,29 +40,37 @@ export default function Navbar({ bgClass }) {
 
   const isActivePath = (path) => currentPath === path;
 
-  const NavLink = ({ to, children, icon: Icon, external = false, mobile = false }) => {
+  const NavLink = ({
+    to,
+    children,
+    icon: Icon,
+    external = false,
+    mobile = false,
+  }) => {
     const baseClasses = mobile
       ? "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium w-full"
       : "flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium";
-    
+
     const activeClasses = mobile
       ? "text-blue-400 border"
       : "bg-blue-600 text-white";
-    
+
     const inactiveClasses = mobile
       ? "hover:text-blue-400 text-gray-200"
       : "hover:bg-gray-800 hover:text-blue-400";
 
-    const mobileStyles = mobile ? (
-      isActivePath(to) ? {
-        background: 'rgba(59, 130, 246, 0.15)',
-        border: '1px solid rgba(59, 130, 246, 0.4)',
-        backdropFilter: 'blur(10px)',
-      } : {
-        background: 'rgba(255, 255, 255, 0.05)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-      }
-    ) : {};
+    const mobileStyles = mobile
+      ? isActivePath(to)
+        ? {
+            background: "rgba(59, 130, 246, 0.15)",
+            border: "1px solid rgba(59, 130, 246, 0.4)",
+            backdropFilter: "blur(10px)",
+          }
+        : {
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+          }
+      : {};
 
     const linkClasses = `${baseClasses} ${
       isActivePath(to) ? activeClasses : inactiveClasses
@@ -108,7 +116,7 @@ export default function Navbar({ bgClass }) {
       opacity: 1,
       y: 0,
       scale: 1,
-    }
+    },
   };
 
   const backdropVariants = {
@@ -117,7 +125,7 @@ export default function Navbar({ bgClass }) {
     },
     open: {
       opacity: 1,
-    }
+    },
   };
 
   const itemVariants = {
@@ -128,7 +136,7 @@ export default function Navbar({ bgClass }) {
     open: {
       opacity: 1,
       x: 0,
-    }
+    },
   };
 
   return (
@@ -257,7 +265,7 @@ export default function Navbar({ bgClass }) {
               animate={isMobileMenuOpen ? "open" : "closed"}
               variants={{
                 closed: { rotate: 0 },
-                open: { rotate: 180 }
+                open: { rotate: 180 },
               }}
               transition={{ duration: 0.2 }}
             >
@@ -292,8 +300,8 @@ export default function Navbar({ bgClass }) {
               exit="closed"
               transition={{ duration: 0.2 }}
               style={{
-                background: 'rgba(0, 0, 0, 0.3)',
-                backdropFilter: 'blur(12px)',
+                background: "rgba(0, 0, 0, 0.3)",
+                backdropFilter: "blur(12px)",
               }}
               onClick={() => setIsMobileMenuOpen(false)}
             />
@@ -305,30 +313,34 @@ export default function Navbar({ bgClass }) {
               initial="closed"
               animate="open"
               exit="closed"
-              transition={{ 
-                duration: 0.3, 
-                ease: [0.04, 0.62, 0.23, 0.98] 
+              transition={{
+                duration: 0.3,
+                ease: [0.04, 0.62, 0.23, 0.98],
               }}
             >
-              <div 
+              <div
                 className="rounded-2xl shadow-2xl border p-6"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(20px) saturate(180%)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(20px) saturate(180%)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow:
+                    "0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 25px 50px -12px rgba(0, 0, 0, 0.4)",
                 }}
               >
                 {/* Navigation Links */}
-                <motion.div 
+                <motion.div
                   className="space-y-3"
                   variants={{
                     open: {
-                      transition: { staggerChildren: 0.07, delayChildren: 0.1 }
+                      transition: { staggerChildren: 0.07, delayChildren: 0.1 },
                     },
                     closed: {
-                      transition: { staggerChildren: 0.05, staggerDirection: -1 }
-                    }
+                      transition: {
+                        staggerChildren: 0.05,
+                        staggerDirection: -1,
+                      },
+                    },
                   }}
                   initial="closed"
                   animate="open"
@@ -350,20 +362,22 @@ export default function Navbar({ bgClass }) {
 
                   {isLoggedIn ? (
                     <>
-                      <motion.div 
+                      <motion.div
                         variants={itemVariants}
                         className="border-t pt-4 mt-4"
-                        style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                        style={{ borderColor: "rgba(255, 255, 255, 0.1)" }}
                       >
-                        <div 
+                        <div
                           className="px-4 py-3 rounded-xl"
                           style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            background: "rgba(255, 255, 255, 0.05)",
+                            border: "1px solid rgba(255, 255, 255, 0.1)",
                           }}
                         >
                           <p className="text-sm text-gray-300">Signed in as</p>
-                          <p className="text-sm font-medium text-white">{user?.email}</p>
+                          <p className="text-sm font-medium text-white">
+                            {user?.email}
+                          </p>
                         </div>
                       </motion.div>
 
@@ -379,17 +393,21 @@ export default function Navbar({ bgClass }) {
                           onClick={handleLogout}
                           className="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium w-full text-red-400 hover:text-red-300"
                           style={{
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                            backdropFilter: 'blur(10px)',
+                            background: "rgba(239, 68, 68, 0.1)",
+                            border: "1px solid rgba(239, 68, 68, 0.3)",
+                            backdropFilter: "blur(10px)",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(239, 68, 68, 0.15)';
-                            e.target.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                            e.target.style.background =
+                              "rgba(239, 68, 68, 0.15)";
+                            e.target.style.borderColor =
+                              "rgba(239, 68, 68, 0.4)";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.background = 'rgba(239, 68, 68, 0.1)';
-                            e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                            e.target.style.background =
+                              "rgba(239, 68, 68, 0.1)";
+                            e.target.style.borderColor =
+                              "rgba(239, 68, 68, 0.3)";
                           }}
                         >
                           <ArrowRightOnRectangleIcon className="w-5 h-5" />
@@ -399,10 +417,10 @@ export default function Navbar({ bgClass }) {
                     </>
                   ) : (
                     currentPath !== "/login" && (
-                      <motion.div 
+                      <motion.div
                         variants={itemVariants}
                         className="border-t pt-4 mt-4 space-y-3"
-                        style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                        style={{ borderColor: "rgba(255, 255, 255, 0.1)" }}
                       >
                         <button
                           onClick={() => {
@@ -411,17 +429,21 @@ export default function Navbar({ bgClass }) {
                           }}
                           className="w-full text-left px-4 py-3 text-blue-400 hover:text-blue-300 rounded-xl transition-all duration-200 font-medium flex items-center"
                           style={{
-                            background: 'rgba(59, 130, 246, 0.1)',
-                            border: '1px solid rgba(59, 130, 246, 0.3)',
-                            backdropFilter: 'blur(10px)',
+                            background: "rgba(59, 130, 246, 0.1)",
+                            border: "1px solid rgba(59, 130, 246, 0.3)",
+                            backdropFilter: "blur(10px)",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(59, 130, 246, 0.15)';
-                            e.target.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+                            e.target.style.background =
+                              "rgba(59, 130, 246, 0.15)";
+                            e.target.style.borderColor =
+                              "rgba(59, 130, 246, 0.4)";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.background = 'rgba(59, 130, 246, 0.1)';
-                            e.target.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                            e.target.style.background =
+                              "rgba(59, 130, 246, 0.1)";
+                            e.target.style.borderColor =
+                              "rgba(59, 130, 246, 0.3)";
                           }}
                         >
                           Sign up
@@ -433,15 +455,17 @@ export default function Navbar({ bgClass }) {
                           }}
                           className="w-full text-left text-white px-4 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center"
                           style={{
-                            background: 'rgba(59, 130, 246, 0.6)',
-                            border: '1px solid rgba(59, 130, 246, 0.8)',
-                            backdropFilter: 'blur(10px)',
+                            background: "rgba(59, 130, 246, 0.6)",
+                            border: "1px solid rgba(59, 130, 246, 0.8)",
+                            backdropFilter: "blur(10px)",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(59, 130, 246, 0.7)';
+                            e.target.style.background =
+                              "rgba(59, 130, 246, 0.7)";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.background = 'rgba(59, 130, 246, 0.6)';
+                            e.target.style.background =
+                              "rgba(59, 130, 246, 0.6)";
                           }}
                         >
                           Login
