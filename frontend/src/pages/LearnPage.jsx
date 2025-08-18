@@ -339,6 +339,17 @@ function LearnPage() {
     setExplanation("Loading...");
     setSidebarOpen(false); // Close mobile sidebar when topic is selected
 
+    // Clear quiz-related state when changing topics
+    setSelectedAnswers({});
+    setQuizSubmitted(false);
+    setScore(0);
+    setShowPopup(false);
+
+    // Clear other tab data as well
+    setSimplifiedExp("");
+    setExamples([]);
+    setQuiz([]); // Clear the quiz array
+
     try {
       const res = await axios.post(
         "http://localhost:8080/explain-topic",
@@ -781,8 +792,7 @@ function LearnPage() {
                               value={optionLetter}
                               checked={isSelected}
                               disabled={quizSubmitted} // prevent changes after submission
-                              onChange={(e) => {
-                                e.preventDefault();
+                              onChange={() => {
                                 setSelectedAnswers((prev) => ({
                                   ...prev,
                                   [idx]: optionLetter,
