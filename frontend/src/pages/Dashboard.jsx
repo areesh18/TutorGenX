@@ -4,6 +4,96 @@ import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Custom Modal Component
+const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confirmText = "Delete", cancelText = "Cancel", isDestructive = true }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          onClick={onCancel}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-slate-700/50 relative"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+            }}
+          >
+            {/* Icon */}
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: "spring" }}
+              className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center"
+            >
+              <span className="text-2xl">⚠️</span>
+            </motion.div>
+
+            {/* Title */}
+            <motion.h3 
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.15 }}
+              className="text-xl font-bold text-white text-center mb-3"
+            >
+              {title}
+            </motion.h3>
+
+            {/* Message */}
+            <motion.p 
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-slate-300 text-center mb-6 leading-relaxed"
+            >
+              {message}
+            </motion.p>
+
+            {/* Buttons */}
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="flex gap-3"
+            >
+              <motion.button
+                onClick={onCancel}
+                className="flex-1 px-4 py-3 bg-slate-600/50 hover:bg-slate-600/70 text-white rounded-xl font-medium transition-all duration-300 border border-slate-600/30"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {cancelText}
+              </motion.button>
+              <motion.button
+                onClick={onConfirm}
+                className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition-all duration-300 ${
+                  isDestructive 
+                    ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700" 
+                    : "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {confirmText}
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 function Dashboard() {
   const [generatedTitle, setGeneratedTitle] = useState("");
   const [goal, setGoal] = useState("");
@@ -13,6 +103,16 @@ function Dashboard() {
   const [UnsavedRoadmap, setUnsavedRoadmap] = useState(true);
   const [newGoal, setNewGoal] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Modal states
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    type: null, // 'single' or 'all'
+    roadmapId: null,
+    title: "",
+    message: ""
+  });
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const userData = localStorage.getItem("user");
@@ -20,10 +120,11 @@ function Dashboard() {
   const userName = user?.name || user?.email?.split("@")[0] || "User";
 
   function formatPossessive(name) {
-  if (!name) return "";
-  const lower = name.toLowerCase();
-  return lower.endsWith("s") ? `${name}’` : `${name}’s`;
-}
+    if (!name) return "";
+    const lower = name.toLowerCase();
+    return lower.endsWith("s") ? `${name}'` : `${name}'s`;
+  }
+
   const fetchSavedRoadmaps = useCallback(async () => {
     try {
       const res = await axios.get("http://localhost:8080/roadmaps", {
@@ -42,9 +143,10 @@ function Dashboard() {
   }, [token, fetchSavedRoadmaps]);
 
   if (!token) return <Navigate to="/login" />;
+
   const handleSaveButton = async () => {
     try {
-      let finalTitle = newGoal; // fallback
+      let finalTitle = newGoal;
 
       try {
         const titleRes = await axios.post(
@@ -57,12 +159,11 @@ function Dashboard() {
           }
         );
         finalTitle = titleRes.data.title;
-        setGeneratedTitle(finalTitle); // updates UI later
+        setGeneratedTitle(finalTitle);
       } catch (titleErr) {
         console.error("Failed to generate title:", titleErr);
       }
 
-      // ✅ Use local variable
       await axios.post(
         "http://localhost:8080/save-roadmap",
         {
@@ -83,51 +184,6 @@ function Dashboard() {
     }
   };
 
-  /* const handleSaveButton = async () => {
-    try {
-      // Generate title first
-       setGeneratedTitle(newGoal); // fallback
-      try {
-        const titleRes = await axios.post(
-          `http://localhost:8080/generateTitle`,
-          {
-            goalreq: newGoal,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        setGeneratedTitle (titleRes.data.title); 
-      } catch (titleErr) {
-        console.error("Failed to generate title:", titleErr);
-      }
-
-      // Save roadmap with the generated title
-      await axios.post(
-        "http://localhost:8080/save-roadmap",
-        {
-          goal: newGoal,
-          title: generatedTitle, // Send title to backend
-          roadmap,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setUnsavedRoadmap(false);
-      setRoadmap([]);
-      setMsg("Roadmap Saved✅");
-      fetchSavedRoadmaps();
-    } catch (err) {
-      console.error("Error saving roadmap:", err);
-      alert("Failed to save roadmap");
-    }
-  }; */
   const handleDiscardButton = () => {
     setNewGoal("");
     setRoadmap([]);
@@ -171,85 +227,65 @@ function Dashboard() {
     }
   };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this roadmap?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8080/delete-roadmap?id=${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setSavedRoadmaps((prev) => prev.filter((rm) => rm.ID !== id));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Failed to delete roadmap");
-    }
+  // Open delete modal for single roadmap
+  const handleDeleteClick = (id, title = "Learning Roadmap") => {
+    setDeleteModal({
+      isOpen: true,
+      type: 'single',
+      roadmapId: id,
+      title: "Delete Roadmap?",
+      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`
+    });
   };
 
-  const handleDeleteAll = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete All roadmaps?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setSavedRoadmaps([]);
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Failed to delete roadmap");
-    }
+  // Open delete modal for all roadmaps
+  const handleDeleteAllClick = () => {
+    setDeleteModal({
+      isOpen: true,
+      type: 'all',
+      roadmapId: null,
+      title: "Delete All Roadmaps?",
+      message: `Are you sure you want to delete all ${savedRoadmaps.length} roadmaps? This action cannot be undone.`
+    });
   };
 
-  /*  const handleCheckboxToggle = async (
-    roadmapId,
-    weekId,
-    topicIndex,
-    newValue
-  ) => {
+  // Handle modal confirmation
+  const handleDeleteConfirm = async () => {
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:8080/update-progress",
-        {
-          roadmap_id: roadmapId,
-          week_id: weekId,
-          topic_index: topicIndex,
-          value: newValue,
-        },
-        {
+      if (deleteModal.type === 'single') {
+        await axios.delete(`http://localhost:8080/delete-roadmap?id=${deleteModal.roadmapId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
-
-      const res = await axios.get("http://localhost:8080/roadmaps", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setSavedRoadmaps(res.data);
+        });
+        setSavedRoadmaps((prev) => prev.filter((rm) => rm.ID !== deleteModal.roadmapId));
+      } else if (deleteModal.type === 'all') {
+        await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setSavedRoadmaps([]);
+      }
+      
+      // Close modal
+      setDeleteModal({ isOpen: false, type: null, roadmapId: null, title: "", message: "" });
     } catch (err) {
-      console.error("Failed to update progress:", err);
-      alert("Could not update progress. Try again.");
+      console.error("Delete failed:", err);
+      alert("Failed to delete roadmap(s)");
+      // Close modal even on error
+      setDeleteModal({ isOpen: false, type: null, roadmapId: null, title: "", message: "" });
     }
-  }; */
+  };
+
+  // Handle modal cancellation
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false, type: null, roadmapId: null, title: "", message: "" });
+  };
 
   return (
     <>
+      {/* Loading Modal */}
       {loading && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -282,6 +318,16 @@ function Dashboard() {
         </motion.div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal 
+        isOpen={deleteModal.isOpen}
+        title={deleteModal.title}
+        message={deleteModal.message}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        confirmText={deleteModal.type === 'all' ? "Delete All" : "Delete"}
+      />
+
       <div
         className="min-h-screen p-3 sm:p-4 md:p-6 font-sans"
         style={{
@@ -313,7 +359,7 @@ function Dashboard() {
             className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3"
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10  rounded-lg sm:rounded-xl flex items-center justify-center text-base sm:text-lg md:text-xl text-white">
-              ✍🏻
+              ✋🏻
             </div>
             <span className="text-center break-words">
               {formatPossessive(userName)} Learning Assistant
@@ -411,7 +457,7 @@ function Dashboard() {
                           📚
                         </span>
                         <span className="break-words">
-                           {week.week}: {week.title}
+                          {week.week}: {week.title}
                         </span>
                       </motion.h4>
                       <motion.ul
@@ -488,7 +534,7 @@ function Dashboard() {
                   <span className="break-words">Your Saved Roadmaps</span>
                 </h3>
                 <motion.button
-                  onClick={() => handleDeleteAll()}
+                  onClick={handleDeleteAllClick}
                   className="text-sm text-red-400 hover:text-red-300 border border-white px-2 py-1 rounded  hover:underline transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -556,12 +602,12 @@ function Dashboard() {
                           </p>
                         </div>
                         <motion.button
-                          onClick={() => handleDelete(roadmap.ID)}
+                          onClick={() => handleDeleteClick(roadmap.ID, roadmap?.title || "Learning Roadmap")}
                           className="text-xs text-red-400 hover:text-red-300 ml-2 p-2 hover:bg-red-500/10 rounded-lg transition-all"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                         >
-                          ✕ Delete
+                          ❌ Delete
                         </motion.button>
                       </motion.div>
 
@@ -627,7 +673,7 @@ function Dashboard() {
                                   transition={{ delay: 0.2 + 0.1 * weekIndex }}
                                   className="font-semibold text-white text-sm mb-3 flex items-center gap-2"
                                 >
-                                  📚  {week.week}: {week.title}
+                                  📚 {week.week}: {week.title}
                                 </motion.h4>
                                 <motion.ul
                                   initial={{ opacity: 0 }}

@@ -192,10 +192,10 @@ function LearnPage() {
     );
 
   const handlePrevButton = () => {
-    console.log("Clicked Prev");
+/*     console.log("Clicked Prev");
     console.log("roadmap:", roadmap);
     console.log("currentWeekIndex:", currentWeekIndex);
-    console.log("currentTopicIndex:", currentTopicIndex);
+    console.log("currentTopicIndex:", currentTopicIndex); */
 
     if (!roadmap || !roadmap.weeks) {
       return;
@@ -283,10 +283,10 @@ function LearnPage() {
   };
 
   const handleNextButton = () => {
-    console.log("Clicked Next");
+  /*   console.log("Clicked Next");
     console.log("roadmap:", roadmap);
     console.log("currentWeekIndex:", currentWeekIndex);
-    console.log("currentTopicIndex:", currentTopicIndex);
+    console.log("currentTopicIndex:", currentTopicIndex); */
 
     if (!roadmap || !roadmap.weeks) {
       console.warn("Roadmap or weeks missing");
@@ -319,12 +319,12 @@ function LearnPage() {
     const nextTopics = JSON.parse(nextWeek.topics);
     const nextTopic = nextTopics[nextTopicIndex];
 
-    console.log("Navigating to:", {
+    /* console.log("Navigating to:", {
       week: nextWeekIndex,
       topic: nextTopic,
       topicIndex: nextTopicIndex,
     });
-
+ */
     if (!nextTopic) {
       console.warn("Next topic not found");
       return;
