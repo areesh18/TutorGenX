@@ -74,11 +74,12 @@ function Landing() {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="text-3xl md:text-4xl font-extrabold mb-5 leading-tight bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent"
             >
-              Build Your Career Roadmap with{" "}
+              Learn 10x Faster with Your{" "}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 AI
               </span>
-              🧠
+               {" "}Tutor.
+              
             </motion.h2>
 
             {/* Subtitle */}
@@ -88,9 +89,9 @@ function Landing() {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="text-slate-300 leading-relaxed text-base md:text-lg mb-8 max-w-2xl mx-auto"
             >
-              Just tell us your goal — and we'll create a{" "}
+              Your personalized roadmap with {" "}
               <span className="font-semibold text-blue-400">
-                step-by-step weekly plan
+                examples, quizzes & milestones,
               </span>{" "}
               tailored just for you.
             </motion.p>

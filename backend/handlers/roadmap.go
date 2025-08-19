@@ -313,22 +313,48 @@ func HandleRoadmap(w http.ResponseWriter, r *http.Request) {
 	client := openai.NewClientWithConfig(cfg)
 
 	// Smart prompt with validation
-	prompt := `You are an expert career coach.
-If the input is not a valid career or learning goal, respond only with:
-{"error": "Invalid goal"}
+	prompt := fmt.Sprintf(`You are a career counselor creating learning roadmaps. Analyze if this is a valid learning goal, then create a structured plan.
 
-Otherwise, generate a weekly roadmap in this JSON format:
+VALIDATION FIRST:
+- Valid goals: specific skills, career paths, technologies, subjects
+- Invalid: vague requests, inappropriate content, non-educational goals
+- If invalid, return exactly: {"error": "Invalid goal"}
 
+FOR VALID GOALS - CREATE ROADMAP:
+Requirements:
+1. 8-16 weeks maximum (adjust based on goal complexity)
+2. Each week focuses on 1-2 main concepts
+3. 3-5 specific, actionable topics per week
+4. Progressive difficulty (beginner → intermediate → advanced)
+5. Include practical application/projects every 2-3 weeks
+
+WEEK STRUCTURE:
+- Week number: sequential integer
+- Title: Clear, specific learning objective (5-8 words)
+- Topics: Concrete, measurable learning items
+
+OUTPUT FORMAT (JSON only):
 [
   {
     "week": 1,
-    "title": "Title of the week",
-    "topics": ["Topic A", "Topic B", "Topic C"]
+    "title": "Foundations and Setup",
+    "topics": [
+      "Install development environment",
+      "Learn basic syntax and structure", 
+      "Complete first hello world program"
+    ]
   }
 ]
 
-Goal:
-` + req.Goal
+QUALITY CHECKS:
+- No repeated topics across weeks
+- Each topic is specific and actionable
+- Logical progression from basics to advanced
+- Realistic weekly workload (8-12 hours)
+
+Goal: %s
+
+Generate roadmap:`, req.Goal)
 
 	// Call Groq
 	resp, err := client.CreateChatCompletion(

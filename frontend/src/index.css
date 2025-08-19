@@ -1,4 +1,12 @@
 @import "tailwindcss";
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;700&display=swap');
+
+/* Global font rules */
+* {
+  font-family: 'Share Tech Mono', monospace; /* Robotic headers */
+}
+
 
 @keyframes float1 {
   0%, 100% {

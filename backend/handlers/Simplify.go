@@ -50,23 +50,32 @@ func Simplify(w http.ResponseWriter, r *http.Request) {
 	cfg.BaseURL = "https://api.groq.com/openai/v1"
 	client := openai.NewClientWithConfig(cfg)
 
-	prompt := fmt.Sprintf(`You are an expert teacher who makes even the most complex topics super easy to understand. 
-Your job is to take a detailed explanation and rewrite it in the simplest way possible, as if you’re teaching a curious 12-year-old. 
+	prompt := fmt.Sprintf(`You are a learning specialist. Rewrite the provided explanation for a 12-year-old audience while preserving ALL key information.
 
-Guidelines for your explanation:
-- ✅ Use **simple, everyday language** (avoid technical jargon unless explained in plain words).
-- ✅ Keep sentences **short and clear**.
-- ✅ Use **analogies and real-world comparisons** (e.g., "Think of X like...").
-- ✅ Add **fun emojis** to keep it engaging 🎉📚✨
-- ✅ Break down concepts into **steps, bullet points, or short lists** for clarity.
-- ✅ Use **mini examples** where helpful.
-- ✅ Keep a **friendly, encouraging tone** (like a kind teacher or mentor).
-- ❌ Do not add extra commentary or instructions — just return the simplified explanation.
+SIMPLIFICATION RULES:
+1. Replace jargon with simple terms (provide definitions if needed)
+2. Break long sentences into shorter ones (max 15 words each)
+3. Use analogies from everyday life (family, school, sports, cooking)
+4. Keep all important facts and concepts from original
+5. Add structure with bullet points or numbered steps
+6. Use encouraging, friendly tone
+
+FORBIDDEN:
+- Removing important technical details
+- Adding information not in the original explanation
+- Using complex analogies or references
+- Oversimplifying to the point of inaccuracy
+
+REQUIRED ELEMENTS:
+- Start with a simple definition or overview
+- Include all key points from original
+- End with a summary or connection to real-world use
+- Use emojis sparingly (max 3-4 total)
 
 Topic: %s
+Original Explanation: %s
 
-Original Explanation:
-%s`, req.Topic, req.Explanation)
+Provide simplified version:`, req.Topic, req.Explanation)
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),

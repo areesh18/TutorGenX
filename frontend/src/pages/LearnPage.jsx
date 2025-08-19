@@ -432,9 +432,7 @@ function LearnPage() {
               </div>
               <span className="truncate min-w-0">Roadmap</span>
             </h2>
-            <span className="inline-block text-xs xs:text-sm bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-purple-300 px-2 xs:px-3 py-1 rounded-full font-medium">
-              Generic
-            </span>
+            
           </div>
 
           {/* Weeks */}
@@ -682,7 +680,7 @@ function LearnPage() {
                     <span className="break-words">{selectedTopic}</span>
                   </h2>
                 )}
-                {console.log("Explanation:", explanation)}
+                
                 <div
                   className="prose prose-invert max-w-none w-full overflow-x-hidden
     prose-headings:font-bold prose-headings:text-white prose-headings:mb-4

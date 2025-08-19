@@ -58,28 +58,35 @@ func GenerateQuiz(w http.ResponseWriter, r *http.Request) {
 	cfg.BaseURL = "https://api.groq.com/openai/v1"
 	client := openai.NewClientWithConfig(cfg)
 
-	prompt := fmt.Sprintf(`
-You are an expert tutor.
+	prompt := fmt.Sprintf(`You are a quiz generator. Create EXACTLY 3-5 multiple choice questions based ONLY on the provided explanation.
 
-Create a multiple choice quiz from the explanation below. 
-Each question should be based on the content.
+STRICT REQUIREMENTS:
+1. Base questions ONLY on facts explicitly mentioned in the explanation
+2. Each question must have EXACTLY 4 options (A, B, C, D)
+3. Only ONE option can be correct
+4. Incorrect options must be plausible but clearly wrong
+5. Do not add external knowledge not present in the explanation
+6. Questions must be factual, not opinion-based
 
-Respond in ONLY this JSON format:
+OUTPUT FORMAT (JSON only, no markdown or extra text):
 {
   "quiz": [
     {
-      "question": "string",
-      "options": ["A", "B", "C"],
-      "answer": "B"
+      "question": "Clear, specific question based on explanation content?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "answer": "Option B"
     }
   ]
 }
 
-Topic: %s
+VALIDATION:
+- If explanation is too short for 3 questions, create fewer but high-quality ones
+- If explanation contains no factual content, return: {"quiz": [], "error": "Insufficient content for quiz generation"}
 
-Explanation:
-%s
-`, req.Topic, req.Explanation)
+Topic: %s
+Explanation: %s
+
+Generate quiz now:`, req.Topic, req.Explanation)
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
