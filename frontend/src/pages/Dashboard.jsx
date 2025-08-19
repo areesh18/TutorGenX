@@ -307,8 +307,8 @@ function Dashboard() {
             transition={{ delay: 0.2 }}
             className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center text-base sm:text-lg md:text-xl">
-              🎯
+            <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10  rounded-lg sm:rounded-xl flex items-center justify-center text-base sm:text-lg md:text-xl text-white">
+              ✍🏻
             </div>
             <span className="text-center break-words">
               {userName}'s Learning Assistant
@@ -476,15 +476,15 @@ function Dashboard() {
                 transition={{ delay: 0.4 }}
                 className="flex justify-between items-center mb-6"
               >
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center text-sm sm:text-base">
+                <h3 className="text-lg sm:text-xl md:text-2xl  font-bold text-white flex items-center gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8  rounded-lg flex items-center justify-center text-sm sm:text-base">
                     📁
                   </div>
                   <span className="break-words">Your Saved Roadmaps</span>
                 </h3>
                 <motion.button
                   onClick={() => handleDeleteAll()}
-                  className="text-sm text-red-400 hover:text-red-300 hover:underline transition-colors"
+                  className="text-sm text-red-400 hover:text-red-300 border border-white px-2 py-1 rounded  hover:underline transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
