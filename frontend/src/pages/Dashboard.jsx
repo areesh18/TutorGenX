@@ -19,6 +19,11 @@ function Dashboard() {
   const user = userData ? JSON.parse(userData) : null;
   const userName = user?.name || user?.email?.split("@")[0] || "User";
 
+  function formatPossessive(name) {
+  if (!name) return "";
+  const lower = name.toLowerCase();
+  return lower.endsWith("s") ? `${name}’` : `${name}’s`;
+}
   const fetchSavedRoadmaps = useCallback(async () => {
     try {
       const res = await axios.get("http://localhost:8080/roadmaps", {
@@ -208,7 +213,7 @@ function Dashboard() {
     }
   };
 
-  const handleCheckboxToggle = async (
+  /*  const handleCheckboxToggle = async (
     roadmapId,
     weekId,
     topicIndex,
@@ -241,7 +246,7 @@ function Dashboard() {
       console.error("Failed to update progress:", err);
       alert("Could not update progress. Try again.");
     }
-  };
+  }; */
 
   return (
     <>
@@ -311,7 +316,7 @@ function Dashboard() {
               ✍🏻
             </div>
             <span className="text-center break-words">
-              {userName}'s Learning Assistant
+              {formatPossessive(userName)} Learning Assistant
             </span>
           </motion.h2>
 
@@ -383,7 +388,7 @@ function Dashboard() {
                   <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-sm sm:text-base">
                     📅
                   </div>
-                  Weekly Plan
+                  Topic Wise Plan
                 </motion.h3>
 
                 <ul className="space-y-4">
@@ -406,7 +411,7 @@ function Dashboard() {
                           📚
                         </span>
                         <span className="break-words">
-                          Week {week.week}: {week.title}
+                           {week.week}: {week.title}
                         </span>
                       </motion.h4>
                       <motion.ul
@@ -622,7 +627,7 @@ function Dashboard() {
                                   transition={{ delay: 0.2 + 0.1 * weekIndex }}
                                   className="font-semibold text-white text-sm mb-3 flex items-center gap-2"
                                 >
-                                  📚 Week {week.week}: {week.title}
+                                  📚  {week.week}: {week.title}
                                 </motion.h4>
                                 <motion.ul
                                   initial={{ opacity: 0 }}
