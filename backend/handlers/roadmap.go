@@ -695,11 +695,13 @@ func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
 	prompt := fmt.Sprintf(`Explain the following topic like you're teaching a beginner. Your explanation should be clear, concise, and easy to read.
 
 Use the following Markdown formatting to structure your response:
-- Use **bold** text for key terms.
+- Use **bold** text for key terms and important concepts.
 - Use headings (## and ###) to break the content into logical sections.
 - Use bullet points (*) or numbered lists (1.) for step-by-step instructions or to list related concepts.
-- Where a diagram might be useful, use a Markdown table or a bulleted list to show the relationships or structure.
 - Use code blocks (`+"```"+`) for any code snippets or technical examples.
+- Use blockquotes (>) for important notes, tips, or warnings.
+
+**Important:** Focus on clear explanations using text, headings, lists, and code blocks only. Do not create tables, diagrams, or use pipe symbols (|) in your response.
 
 Topic: %s`, req.Topic)
 

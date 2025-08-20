@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"; // theme (you can pick another)
-
+import QuizSection from "./QuizSection"; // Add this line after other imports/*  */
 function LearnPage() {
   const { roadmapId } = useParams();
   const [roadmap, setRoadmap] = useState(null);
@@ -14,16 +14,16 @@ function LearnPage() {
   const [openWeek, setOpenWeek] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [explanation, setExplanation] = useState("");
-  const [quiz, setQuiz] = useState([]);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
+  /* const [quiz, setQuiz] = useState([]); */
+  /* const [selectedAnswers, setSelectedAnswers] = useState({}); */
   const [simplifiedExp, setSimplifiedExp] = useState("");
   const [examples, setExamples] = useState([]); // array of example objects
   const [loadingTabData, setLoadingTabData] = useState(false); // loading spinner
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [updating, setUpdating] = useState(false);
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
+  /* const [quizSubmitted, setQuizSubmitted] = useState(false); */
+  /* const [showPopup, setShowPopup] = useState(false); */
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
   const [showHint, setShowHint] = useState(true);
 
@@ -36,7 +36,7 @@ function LearnPage() {
     setShowHint(false);
     setSidebarOpen(true);
   };
-  const [score, setScore] = useState(0);
+ /*  const [score, setScore] = useState(0); */
 
   const fetchRoadmap = useCallback(async () => {
     try {
@@ -124,7 +124,7 @@ function LearnPage() {
     }
   }, [activeTab, explanation, selectedTopic]);
 
-  useEffect(() => {
+  /* useEffect(() => {
     const generateQuiz = async () => {
       setLoadingTabData(true);
       try {
@@ -151,9 +151,9 @@ function LearnPage() {
     if (activeTab === "quiz" && explanation) {
       generateQuiz();
     }
-  }, [activeTab, explanation, selectedTopic]);
+  }, [activeTab, explanation, selectedTopic]); */
 
-  useEffect(() => {
+  /* useEffect(() => {
     // This function runs when a key is pressed
     const onKey = (e) => e.key === "Escape" && setShowPopup(false);
 
@@ -162,7 +162,7 @@ function LearnPage() {
 
     // Cleanup: remove event listener when component unmounts
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, []); */
 
   useEffect(() => {
     fetchRoadmap();
@@ -342,15 +342,15 @@ function LearnPage() {
     setSidebarOpen(false); // Close mobile sidebar when topic is selected
 
     // Clear quiz-related state when changing topics
-    setSelectedAnswers({});
+    /* setSelectedAnswers({});
     setQuizSubmitted(false);
     setScore(0);
-    setShowPopup(false);
+    setShowPopup(false); */
 
     // Clear other tab data as well
     setSimplifiedExp("");
     setExamples([]);
-    setQuiz([]); // Clear the quiz array
+    /* setQuiz([]); */ // Clear the quiz array
 
     try {
       const res = await axios.post(
@@ -1020,69 +1020,74 @@ function LearnPage() {
 
                       // Enhanced table rendering
                       table({ children, ...props }) {
-                        return (
-                          <div className="my-8 overflow-x-auto rounded-lg border border-gray-700 shadow-lg bg-gray-900/50">
-                            <table
-                              className="w-full text-sm text-left text-gray-300 border-collapse"
-                              {...props}
-                            >
-                              {children}
-                            </table>
-                          </div>
-                        );
-                      },
+      return (
+        <div className="my-8 overflow-x-auto rounded-lg border border-slate-700 shadow-lg bg-slate-900/50 backdrop-blur-sm">
+          <table
+            className="w-full text-sm text-left text-gray-300 border-collapse min-w-full"
+            {...props}
+          >
+            {children}
+          </table>
+        </div>
+      );
+    },
 
-                      thead({ children, ...props }) {
-                        return (
-                          <thead
-                            className="text-xs text-gray-100 uppercase bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600"
-                            {...props}
-                          >
-                            {children}
-                          </thead>
-                        );
-                      },
+    // Table header with gradient background
+    thead({ children, ...props }) {
+      return (
+        <thead
+          className="text-sm text-gray-100 uppercase bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 border-b-2 border-slate-600"
+          {...props}
+        >
+          {children}
+        </thead>
+      );
+    },
 
-                      th({ children, ...props }) {
-                        return (
-                          <th
-                            className="px-6 py-4 font-semibold text-blue-400 border-r border-gray-600 last:border-r-0"
-                            {...props}
-                          >
-                            {children}
-                          </th>
-                        );
-                      },
+    // Table header cells with better spacing
+    th({ children, ...props }) {
+      return (
+        <th
+          className="px-6 py-4 font-semibold text-blue-400 border-r border-slate-600 last:border-r-0 whitespace-nowrap"
+          {...props}
+        >
+          {children}
+        </th>
+      );
+    },
 
-                      tbody({ children, ...props }) {
-                        return (
-                          <tbody className="bg-gray-900/30" {...props}>
-                            {children}
-                          </tbody>
-                        );
-                      },
+    // Table body with alternating row colors
+    tbody({ children, ...props }) {
+      return (
+        <tbody className="bg-slate-900/30 divide-y divide-slate-700/50" {...props}>
+          {children}
+        </tbody>
+      );
+    },
 
-                      tr({ children, ...props }) {
-                        return (
-                          <tr
-                            className="border-b border-gray-700/50 hover:bg-gray-800/50 transition-all duration-200"
-                            {...props}
-                          >
-                            {children}
-                          </tr>
-                        );
-                      },
+    // Enhanced table rows with hover effects
+    tr({ children, ...props }) {
+      return (
+        <tr
+          className="border-b border-slate-700/30 hover:bg-slate-800/40 transition-all duration-200 group"
+          {...props}
+        >
+          {children}
+        </tr>
+      );
+    },
 
-                      td({ children, ...props }) {
-                        return (
-                          <td
-                            className="px-6 py-4 border-r border-gray-700/30 last:border-r-0"
-                            {...props}
-                          >
-                            {children}
-                          </td>
-                        );
-                      },
+    // Table cells with proper padding and borders
+    td({ children, ...props }) {
+      return (
+        <td
+          className="px-6 py-4 border-r border-slate-700/30 last:border-r-0 group-hover:text-gray-200 transition-colors duration-200"
+          {...props}
+        >
+          {children}
+        </td>
+      );
+    },
 
                       // Enhanced blockquote with icon
                       blockquote({ children, ...props }) {
@@ -1213,7 +1218,7 @@ function LearnPage() {
                       strong({ children, ...props }) {
                         return (
                           <strong
-                            className="font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+                            className="font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text "
                             {...props}
                           >
                             {children}
@@ -1331,234 +1336,15 @@ function LearnPage() {
         )}
 
         {/* Quiz Tab */}
-        {activeTab === "quiz" && (
-          <div className="space-y-4 sm:space-y-6">
-            {quiz.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
-                  🧠
-                </div>
-                <p className="text-gray-400 text-base sm:text-lg px-4">
-                  Click a topic and switch to this tab to generate a quiz.
-                </p>
-              </div>
-            ) : (
-              quiz.map((q, idx) => (
-                <div
-                  key={idx}
-                  className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-4 sm:p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
-                >
-                  <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 text-white flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-xs sm:text-sm font-bold">
-                      {idx + 1}
-                    </div>
-                    <span className="break-words">{q.question}</span>
-                  </h3>
-                  <ul className="space-y-2 sm:space-y-3">
-                    {q.options.map((opt, i) => {
-                      const optionLetter = String.fromCharCode(65 + i);
-                      const isCorrect = optionLetter === q.answer;
-                      const isSelected = selectedAnswers[idx] === optionLetter;
-
-                      return (
-                        <motion.li
-                          key={i}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <label
-                            className={`flex items-center space-x-2 sm:space-x-3 p-3 sm:p-4 rounded-lg cursor-pointer transition-all duration-300 border text-sm sm:text-base ${
-                              quizSubmitted && isCorrect
-                                ? "bg-green-500/20 border-green-400/50 text-green-300"
-                                : quizSubmitted && isSelected && !isCorrect
-                                ? "bg-red-500/20 border-red-400/50 text-red-300"
-                                : isSelected
-                                ? "bg-cyan-500/20 border-cyan-400/50 text-cyan-300"
-                                : "bg-slate-700/30 border-slate-600/30 text-gray-300 hover:bg-slate-600/40 hover:border-slate-500/40"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={`q-${idx}`}
-                              value={optionLetter}
-                              checked={isSelected}
-                              disabled={quizSubmitted} // prevent changes after submission
-                              onChange={() => {
-                                setSelectedAnswers((prev) => ({
-                                  ...prev,
-                                  [idx]: optionLetter,
-                                }));
-                              }}
-                              className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 bg-slate-700 border-slate-600 focus:ring-cyan-500 focus:ring-2"
-                            />
-                            <span className="flex items-center gap-2 min-w-0">
-                              <span className="font-semibold flex-shrink-0">
-                                {optionLetter}.
-                              </span>
-                              <span className="break-words">{opt}</span>
-                            </span>
-                          </label>
-                        </motion.li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))
-            )}
-
-            {quiz.length > 0 && (
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <motion.button
-                  onClick={() => {
-                    // calculate score
-                    let total = 0;
-                    quiz.forEach((q, idx) => {
-                      if (selectedAnswers[idx] === q.answer) total++;
-                    });
-                    setScore(total);
-                    setQuizSubmitted(true);
-                    setShowPopup(true);
-                  }}
-                  className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 sm:px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-sm sm:text-base"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Submit Quiz 🚀
-                </motion.button>
-                {quizSubmitted && (
-                  <motion.button
-                    className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 sm:px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 text-sm sm:text-base"
-                    onClick={() => {
-                      setSelectedAnswers({});
-                      setScore(0);
-                      setQuizSubmitted(false);
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Retry 🔄
-                  </motion.button>
-                )}
-              </div>
-            )}
-
-            {/* Animated Popup (Framer Motion) */}
-            <AnimatePresence>
-              {showPopup && (
-                <div
-                  className="fixed inset-0 z-50 flex items-center justify-center"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {/* Backdrop */}
-                  <div
-                    className="absolute inset-0 bg-black/70 backdrop-blur-md"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setShowPopup(false)}
-                  />
-
-                  {/* Modal */}
-                  <motion.div
-                    className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4 sm:p-6 md:p-8 w-full max-w-xs sm:max-w-sm md:max-w-md mx-3 sm:mx-4 shadow-2xl border border-slate-700/50"
-                    initial={{ scale: 0.5, opacity: 0, rotateX: -15 }}
-                    animate={{ scale: 1, opacity: 1, rotateX: 0 }}
-                    exit={{ scale: 0.5, opacity: 0, rotateX: 15 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    <div className="text-center">
-                      <div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{
-                          delay: 0.2,
-                          type: "spring",
-                          stiffness: 200,
-                        }}
-                        className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xl sm:text-2xl mx-auto mb-4"
-                      >
-                        🎉
-                      </div>
-
-                      <h2
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-xl sm:text-2xl font-bold mb-3 text-white"
-                      >
-                        Quiz Completed!
-                      </h2>
-
-                      <motion.p
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.4 }}
-                        className="mb-4 text-gray-300 text-base sm:text-lg text-center"
-                      >
-                        You scored{" "}
-                        <span className="font-bold text-cyan-400 text-lg sm:text-xl">
-                          {score}
-                        </span>{" "}
-                        out of {quiz.length}.
-                      </motion.p>
-
-                      {/* ✅ Conditional Message */}
-                      <div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.5 }}
-                      >
-                        {score === quiz.length ? (
-                          <p className="text-green-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
-                            Perfect score!{" "}
-                            <span className="text-xl sm:text-2xl">🏆</span>
-                          </p>
-                        ) : score >= quiz.length / 2 ? (
-                          <p className="text-blue-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
-                            Good job! Keep practicing!{" "}
-                            <span className="text-xl sm:text-2xl">💪</span>
-                          </p>
-                        ) : (
-                          <p className="text-orange-400 font-semibold text-base sm:text-lg flex items-center justify-center gap-2">
-                            Don't give up — you'll get it!{" "}
-                            <span className="text-xl sm:text-2xl">🚀</span>
-                          </p>
-                        )}
-                      </div>
-
-                      <div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.6 }}
-                        className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6"
-                      >
-                        <button
-                          onClick={() => setShowPopup(false)}
-                          className="px-4 sm:px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition-colors text-sm sm:text-base"
-                        >
-                          Close
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedAnswers({});
-                            setScore(0);
-                            setQuizSubmitted(false);
-                            setShowPopup(false);
-                          }}
-                          className="px-4 sm:px-6 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all text-sm sm:text-base"
-                        >
-                          Try Again
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+        
+{activeTab === "quiz" && (
+  <QuizSection
+    selectedTopic={selectedTopic}
+    explanation={explanation}
+    isVisible={activeTab === "quiz"}
+    loadingTabData={loadingTabData}
+  />
+)}
 
         {/* Example Tab */}
         {activeTab === "example" && (
