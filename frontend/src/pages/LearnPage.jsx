@@ -940,11 +940,10 @@ function LearnPage() {
             {simplifiedExp === "" ? (
               <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
-                  🎯
+                 😅
                 </div>
                 <p className="text-gray-400 text-base sm:text-lg px-4">
-                  Click a topic and switch to this tab to generate a simplified
-                  explanation.
+                  Sorry we are currently down
                 </p>
               </div>
             ) : (
@@ -1342,7 +1341,6 @@ function LearnPage() {
     selectedTopic={selectedTopic}
     explanation={explanation}
     isVisible={activeTab === "quiz"}
-    loadingTabData={loadingTabData}
   />
 )}
 
@@ -1352,10 +1350,10 @@ function LearnPage() {
             {examples.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
-                  💡
+                  😅
                 </div>
                 <p className="text-gray-400 text-base sm:text-lg px-4">
-                  Click a topic and switch to this tab to generate an example.
+                  Sorry we are currently down
                 </p>
               </div>
             ) : (
