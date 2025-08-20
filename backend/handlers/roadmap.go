@@ -313,48 +313,47 @@ func HandleRoadmap(w http.ResponseWriter, r *http.Request) {
 	client := openai.NewClientWithConfig(cfg)
 
 	// Smart prompt with validation
-	prompt := fmt.Sprintf(`You are a career counselor creating learning roadmaps. Analyze if this is a valid learning goal, then create a structured plan.
+	prompt := fmt.Sprintf(`You are a career counselor creating learning roadmaps. 
+Your job is to ALWAYS return valid JSON.
 
-VALIDATION FIRST:
-- Valid goals: specific skills, career paths, technologies, subjects
-- Invalid: vague requests, inappropriate content, non-educational goals
-- If invalid, return exactly: {"error": "Invalid goal"}
+VALIDATION RULES:
+- Valid goals: specific skills, career paths, technologies, subjects, or exam preparation.
+- Invalid goals: vague, unrealistic, inappropriate, or non-educational (e.g. "I want to be an apple").
+- If invalid, return ONLY:
+{"error": "Invalid goal"}
 
-FOR VALID GOALS - CREATE ROADMAP:
-Requirements:
-1. 8-16 weeks maximum (adjust based on goal complexity)
-2. Each week focuses on 1-2 main concepts
-3. 3-5 specific, actionable topics per week
-4. Progressive difficulty (beginner → intermediate → advanced)
-5. Include practical application/projects every 2-3 weeks
+ROADMAP GENERATION (for valid goals):
+1. Rewrite vague or typo-filled goals into a clear, specific learning goal.
+2. Create a roadmap:
+   - 8–16 weeks maximum (adjust based on goal complexity).
+   - Each week focuses on 1–2 main concepts.
+   - 3–5 specific, actionable topics per week.
+   - Progressive difficulty (beginner → advanced).
+   - Include practical applications/projects/revision every 2–3 weeks.
 
-WEEK STRUCTURE:
-- Week number: sequential integer
-- Title: Clear, specific learning objective (5-8 words)
-- Topics: Concrete, measurable learning items
-
-OUTPUT FORMAT (JSON only):
+OUTPUT FORMAT (strict JSON array):
 [
   {
     "week": 1,
     "title": "Foundations and Setup",
     "topics": [
       "Install development environment",
-      "Learn basic syntax and structure", 
+      "Learn basic syntax and structure",
       "Complete first hello world program"
     ]
   }
 ]
 
 QUALITY CHECKS:
-- No repeated topics across weeks
-- Each topic is specific and actionable
-- Logical progression from basics to advanced
-- Realistic weekly workload (8-12 hours)
+- Always return JSON only (no text outside JSON).
+- No repeated topics across weeks.
+- Each topic must be specific and actionable.
+- Logical progression.
+- Realistic workload (8–12 hours weekly).
 
 Goal: %s
 
-Generate roadmap:`, req.Goal)
+Now generate the correct JSON output:`, req.Goal)
 
 	// Call Groq
 	resp, err := client.CreateChatCompletion(

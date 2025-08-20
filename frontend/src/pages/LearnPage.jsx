@@ -192,7 +192,7 @@ function LearnPage() {
     );
 
   const handlePrevButton = () => {
-/*     console.log("Clicked Prev");
+    /*     console.log("Clicked Prev");
     console.log("roadmap:", roadmap);
     console.log("currentWeekIndex:", currentWeekIndex);
     console.log("currentTopicIndex:", currentTopicIndex); */
@@ -283,7 +283,7 @@ function LearnPage() {
   };
 
   const handleNextButton = () => {
-  /*   console.log("Clicked Next");
+    /*   console.log("Clicked Next");
     console.log("roadmap:", roadmap);
     console.log("currentWeekIndex:", currentWeekIndex);
     console.log("currentTopicIndex:", currentTopicIndex); */
@@ -368,6 +368,15 @@ function LearnPage() {
       setLoadingTabData(false);
     }
   };
+  const handleCopyCode = async (code) => {
+  try {
+    await navigator.clipboard.writeText(code);
+    // You could add a toast notification here
+    console.log('Code copied to clipboard!');
+  } catch (err) {
+    console.error('Failed to copy code:', err);
+  }
+};
   // Sidebar component
   const RoadmapSidebar = () => {
     const totalWeeks = roadmap.weeks.length;
@@ -432,7 +441,6 @@ function LearnPage() {
               </div>
               <span className="truncate min-w-0">Roadmap</span>
             </h2>
-            
           </div>
 
           {/* Weeks */}
@@ -670,8 +678,6 @@ function LearnPage() {
               </div>
             ) : (
               <>
-              
-
                 {selectedTopic && (
                   <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
@@ -680,7 +686,7 @@ function LearnPage() {
                     <span className="break-words">{selectedTopic}</span>
                   </h2>
                 )}
-                
+
                 <div
                   className="prose prose-invert max-w-none w-full overflow-x-hidden
     prose-headings:font-bold prose-headings:text-white prose-headings:mb-4
@@ -689,24 +695,233 @@ function LearnPage() {
                 >
                   <ReactMarkdown
                     components={{
+                      // Enhanced code block rendering
                       code({ node, inline, className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || "");
                         return !inline && match ? (
-                          <SyntaxHighlighter
-                            style={oneDark}
-                            language={match[1]}
-                            PreTag="div"
-                            {...props}
-                          >
-                            {String(children).replace(/\n$/, "")}
-                          </SyntaxHighlighter>
+                          <div className="my-6 rounded-lg overflow-hidden border border-gray-700">
+                            <div className="bg-gray-800 px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
+                              {match[1].toUpperCase()}
+                            </div>
+                            <SyntaxHighlighter
+                              style={oneDark}
+                              language={match[1]}
+                              PreTag="div"
+                              customStyle={{
+                                margin: 0,
+                                borderRadius: 0,
+                                background: "#1e1e1e",
+                              }}
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, "")}
+                            </SyntaxHighlighter>
+                          </div>
                         ) : (
                           <code
-                            className="bg-gray-800 px-1 py-0.5 rounded"
+                            className="bg-gray-800 px-2 py-1 rounded text-blue-300 font-mono text-sm"
                             {...props}
                           >
                             {children}
                           </code>
+                        );
+                      },
+
+                      // Enhanced table rendering
+                      table({ children, ...props }) {
+                        return (
+                          <div className="my-6 overflow-x-auto rounded-lg border border-gray-700 bg-gray-900">
+                            <table
+                              className="w-full text-sm text-left text-gray-300"
+                              {...props}
+                            >
+                              {children}
+                            </table>
+                          </div>
+                        );
+                      },
+
+                      // Table header styling
+                      thead({ children, ...props }) {
+                        return (
+                          <thead
+                            className="text-xs text-gray-100 uppercase bg-gray-800 border-b border-gray-700"
+                            {...props}
+                          >
+                            {children}
+                          </thead>
+                        );
+                      },
+
+                      // Table header cell styling
+                      th({ children, ...props }) {
+                        return (
+                          <th
+                            className="px-4 py-3 font-semibold text-blue-400 border-r border-gray-700 last:border-r-0"
+                            {...props}
+                          >
+                            {children}
+                          </th>
+                        );
+                      },
+
+                      // Table body styling
+                      tbody({ children, ...props }) {
+                        return (
+                          <tbody className="bg-gray-900" {...props}>
+                            {children}
+                          </tbody>
+                        );
+                      },
+
+                      // Table row styling with alternating colors
+                      tr({ children, ...props }) {
+                        return (
+                          <tr
+                            className="border-b border-gray-700 hover:bg-gray-800 transition-colors"
+                            {...props}
+                          >
+                            {children}
+                          </tr>
+                        );
+                      },
+
+                      // Table cell styling
+                      td({ children, ...props }) {
+                        return (
+                          <td
+                            className="px-4 py-3 border-r border-gray-700 last:border-r-0"
+                            {...props}
+                          >
+                            {children}
+                          </td>
+                        );
+                      },
+
+                      // Enhanced blockquote for diagrams or special content
+                      blockquote({ children, ...props }) {
+                        return (
+                          <div
+                            className="my-6 p-4 border-l-4 border-blue-500 bg-gray-800 rounded-r-lg"
+                            {...props}
+                          >
+                            <div className="text-gray-300 italic">
+                              {children}
+                            </div>
+                          </div>
+                        );
+                      },
+
+                      // Enhanced list styling
+                      ul({ children, ...props }) {
+                        return (
+                          <ul
+                            className="list-disc list-inside my-4 space-y-2 text-gray-300"
+                            {...props}
+                          >
+                            {children}
+                          </ul>
+                        );
+                      },
+
+                      ol({ children, ...props }) {
+                        return (
+                          <ol
+                            className="list-decimal list-inside my-4 space-y-2 text-gray-300"
+                            {...props}
+                          >
+                            {children}
+                          </ol>
+                        );
+                      },
+
+                      // Enhanced list items
+                      li({ children, ...props }) {
+                        return (
+                          <li
+                            className="text-gray-300 leading-relaxed"
+                            {...props}
+                          >
+                            {children}
+                          </li>
+                        );
+                      },
+
+                      // Enhanced headings with better spacing
+                      h1({ children, ...props }) {
+                        return (
+                          <h1
+                            className="text-3xl font-bold text-white mb-6 mt-8 pb-2 border-b border-gray-700"
+                            {...props}
+                          >
+                            {children}
+                          </h1>
+                        );
+                      },
+
+                      h2({ children, ...props }) {
+                        return (
+                          <h2
+                            className="text-2xl font-bold text-white mb-4 mt-6 flex items-center gap-2"
+                            {...props}
+                          >
+                            <span className="w-2 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded"></span>
+                            {children}
+                          </h2>
+                        );
+                      },
+
+                      h3({ children, ...props }) {
+                        return (
+                          <h3
+                            className="text-xl font-semibold text-blue-400 mb-3 mt-5"
+                            {...props}
+                          >
+                            {children}
+                          </h3>
+                        );
+                      },
+
+                      // Enhanced paragraph styling
+                      p({ children, ...props }) {
+                        return (
+                          <p
+                            className="text-gray-300 leading-7 mb-4"
+                            {...props}
+                          >
+                            {children}
+                          </p>
+                        );
+                      },
+
+                      // Enhanced strong/bold text
+                      strong({ children, ...props }) {
+                        return (
+                          <strong
+                            className="font-semibold text-white"
+                            {...props}
+                          >
+                            {children}
+                          </strong>
+                        );
+                      },
+
+                      // Enhanced emphasis/italic text
+                      em({ children, ...props }) {
+                        return (
+                          <em className="italic text-blue-300" {...props}>
+                            {children}
+                          </em>
+                        );
+                      },
+
+                      // Enhanced horizontal rule
+                      hr({ ...props }) {
+                        return (
+                          <hr
+                            className="my-8 border-0 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"
+                            {...props}
+                          />
                         );
                       },
                     }}
@@ -753,50 +968,344 @@ function LearnPage() {
                     "--tw-prose-code": "#06b6d4",
                     "--tw-prose-pre-bg": "rgba(15, 23, 42, 0.6)",
                     "--tw-prose-pre-code": "#e2e8f0",
-                    // --- New styles for readability ---
-                    "--tw-prose-p": {
-                      "margin-top": "1em",
-                      "margin-bottom": "1em",
-                      "line-height": "1.8", // Increased line height
-                    },
-                    "--tw-prose-h2": {
-                      "margin-top": "2em",
-                      "margin-bottom": "1em",
-                    },
-                    "--tw-prose-h3": {
-                      "margin-top": "1.5em",
-                      "margin-bottom": "0.5em",
-                    },
-                    "--tw-prose-ul": {
-                      "margin-top": "1em",
-                      "margin-bottom": "1em",
-                    },
-                    "--tw-prose-ol": {
-                      "margin-top": "1em",
-                      "margin-bottom": "1em",
-                    },
+                    "--tw-prose-bold": "#ffffff",
+                    "--tw-prose-strong": "#ffffff",
+                    "--tw-prose-italic": "#06b6d4",
+                    "--tw-prose-quote-borders": "#3b82f6",
+                    "--tw-prose-quotes": "#cbd5e1",
+                    "--tw-prose-th-borders": "#374151",
+                    "--tw-prose-td-borders": "#374151",
                   }}
                 >
                   <ReactMarkdown
                     components={{
+                      // Enhanced code block rendering with language header
                       code({ node, inline, className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || "");
                         return !inline && match ? (
-                          <SyntaxHighlighter
-                            style={oneDark}
-                            language={match[1]}
-                            PreTag="div"
-                            {...props}
-                          >
-                            {String(children).replace(/\n$/, "")}
-                          </SyntaxHighlighter>
+                          <div className="my-6 rounded-lg overflow-hidden border border-gray-700 shadow-lg">
+                            <div className="bg-gray-800 px-4 py-2 text-sm text-gray-300 border-b border-gray-700 flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                              <span className="ml-2 font-mono text-xs uppercase tracking-wide">
+                                {match[1]}
+                              </span>
+                            </div>
+                            <SyntaxHighlighter
+                              style={oneDark}
+                              language={match[1]}
+                              PreTag="div"
+                              customStyle={{
+                                margin: 0,
+                                borderRadius: 0,
+                                background: "#1e1e1e",
+                                fontSize: "0.9em",
+                                lineHeight: "1.5",
+                              }}
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, "")}
+                            </SyntaxHighlighter>
+                          </div>
                         ) : (
                           <code
-                            className="bg-gray-800 px-1 py-0.5 rounded"
+                            className="bg-gray-800/80 px-2 py-1 rounded-md text-cyan-300 font-mono text-sm border border-gray-700/50"
                             {...props}
                           >
                             {children}
                           </code>
+                        );
+                      },
+
+                      // Enhanced table rendering
+                      table({ children, ...props }) {
+                        return (
+                          <div className="my-8 overflow-x-auto rounded-lg border border-gray-700 shadow-lg bg-gray-900/50">
+                            <table
+                              className="w-full text-sm text-left text-gray-300 border-collapse"
+                              {...props}
+                            >
+                              {children}
+                            </table>
+                          </div>
+                        );
+                      },
+
+                      thead({ children, ...props }) {
+                        return (
+                          <thead
+                            className="text-xs text-gray-100 uppercase bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600"
+                            {...props}
+                          >
+                            {children}
+                          </thead>
+                        );
+                      },
+
+                      th({ children, ...props }) {
+                        return (
+                          <th
+                            className="px-6 py-4 font-semibold text-blue-400 border-r border-gray-600 last:border-r-0"
+                            {...props}
+                          >
+                            {children}
+                          </th>
+                        );
+                      },
+
+                      tbody({ children, ...props }) {
+                        return (
+                          <tbody className="bg-gray-900/30" {...props}>
+                            {children}
+                          </tbody>
+                        );
+                      },
+
+                      tr({ children, ...props }) {
+                        return (
+                          <tr
+                            className="border-b border-gray-700/50 hover:bg-gray-800/50 transition-all duration-200"
+                            {...props}
+                          >
+                            {children}
+                          </tr>
+                        );
+                      },
+
+                      td({ children, ...props }) {
+                        return (
+                          <td
+                            className="px-6 py-4 border-r border-gray-700/30 last:border-r-0"
+                            {...props}
+                          >
+                            {children}
+                          </td>
+                        );
+                      },
+
+                      // Enhanced blockquote with icon
+                      blockquote({ children, ...props }) {
+                        return (
+                          <div
+                            className="my-6 p-6 border-l-4 border-blue-500 bg-gradient-to-r from-gray-800/80 to-gray-900/60 rounded-r-lg shadow-lg"
+                            {...props}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="text-blue-400 text-lg">💡</div>
+                              <div className="text-gray-300 italic leading-relaxed flex-1">
+                                {children}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      },
+
+                      // Enhanced headings with visual elements
+                      h1({ children, ...props }) {
+                        return (
+                          <h1
+                            className="text-3xl sm:text-4xl font-bold text-white mb-6 mt-8 pb-3 border-b-2 border-gradient-to-r from-blue-500 to-purple-500 relative"
+                            {...props}
+                          >
+                            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent"></div>
+                            {children}
+                          </h1>
+                        );
+                      },
+
+                      h2({ children, ...props }) {
+                        return (
+                          <h2
+                            className="text-2xl sm:text-3xl font-bold text-white mb-4 mt-8 flex items-center gap-3 group"
+                            {...props}
+                          >
+                            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                            <span className="group-hover:text-blue-300 transition-colors duration-200">
+                              {children}
+                            </span>
+                          </h2>
+                        );
+                      },
+
+                      h3({ children, ...props }) {
+                        return (
+                          <h3
+                            className="text-xl sm:text-2xl font-semibold text-blue-400 mb-3 mt-6 flex items-center gap-2"
+                            {...props}
+                          >
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            {children}
+                          </h3>
+                        );
+                      },
+
+                      h4({ children, ...props }) {
+                        return (
+                          <h4
+                            className="text-lg sm:text-xl font-medium text-gray-200 mb-2 mt-4"
+                            {...props}
+                          >
+                            {children}
+                          </h4>
+                        );
+                      },
+
+                      // Enhanced lists with better spacing and icons
+                      ul({ children, ...props }) {
+                        return (
+                          <ul
+                            className="list-none my-6 space-y-2 text-gray-300"
+                            {...props}
+                          >
+                            {children}
+                          </ul>
+                        );
+                      },
+
+                      ol({ children, ...props }) {
+                        return (
+                          <ol
+                            className="list-none my-6 space-y-2 text-gray-300 counter-reset-item"
+                            {...props}
+                          >
+                            {children}
+                          </ol>
+                        );
+                      },
+
+                      li({ children, node, ...props }) {
+                        const isOrdered = node?.parent?.tagName === "ol";
+                        return (
+                          <li
+                            className={`text-gray-300 leading-relaxed flex items-start gap-3 ${
+                              isOrdered ? "counter-increment-item" : ""
+                            }`}
+                            {...props}
+                          >
+                            {isOrdered ? (
+                              <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white text-xs font-bold rounded-full mt-0.5 flex-shrink-0">
+                                <span className="counter-item"></span>
+                              </span>
+                            ) : (
+                              <span className="text-blue-400 mt-1.5 flex-shrink-0">
+                                •
+                              </span>
+                            )}
+                            <span className="flex-1">{children}</span>
+                          </li>
+                        );
+                      },
+
+                      // Enhanced paragraph with better spacing
+                      p({ children, ...props }) {
+                        return (
+                          <p
+                            className="text-gray-300 leading-8 mb-6 text-base sm:text-lg"
+                            {...props}
+                          >
+                            {children}
+                          </p>
+                        );
+                      },
+
+                      // Enhanced strong/bold text
+                      strong({ children, ...props }) {
+                        return (
+                          <strong
+                            className="font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+                            {...props}
+                          >
+                            {children}
+                          </strong>
+                        );
+                      },
+
+                      // Enhanced emphasis/italic text
+                      em({ children, ...props }) {
+                        return (
+                          <em
+                            className="italic text-blue-300 font-medium"
+                            {...props}
+                          >
+                            {children}
+                          </em>
+                        );
+                      },
+
+                      // Enhanced links
+                      a({ children, href, ...props }) {
+                        return (
+                          <a
+                            href={href}
+                            className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/50 hover:decoration-blue-300 transition-colors duration-200"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            {...props}
+                          >
+                            {children}
+                          </a>
+                        );
+                      },
+
+                      // Enhanced horizontal rule
+                      hr({ ...props }) {
+                        return (
+                          <div
+                            className="my-12 flex items-center justify-center"
+                            {...props}
+                          >
+                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-gray-600"></div>
+                            <div className="mx-4 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                            <div className="flex-1 h-px bg-gradient-to-r from-gray-600 via-gray-600 to-transparent"></div>
+                          </div>
+                        );
+                      },
+
+                      // Add custom component for special content blocks
+                      div({ children, className, ...props }) {
+                        // Check if it's a special content block
+                        if (
+                          className?.includes("note") ||
+                          className?.includes("warning") ||
+                          className?.includes("tip")
+                        ) {
+                          const type = className.includes("warning")
+                            ? "warning"
+                            : className.includes("tip")
+                            ? "tip"
+                            : "note";
+
+                          const styles = {
+                            note: "border-blue-500 bg-blue-900/20 text-blue-100",
+                            tip: "border-green-500 bg-green-900/20 text-green-100",
+                            warning:
+                              "border-yellow-500 bg-yellow-900/20 text-yellow-100",
+                          };
+
+                          const icons = {
+                            note: "📝",
+                            tip: "💡",
+                            warning: "⚠️",
+                          };
+
+                          return (
+                            <div
+                              className={`my-6 p-6 border-l-4 rounded-r-lg ${styles[type]}`}
+                              {...props}
+                            >
+                              <div className="flex items-start gap-3">
+                                <span className="text-xl">{icons[type]}</span>
+                                <div className="flex-1">{children}</div>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className={className} {...props}>
+                            {children}
+                          </div>
                         );
                       },
                     }}
@@ -804,6 +1313,18 @@ function LearnPage() {
                     {simplifiedExp}
                   </ReactMarkdown>
                 </div>
+
+                <style jsx>{`
+                  .counter-reset-item {
+                    counter-reset: item;
+                  }
+                  .counter-increment-item {
+                    counter-increment: item;
+                  }
+                  .counter-item:before {
+                    content: counter(item);
+                  }
+                `}</style>
               </>
             )}
           </div>
@@ -1055,25 +1576,126 @@ function LearnPage() {
               examples.map((ex, idx) => (
                 <div
                   key={idx}
-                  className="bg-gradient-to-r from-slate-800/60 to-slate-700/40 p-4 sm:p-6 rounded-xl border border-slate-600/30 backdrop-blur-sm"
+                  className="group relative bg-gradient-to-br from-slate-800/70 via-slate-700/50 to-slate-800/60 p-6 sm:p-8 rounded-2xl border border-slate-600/40 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-500/60 hover:-translate-y-1"
                 >
-                  <h3 className="text-lg sm:text-xl font-bold mb-3 text-white flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
-                      📌
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                  {/* Content container */}
+                  <div className="relative z-10">
+                    {/* Enhanced header */}
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                          📌
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight group-hover:text-orange-200 transition-colors duration-300">
+                          {ex.title}
+                        </h3>
+                        <div className="w-12 h-0.5 bg-gradient-to-r from-orange-500 to-red-500 mt-2 rounded-full"></div>
+                      </div>
                     </div>
-                    <span className="break-words">{ex.title}</span>
-                  </h3>
-                  <p className="mb-4 text-gray-300 leading-relaxed text-sm sm:text-base">
-                    {ex.explanation}
-                  </p>
-                  <motion.blockquote className="italic text-cyan-400 mb-4 pl-3 sm:pl-4 border-l-4 border-cyan-400/50 bg-cyan-400/5 py-2 rounded-r-lg text-sm sm:text-base">
-                    💡 {ex.highlight}
-                  </motion.blockquote>
-                  {ex.code && (
-                    <motion.pre className="bg-slate-900/80 p-3 sm:p-4 rounded-lg text-xs sm:text-sm overflow-x-auto border border-slate-700/50 shadow-inner">
-                      <code className="text-green-400">{ex.code}</code>
-                    </motion.pre>
-                  )}
+
+                    {/* Enhanced explanation */}
+                    <div className="mb-6">
+                      <p className="text-gray-300 leading-relaxed text-base sm:text-lg font-light">
+                        {ex.explanation}
+                      </p>
+                    </div>
+
+                    {/* Enhanced highlight section */}
+                    <motion.div
+                      className="relative mb-6 p-4 sm:p-5 rounded-xl bg-gradient-to-r from-cyan-900/30 via-blue-900/20 to-cyan-900/30 border border-cyan-400/30 shadow-inner"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {/* Highlight glow */}
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400/5 to-blue-400/5"></div>
+
+                      <div className="relative flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-white text-sm">💡</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs uppercase tracking-wide text-cyan-300 font-semibold mb-1 opacity-80">
+                            Key Insight
+                          </div>
+                          <blockquote className="text-cyan-100 font-medium leading-relaxed text-sm sm:text-base">
+                            {ex.highlight}
+                          </blockquote>
+                        </div>
+                      </div>
+
+                      {/* Decorative border */}
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-400 to-blue-400 rounded-l-xl"></div>
+                    </motion.div>
+
+                    {/* Enhanced code section */}
+                    {ex.code && (
+                      <motion.div
+                        className="relative"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        {/* Code header */}
+                        <div className="flex items-center justify-between bg-slate-900/90 px-4 py-2 rounded-t-xl border border-slate-700/60">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1.5">
+                              <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                              <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                              <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                            </div>
+                            <span className="text-xs text-gray-400 ml-2 font-mono">
+                              example.code
+                            </span>
+                          </div>
+                         <button 
+  onClick={() => handleCopyCode(ex.code)}
+  className="text-xs text-gray-400 hover:text-gray-300 transition-colors duration-200 px-2 py-1 rounded bg-slate-800/50 hover:bg-slate-700/50 flex items-center gap-1"
+>
+  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+  </svg>
+  Copy
+</button>
+                        </div>
+
+                        {/* Code content */}
+                        <motion.pre
+                          className="bg-slate-950/90 p-4 sm:p-6 rounded-b-xl text-sm sm:text-base overflow-x-auto border-l border-r border-b border-slate-700/60 shadow-inner relative"
+                          whileHover={{
+                            boxShadow: "0 0 20px rgba(34, 197, 94, 0.1)",
+                          }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <code className="text-green-400 font-mono leading-relaxed block">
+                            {ex.code}
+                          </code>
+
+                          {/* Subtle syntax highlighting effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-transparent to-blue-500/5 rounded-b-xl pointer-events-none"></div>
+                        </motion.pre>
+
+                        {/* Code footer with language indicator */}
+                        <div className="flex items-center justify-between bg-slate-800/60 px-4 py-2 rounded-b-xl border-l border-r border-b border-slate-700/40 -mt-px">
+                          <div className="text-xs text-gray-500 font-mono">
+                            {ex.code.split("\n").length} lines
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Hover indicator */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="w-2 h-2 bg-gradient-to-r from-orange-400 to-red-400 rounded-full animate-ping"></div>
+                  </div>
+
+                  {/* Bottom accent line */}
+                  <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-slate-500/50 to-transparent"></div>
                 </div>
               ))
             )}
