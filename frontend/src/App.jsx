@@ -6,7 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
 import Navbar from "./components/Navbar";
 import LearnPage from "./pages/LearnPage";
-
+import Layout from "./Layout";
 function AppWrapper() {
   return (
     <BrowserRouter>
@@ -35,7 +35,7 @@ function App() {
   const showNavbar = !(
     location.pathname === "/" ||
     location.pathname === "/login" ||
-    location.pathname === "/signup" 
+    location.pathname === "/signup"
   );
   return (
     <>
@@ -43,9 +43,11 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/" element={<Landing />} />
-        <Route path="/learn/:roadmapId" element={<LearnPage />} />
+        {/* <Route element={<Layout/>}> */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/learn/:roadmapId" element={<LearnPage />} />
+        {/* </Route> */}
       </Routes>
     </>
   );

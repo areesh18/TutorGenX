@@ -142,7 +142,7 @@ export default function Navbar({ bgClass }) {
   return (
     <>
       <nav
-        className={`bg-gray-900 text-white px-4 sm:px-6 py-4 shadow-lg border-b border-gray-700 ${bgClass} relative z-50`}
+        className={`bg-gray-900 w-[93vw] mx-auto mt-2 rounded-xl  text-white px-4 sm:px-6 py-4 shadow-lg border-b border-gray-700 ${bgClass} relative z-50`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
