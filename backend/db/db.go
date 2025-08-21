@@ -9,14 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-/*
-	 type User struct {
-		ID       uint   `gorm:"primaryKey"`
-		Name     string
-		Email    string `gorm:"unique"`
-		Password string
-	}
-*/
 var DB *gorm.DB
 
 func ConnectDB() {

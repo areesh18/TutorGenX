@@ -1,0 +1,46 @@
+TutorGenX Color Palette
+Primary Colors (Brand & CTAs)
+
+Primary (Blue): #3B82F6 → Buttons, highlights, links
+
+Primary Hover: #2563EB → Hover states for CTAs
+
+Accent (Cyan): #06B6D4 → Secondary actions, progress highlights
+
+Neutral Backgrounds
+
+Background Light: #F8FAFC → Page backgrounds (light mode)
+
+Card Background: #FFFFFF → Cards, modals, content areas
+
+Background Dark: #1E293B → Dark mode background
+
+Card Dark: #334155 → Dark mode cards
+
+Text Colors
+
+Heading/Text Primary: #0F172A → Titles & main text (light mode)
+
+Secondary Text: #475569 → Descriptions, labels (light mode)
+
+Text Light Mode on Dark: #F1F5F9 → Text on dark backgrounds
+
+Borders & Dividers
+
+Light Border: #E2E8F0 → Card borders, input outlines
+
+Dark Border: #475569 → Dark mode borders
+
+Status Colors
+
+Success (Green): #10B981 → Completed topics, success toasts
+
+Warning (Amber): #F59E0B → Upcoming deadlines, reminders
+
+Error (Red): #EF4444 → Errors, failed quizzes
+
+Gradients (Optional for Hero Sections or Buttons)
+
+Blue Gradient: linear-gradient(90deg, #3B82F6, #06B6D4)
+
+Dark Gradient: linear-gradient(90deg, #1E293B, #334155)
