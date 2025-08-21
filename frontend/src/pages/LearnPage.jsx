@@ -13,17 +13,24 @@ function LearnPage() {
   const [activeTab, setActiveTab] = useState("content");
   const [openWeek, setOpenWeek] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  // Add this NEW cache state
+  const [contentCache, setContentCache] = useState({
+    explanations: {},
+    simplifiedExps: {},
+    examples: {},
+  });
+  // Helper function to generate cache key
+  const getCacheKey = (topic, weekIndex, topicIndex) => {
+    return `${weekIndex}-${topicIndex}-${topic}`;
+  };
+  // Keep these existing states (don't change these)
   const [explanation, setExplanation] = useState("");
-  /* const [quiz, setQuiz] = useState([]); */
-  /* const [selectedAnswers, setSelectedAnswers] = useState({}); */
   const [simplifiedExp, setSimplifiedExp] = useState("");
-  const [examples, setExamples] = useState([]); // array of example objects
-  const [loadingTabData, setLoadingTabData] = useState(false); // loading spinner
+  const [examples, setExamples] = useState([]);
+  const [loadingTabData, setLoadingTabData] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [updating, setUpdating] = useState(false);
-  /* const [quizSubmitted, setQuizSubmitted] = useState(false); */
-  /* const [showPopup, setShowPopup] = useState(false); */
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
   const [showHint, setShowHint] = useState(true);
 
@@ -36,7 +43,7 @@ function LearnPage() {
     setShowHint(false);
     setSidebarOpen(true);
   };
- /*  const [score, setScore] = useState(0); */
+  /*  const [score, setScore] = useState(0); */
 
   const fetchRoadmap = useCallback(async () => {
     try {
@@ -70,6 +77,18 @@ function LearnPage() {
   }, [roadmap, selectedTopic]);
   useEffect(() => {
     const generateExample = async () => {
+      if (!selectedTopic || !explanation || explanation === "Loading...")
+        return;
+      const cacheKey = getCacheKey(
+        selectedTopic,
+        currentWeekIndex,
+        currentTopicIndex
+      );
+      // Check if already cached
+      if (contentCache.examples[cacheKey]) {
+        setExamples(contentCache.examples[cacheKey]);
+        return;
+      }
       setLoadingTabData(true);
       try {
         const res = await axios.post(
@@ -84,20 +103,54 @@ function LearnPage() {
             },
           }
         );
-        setExamples(res.data.examples);
+        const examplesData = res.data.examples;
+        setExamples(examplesData);
+
+        // Cache the examples
+        setContentCache((prev) => ({
+          ...prev,
+          examples: {
+            ...prev.examples,
+            [cacheKey]: examplesData,
+          },
+        }));
       } catch (err) {
         console.error(err);
       } finally {
         setLoadingTabData(false);
       }
     };
-    if (activeTab == "example" && explanation) {
+    if (
+      activeTab === "example" &&
+      explanation &&
+      explanation !== "Loading..."
+    ) {
       generateExample();
     }
-  }, [activeTab, explanation, selectedTopic]);
+  }, [
+    activeTab,
+    explanation,
+    selectedTopic,
+    currentWeekIndex,
+    currentTopicIndex,
+    contentCache.examples,
+  ]);
 
   useEffect(() => {
     const generateSimplifiedExp = async () => {
+      if (!selectedTopic || !explanation || explanation === "Loading...")
+        return;
+      const cacheKey = getCacheKey(
+        selectedTopic,
+        currentWeekIndex,
+        currentTopicIndex
+      );
+
+      // Check if already cached
+      if (contentCache.simplifiedExps[cacheKey]) {
+        setSimplifiedExp(contentCache.simplifiedExps[cacheKey]);
+        return;
+      }
       setLoadingTabData(true);
       try {
         const res = await axios.post(
@@ -112,17 +165,38 @@ function LearnPage() {
             },
           }
         );
-        setSimplifiedExp(res.data.simplifiedexplanation);
+        const simplifiedText = res.data.simplifiedexplanation;
+        setSimplifiedExp(simplifiedText);
+
+        // Cache the simplified explanation
+        setContentCache((prev) => ({
+          ...prev,
+          simplifiedExps: {
+            ...prev.simplifiedExps,
+            [cacheKey]: simplifiedText,
+          },
+        }));
       } catch (err) {
         console.error("Simplification failed:", err);
       } finally {
         setLoadingTabData(false);
       }
     };
-    if (activeTab == "simplify" && explanation) {
+    if (
+      activeTab === "simplify" &&
+      explanation &&
+      explanation !== "Loading..."
+    ) {
       generateSimplifiedExp();
     }
-  }, [activeTab, explanation, selectedTopic]);
+  }, [
+    activeTab,
+    explanation,
+    selectedTopic,
+    currentWeekIndex,
+    currentTopicIndex,
+    contentCache.simplifiedExps,
+  ]);
 
   /* useEffect(() => {
     const generateQuiz = async () => {
@@ -336,21 +410,36 @@ function LearnPage() {
   const handleExplainTopic = async (topic, weekIndex, topicIndex) => {
     setCurrentWeekIndex(weekIndex);
     setCurrentTopicIndex(topicIndex);
-    setLoadingTabData(true);
+    /* setLoadingTabData(true); */
     setSelectedTopic(topic);
-    setExplanation("Loading...");
+    /* setExplanation("Loading..."); */
     setSidebarOpen(false); // Close mobile sidebar when topic is selected
+    const cacheKey = getCacheKey(topic, weekIndex, topicIndex);
 
-    // Clear quiz-related state when changing topics
-    /* setSelectedAnswers({});
-    setQuizSubmitted(false);
-    setScore(0);
-    setShowPopup(false); */
+    // Check if explanation is already cached
+    if (contentCache.explanations[cacheKey]) {
+      setExplanation(contentCache.explanations[cacheKey]);
 
-    // Clear other tab data as well
+      // Set cached content for other tabs if available
+      if (contentCache.simplifiedExps[cacheKey]) {
+        setSimplifiedExp(contentCache.simplifiedExps[cacheKey]);
+      } else {
+        setSimplifiedExp("");
+      }
+
+      if (contentCache.examples[cacheKey]) {
+        setExamples(contentCache.examples[cacheKey]);
+      } else {
+        setExamples([]);
+      }
+
+      return; // Exit early if content is cached
+    }
+
+    setLoadingTabData(true);
+    setExplanation("Loading...");
     setSimplifiedExp("");
     setExamples([]);
-    /* setQuiz([]); */ // Clear the quiz array
 
     try {
       const res = await axios.post(
@@ -360,7 +449,17 @@ function LearnPage() {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-      setExplanation(res.data.explanation);
+      const explanationText = res.data.explanation;
+      setExplanation(explanationText);
+
+      // Cache the explanation
+      setContentCache((prev) => ({
+        ...prev,
+        explanations: {
+          ...prev.explanations,
+          [cacheKey]: explanationText,
+        },
+      }));
     } catch (err) {
       setExplanation("Failed to fetch explanation.");
       console.error(err);
@@ -369,14 +468,14 @@ function LearnPage() {
     }
   };
   const handleCopyCode = async (code) => {
-  try {
-    await navigator.clipboard.writeText(code);
-    // You could add a toast notification here
-    console.log('Code copied to clipboard!');
-  } catch (err) {
-    console.error('Failed to copy code:', err);
-  }
-};
+    try {
+      await navigator.clipboard.writeText(code);
+      // You could add a toast notification here
+      console.log("Code copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy code:", err);
+    }
+  };
   // Sidebar component
   const RoadmapSidebar = () => {
     const totalWeeks = roadmap.weeks.length;
@@ -940,7 +1039,7 @@ function LearnPage() {
             {simplifiedExp === "" ? (
               <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
-                 😅
+                  😅
                 </div>
                 <p className="text-gray-400 text-base sm:text-lg px-4">
                   Sorry we are currently down
@@ -1019,74 +1118,77 @@ function LearnPage() {
 
                       // Enhanced table rendering
                       table({ children, ...props }) {
-      return (
-        <div className="my-8 overflow-x-auto rounded-lg border border-slate-700 shadow-lg bg-slate-900/50 backdrop-blur-sm">
-          <table
-            className="w-full text-sm text-left text-gray-300 border-collapse min-w-full"
-            {...props}
-          >
-            {children}
-          </table>
-        </div>
-      );
-    },
+                        return (
+                          <div className="my-8 overflow-x-auto rounded-lg border border-slate-700 shadow-lg bg-slate-900/50 backdrop-blur-sm">
+                            <table
+                              className="w-full text-sm text-left text-gray-300 border-collapse min-w-full"
+                              {...props}
+                            >
+                              {children}
+                            </table>
+                          </div>
+                        );
+                      },
 
-    // Table header with gradient background
-    thead({ children, ...props }) {
-      return (
-        <thead
-          className="text-sm text-gray-100 uppercase bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 border-b-2 border-slate-600"
-          {...props}
-        >
-          {children}
-        </thead>
-      );
-    },
+                      // Table header with gradient background
+                      thead({ children, ...props }) {
+                        return (
+                          <thead
+                            className="text-sm text-gray-100 uppercase bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 border-b-2 border-slate-600"
+                            {...props}
+                          >
+                            {children}
+                          </thead>
+                        );
+                      },
 
-    // Table header cells with better spacing
-    th({ children, ...props }) {
-      return (
-        <th
-          className="px-6 py-4 font-semibold text-blue-400 border-r border-slate-600 last:border-r-0 whitespace-nowrap"
-          {...props}
-        >
-          {children}
-        </th>
-      );
-    },
+                      // Table header cells with better spacing
+                      th({ children, ...props }) {
+                        return (
+                          <th
+                            className="px-6 py-4 font-semibold text-blue-400 border-r border-slate-600 last:border-r-0 whitespace-nowrap"
+                            {...props}
+                          >
+                            {children}
+                          </th>
+                        );
+                      },
 
-    // Table body with alternating row colors
-    tbody({ children, ...props }) {
-      return (
-        <tbody className="bg-slate-900/30 divide-y divide-slate-700/50" {...props}>
-          {children}
-        </tbody>
-      );
-    },
+                      // Table body with alternating row colors
+                      tbody({ children, ...props }) {
+                        return (
+                          <tbody
+                            className="bg-slate-900/30 divide-y divide-slate-700/50"
+                            {...props}
+                          >
+                            {children}
+                          </tbody>
+                        );
+                      },
 
-    // Enhanced table rows with hover effects
-    tr({ children, ...props }) {
-      return (
-        <tr
-          className="border-b border-slate-700/30 hover:bg-slate-800/40 transition-all duration-200 group"
-          {...props}
-        >
-          {children}
-        </tr>
-      );
-    },
+                      // Enhanced table rows with hover effects
+                      tr({ children, ...props }) {
+                        return (
+                          <tr
+                            className="border-b border-slate-700/30 hover:bg-slate-800/40 transition-all duration-200 group"
+                            {...props}
+                          >
+                            {children}
+                          </tr>
+                        );
+                      },
 
-    // Table cells with proper padding and borders
-    td({ children, ...props }) {
-      return (
-        <td
-          className="px-6 py-4 border-r border-slate-700/30 last:border-r-0 group-hover:text-gray-200 transition-colors duration-200"
-          {...props}
-        >
-          {children}
-        </td>
-      );
-    },
+                      // Table cells with proper padding and borders
+                      td({ children, ...props }) {
+                        return (
+                          <td
+                            className="px-6 py-4 border-r border-slate-700/30 last:border-r-0 group-hover:text-gray-200 transition-colors duration-200"
+                            {...props}
+                          >
+                            {children}
+                          </td>
+                        );
+                      },
 
                       // Enhanced blockquote with icon
                       blockquote({ children, ...props }) {
@@ -1335,14 +1437,16 @@ function LearnPage() {
         )}
 
         {/* Quiz Tab */}
-        
-{activeTab === "quiz" && (
-  <QuizSection
-    selectedTopic={selectedTopic}
-    explanation={explanation}
-    isVisible={activeTab === "quiz"}
-  />
-)}
+
+        {activeTab === "quiz" && (
+          <QuizSection
+            selectedTopic={selectedTopic}
+            explanation={explanation}
+            isVisible={activeTab === "quiz"}
+            currentWeekIndex={currentWeekIndex}
+            currentTopicIndex={currentTopicIndex}
+          />
+        )}
 
         {/* Example Tab */}
         {activeTab === "example" && (
@@ -1436,15 +1540,25 @@ function LearnPage() {
                               example.code
                             </span>
                           </div>
-                         <button 
-  onClick={() => handleCopyCode(ex.code)}
-  className="text-xs text-gray-400 hover:text-gray-300 transition-colors duration-200 px-2 py-1 rounded bg-slate-800/50 hover:bg-slate-700/50 flex items-center gap-1"
->
-  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-  </svg>
-  Copy
-</button>
+                          <button
+                            onClick={() => handleCopyCode(ex.code)}
+                            className="text-xs text-gray-400 hover:text-gray-300 transition-colors duration-200 px-2 py-1 rounded bg-slate-800/50 hover:bg-slate-700/50 flex items-center gap-1"
+                          >
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              />
+                            </svg>
+                            Copy
+                          </button>
                         </div>
 
                         {/* Code content */}
