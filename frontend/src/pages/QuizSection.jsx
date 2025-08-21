@@ -31,11 +31,10 @@ const QuizSection = React.memo(({ selectedTopic, explanation, isVisible }) => {
   // Generate quiz when tab becomes visible
   useEffect(() => {
     const generateQuiz = async () => {
-
       if (isLoading) {
-    console.log("Already loading, skipping..."); // Debug log
-    return;
-  }
+        console.log("Already loading, skipping..."); // Debug log
+        return;
+      }
       if (
         !isVisible ||
         !explanation ||
@@ -103,24 +102,22 @@ const QuizSection = React.memo(({ selectedTopic, explanation, isVisible }) => {
     restoreScrollPosition();
   };
 
-  const handleSubmitQuiz = () => {
+ const handleSubmitQuiz = () => {
   let total = 0;
+
   quiz.forEach((q, idx) => {
-    const selectedLetter = selectedAnswers[idx]; // "A", "B", "C", "D"
-    
+    const selectedLetter = selectedAnswers[idx];
+
     if (selectedLetter) {
-      // Convert letter to array index: A=0, B=1, C=2, D=3
-      const selectedIndex = selectedLetter.charCodeAt(0) - 65;
-      const selectedOptionText = q.options[selectedIndex];
-      
-      // Compare the actual option text with the answer
-      if (selectedOptionText === q.answer) {
+      const optionIndex = selectedLetter.charCodeAt(0) - 65; // A=0, B=1, ...
+      const selectedText = q.options[optionIndex];           // actual text
+
+      if (selectedText === q.answer) {
         total++;
       }
     }
   });
-  
-  console.log("Final score:", total); // Debug log
+
   setScore(total);
   setQuizSubmitted(true);
   setShowPopup(true);
@@ -194,7 +191,7 @@ const QuizSection = React.memo(({ selectedTopic, explanation, isVisible }) => {
               <ul className="space-y-2 sm:space-y-3">
                 {q.options.map((opt, i) => {
                   const optionLetter = String.fromCharCode(65 + i);
-                 const isCorrect = opt === q.answer;
+                  const isCorrect = opt === q.answer;
                   const isSelected = selectedAnswers[idx] === optionLetter;
 
                   return (
