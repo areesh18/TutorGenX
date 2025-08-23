@@ -34,110 +34,6 @@ type RoadmapWeek struct {
 	Topics []string `json:"topics"`
 }
 
-/*
-	 func HandleRoadmap(w http.ResponseWriter, r *http.Request) {
-		//getting user info from jwt
-		_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
-		if !ok {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		var req RoadmapRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid Request", http.StatusBadRequest)
-			return
-		}
-		apiKey := os.Getenv("GROQ_API_KEY")
-		if apiKey == "" {
-			http.Error(w, "GROQ_API_KEY not set in .env", http.StatusInternalServerError)
-			return
-		}
-		cfg := openai.DefaultConfig(apiKey)
-		cfg.BaseURL = "https://api.groq.com/openai/v1" // Important: use Groq base URL
-
-		client := openai.NewClientWithConfig(cfg)
-
-		prompt := `You are an expert career coach.
-		If the following input is not a valid career or learning goal, respond only with {"error": "Invalid goal"}.
-
-Otherwise,Create a structured weekly learning roadmap in JSON format for the following goal:
-
-"` + req.Goal + `"
-
-Respond ONLY with JSON in this format:
-
-[
-
-	{
-	  "week": 1,
-	  "title": "Topic Name",
-	  "topics": [
-	    "One thing to learn",
-	    "Another topic to cover",
-	    "Optional assignments"
-	  ]
-	},
-	...
-
-]
-`
-
-		resp, err := client.CreateChatCompletion(
-			context.Background(),
-			openai.ChatCompletionRequest{
-				Model: "llama-3.3-70b-versatile",
-				Messages: []openai.ChatCompletionMessage{
-					{
-						Role:    openai.ChatMessageRoleUser,
-						Content: prompt,
-					},
-				},
-			},
-		)
-
-		if err != nil {
-			http.Error(w, "Failed to generate roadmap: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		var roadmap []RoadmapWeek
-		if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &roadmap); err != nil {
-			http.Error(w, "Failed to parse roadmap JSON: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		claims := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
-		userEmail := claims["email"].(string)
-
-		//creating a roadmap record in db
-		newRoadmap := models.Roadmap{
-			UserEmail: userEmail,
-			Goal:      req.Goal,
-		}
-		if err := db.DB.Create(&newRoadmap).Error; err != nil {
-			http.Error(w, "Failed to save roadmap", http.StatusInternalServerError)
-			return
-		}
-		// Save each week
-		for _, week := range roadmap {
-			topicsJSON, err := json.Marshal(week.Topics)
-			if err != nil {
-				http.Error(w, "Failed to serialize topics", http.StatusInternalServerError)
-				return
-			}
-
-			db.DB.Create(&models.RoadmapWeek{
-				RoadmapID: newRoadmap.ID,
-				Week:      week.Week,
-				Title:     week.Title,
-				Topics:    string(topicsJSON),
-			})
-		}
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"goal":    req.Goal,
-			"roadmap": roadmap,
-		})
-	}
-*/
 type MarkAsCompletedRequest struct {
 	RoadmapID  uint `json:"roadmap_id"`
 	WeekID     uint `json:"week_id"`
@@ -424,56 +320,6 @@ Now generate the correct JSON output:`, req.Goal)
 	})
 }
 
-/* func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
-	//validating jwt
-	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	userEmail := claims["email"].(string)
-	var req struct {
-		Goal    string        `json:"goal"`
-		Roadmap []RoadmapWeek `json:"roadmap"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
-	// Save roadmap to DB
-	newRoadmap := models.Roadmap{
-		UserEmail: userEmail,
-		Goal:      req.Goal,
-	}
-	if err := db.DB.Create(&newRoadmap).Error; err != nil {
-		http.Error(w, "Failed to save roadmap", http.StatusInternalServerError)
-		return
-	}
-
-	for _, week := range req.Roadmap {
-		topicsJSON, err := json.Marshal(week.Topics)
-		if err != nil {
-			http.Error(w, "Failed to serialize topics", http.StatusInternalServerError)
-			return
-		}
-		progress := make([]bool, len(week.Topics))
-		progressJSON, err := json.Marshal(progress)
-		if err != nil {
-			http.Error(w, "Failed to serialize progress", http.StatusInternalServerError)
-			return
-		}
-
-		db.DB.Create(&models.RoadmapWeek{
-			RoadmapID: newRoadmap.ID,
-			Week:      week.Week,
-			Title:     week.Title,
-			Topics:    string(topicsJSON),
-			Progress:  string(progressJSON),
-		})
-	}
-
-} */
-
 func SaveRoadmap(w http.ResponseWriter, r *http.Request) {
 	//validating jwt
 	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
@@ -663,13 +509,15 @@ User Input: %s`, req.GoalReq)
 	})
 
 }
-func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
+
+/* func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
 	// Auth check
-	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	userID := claims["email"].(string)
 
 	// Parse request body
 	var req struct {
@@ -679,7 +527,19 @@ func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request: topic is required", http.StatusBadRequest)
 		return
 	}
+	//check for existing content in the db
+	var content models.Content
+	result := db.DB.Where("user_id = ? AND topic = ?", userID, req.Topic).First(&content)
+	 if result.Error == nil{
+		// Content entry exists. Check if the explanation is already saved.
+		if content.Explanation != "" {
+			// Found in cache, return immediately
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(SimplifiedResponse{SimplifiedExplanation: content.SimplifiedExplanation})
+			return
+		}
 
+	 }
 	// Groq API setup
 	apiKey := os.Getenv("GROQ_API_KEY")
 	if apiKey == "" {
@@ -726,7 +586,7 @@ Topic: %s`, req.Topic)
 	json.NewEncoder(w).Encode(map[string]string{
 		"explanation": explanation,
 	})
-}
+} */
 
 func TestPreload(w http.ResponseWriter, r *http.Request) {
 	var roadmap models.Roadmap

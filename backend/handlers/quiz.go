@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"tutor_genX/db"
+	"tutor_genX/models"
 	"tutor_genX/utils"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sashabaranov/go-openai"
+	"gorm.io/gorm"
 )
 
 type QuizRequest struct {
@@ -30,11 +33,12 @@ type QuizResponse struct {
 
 func GenerateQuiz(w http.ResponseWriter, r *http.Request) {
 	//jwt validation
-	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	userID := claims["email"].(string)
 
 	//parse request body
 	var req QuizRequest
@@ -47,7 +51,30 @@ func GenerateQuiz(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Topic and explanation are required", http.StatusBadRequest)
 		return
 	}
+	//check for exisitng content in the db
+	var content models.Content
+	result := db.DB.Where("user_id = ? AND topic = ?", userID, req.Topic).First(&content)
+	if result.Error == nil {
+		//Content exists.check if the quiz field already exists.
+		if content.Quiz != "" {
+			var cachedQuiz QuizResponse
+			if err := json.Unmarshal([]byte(content.Quiz), &cachedQuiz); err != nil {
+				http.Error(w, "Failed to parse cached quiz", http.StatusInternalServerError)
+				return
+			}
 
+			//Found in cache,return immediately
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(cachedQuiz)
+			return
+		}
+		// If Quiz is empty, we will proceed to generate it.
+	} else if result.Error != gorm.ErrRecordNotFound {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	//content not in cache generate it
 	//setup groq
 	apiKey := os.Getenv("GROQ_API_KEY")
 	if apiKey == "" {
@@ -105,12 +132,26 @@ Generate quiz now:`, req.Topic, req.Explanation)
 		http.Error(w, "Failed to generate quiz: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	var quiz QuizResponse
-	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &quiz); err != nil {
+	var generatedQuiz QuizResponse
+	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &generatedQuiz); err != nil {
 		http.Error(w, "Failed to parse quiz", http.StatusInternalServerError)
 		return
 	}
+	//save the new quiz to the db
+	quizJSON, _ := json.Marshal(generatedQuiz)
 
+	if result.Error == gorm.ErrRecordNotFound {
+		// No entry exists yet, create a new one
+		newContent := models.Content{
+			UserID: userID,
+			Topic:  req.Topic,
+			Quiz:   string(quizJSON),
+		}
+		db.DB.Create(&newContent)
+	} else {
+		// Entry exists, update the specific field
+		db.DB.Model(&content).Where("user_id = ? AND topic = ?", userID, req.Topic).Update("quiz", string(quizJSON))
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(quiz)
+	json.NewEncoder(w).Encode(generatedQuiz)
 }

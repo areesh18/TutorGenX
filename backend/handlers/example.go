@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"tutor_genX/db"
+	"tutor_genX/models"
 	"tutor_genX/utils"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sashabaranov/go-openai"
+	"gorm.io/gorm"
 )
 
 type ExampleRequest struct {
@@ -29,12 +32,14 @@ type ExamplesResponse struct {
 
 func GenerateExamples(w http.ResponseWriter, r *http.Request) {
 	//jwt validation
-	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	userID := claims["email"].(string)
 	//parse request Body
+
 	var req ExampleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid Request", http.StatusBadRequest)
@@ -44,6 +49,32 @@ func GenerateExamples(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Topic and explanation are required", http.StatusBadRequest)
 		return
 	}
+
+	//check for exisitng content in the db
+	var content models.Content
+	result := db.DB.Where("user_id=? AND topic=?", userID, req.Topic).First(&content)
+
+	if result.Error == nil {
+		//Content entry exists. Check if the exmaples field exists already
+		if content.Examples != "" {
+			var cachedExamples ExamplesResponse
+			if err := json.Unmarshal([]byte(content.Examples), &cachedExamples); err != nil {
+				http.Error(w, "Failed to parse cached examples", http.StatusInternalServerError)
+				return
+			}
+			// Found in cache, return immediately
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(cachedExamples)
+			return
+		}
+		// If Examples is empty, we will proceed to generate it.
+	} else if result.Error != gorm.ErrRecordNotFound {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	//content not in cache proceed to geenrate:
+
 	apiKey := os.Getenv("GROQ_API_KEY")
 	if apiKey == "" {
 		http.Error(w, "GROQ_API_KEY not set", http.StatusInternalServerError)
@@ -103,14 +134,28 @@ Explanation:
 		return
 	}
 
-	var examplesResp ExamplesResponse
-	err = json.Unmarshal([]byte(resp.Choices[0].Message.Content), &examplesResp)
+	var generatedExamples ExamplesResponse
+	err = json.Unmarshal([]byte(resp.Choices[0].Message.Content), &generatedExamples)
 	if err != nil {
 		http.Error(w, "Failed to parse examples", http.StatusInternalServerError)
 		return
 	}
 
+	examplesJSON, _ := json.Marshal(generatedExamples)
+	if result.Error == gorm.ErrRecordNotFound {
+		// No entry exists yet, create a new one
+		newContent := models.Content{
+			UserID:   userID,
+			Topic:    req.Topic,
+			Examples: string(examplesJSON),
+		}
+		db.DB.Create(&newContent)
+	} else {
+		// Entry exists, update the specific field
+		db.DB.Model(&content).Where("user_id = ? AND topic = ?", userID, req.Topic).Update("examples", string(examplesJSON))
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(examplesResp)
+	json.NewEncoder(w).Encode(generatedExamples)
 
 }
