@@ -205,7 +205,7 @@ export default function Navbar({ bgClass }) {
                       </p>
                     </div>
 
-                    {/* <Link
+                    <Link
                       to="/profile"
                       className="flex items-center space-x-2 px-4 py-2 text-sm hover:bg-gray-700 transition-colors"
                       onClick={() => setShowUserMenu(false)}
@@ -213,15 +213,6 @@ export default function Navbar({ bgClass }) {
                       <UserCircleIcon className="w-4 h-4" />
                       <span>Profile</span>
                     </Link>
-                    
-                    <Link
-                      to="/settings"
-                      className="flex items-center space-x-2 px-4 py-2 text-sm hover:bg-gray-700 transition-colors"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <Cog6ToothIcon className="w-4 h-4" />
-                      <span>Settings</span>
-                    </Link> */}
 
                     {/* <hr className="border-gray-700 my-1" /> */}
 
@@ -381,12 +372,9 @@ export default function Navbar({ bgClass }) {
                         </div>
                       </motion.div>
 
-                      {/* <motion.div variants={itemVariants}>
+                      <motion.div variants={itemVariants}>
                         <NavLink to="/profile" icon={UserCircleIcon} mobile>Profile</NavLink>
                       </motion.div>
-                      <motion.div variants={itemVariants}>
-                        <NavLink to="/settings" icon={Cog6ToothIcon} mobile>Settings</NavLink>
-                      </motion.div> */}
 
                       <motion.div variants={itemVariants}>
                         <button

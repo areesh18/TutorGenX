@@ -198,46 +198,6 @@ function LearnPage() {
     contentCache.simplifiedExps,
   ]);
 
-  /* useEffect(() => {
-    const generateQuiz = async () => {
-      setLoadingTabData(true);
-      try {
-        const res = await axios.post(
-          "http://localhost:8080/quiz",
-          {
-            topic: selectedTopic,
-            explanation: explanation,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        setQuiz(res.data.quiz);
-      } catch (err) {
-        console.error("Quiz generation failed:", err);
-      } finally {
-        setLoadingTabData(false);
-      }
-    };
-
-    if (activeTab === "quiz" && explanation) {
-      generateQuiz();
-    }
-  }, [activeTab, explanation, selectedTopic]); */
-
-  /* useEffect(() => {
-    // This function runs when a key is pressed
-    const onKey = (e) => e.key === "Escape" && setShowPopup(false);
-
-    // Attach the function to the 'keydown' event
-    window.addEventListener("keydown", onKey);
-
-    // Cleanup: remove event listener when component unmounts
-    return () => window.removeEventListener("keydown", onKey);
-  }, []); */
-
   useEffect(() => {
     fetchRoadmap();
   }, [fetchRoadmap]);
@@ -266,10 +226,7 @@ function LearnPage() {
     );
 
   const handlePrevButton = () => {
-    /*     console.log("Clicked Prev");
-    console.log("roadmap:", roadmap);
-    console.log("currentWeekIndex:", currentWeekIndex);
-    console.log("currentTopicIndex:", currentTopicIndex); */
+
 
     if (!roadmap || !roadmap.weeks) {
       return;
@@ -357,10 +314,7 @@ function LearnPage() {
   };
 
   const handleNextButton = () => {
-    /*   console.log("Clicked Next");
-    console.log("roadmap:", roadmap);
-    console.log("currentWeekIndex:", currentWeekIndex);
-    console.log("currentTopicIndex:", currentTopicIndex); */
+
 
     if (!roadmap || !roadmap.weeks) {
       console.warn("Roadmap or weeks missing");
@@ -393,12 +347,8 @@ function LearnPage() {
     const nextTopics = JSON.parse(nextWeek.topics);
     const nextTopic = nextTopics[nextTopicIndex];
 
-    /* console.log("Navigating to:", {
-      week: nextWeekIndex,
-      topic: nextTopic,
-      topicIndex: nextTopicIndex,
-    });
- */
+
+ 
     if (!nextTopic) {
       console.warn("Next topic not found");
       return;
