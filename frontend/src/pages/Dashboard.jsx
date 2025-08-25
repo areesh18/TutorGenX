@@ -329,6 +329,7 @@ function Dashboard() {
       setRoadmap([]);
       setMsg("Course Saved✅");
       fetchSavedRoadmaps();
+      navigate("/courses");
     } catch (err) {
       console.error("Error saving roadmap:", err);
       alert("Failed to save roadmap");
@@ -593,106 +594,6 @@ function Dashboard() {
               {msg}
             </motion.p>
           )}
-
-          {/* Generated Roadmap */}
-          {/*  <AnimatePresence>
-            {roadmap.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -30, scale: 0.95 }}
-                transition={{ duration: 0.5 }}
-                className="bg-slate-700/50 rounded-xl sm:rounded-2xl border border-slate-600/50 p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 backdrop-blur-sm"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(51, 65, 85, 0.4) 0%, rgba(30, 41, 59, 0.6) 100%)",
-                }}
-              >
-                <motion.h3
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4 md:mb-6 flex items-center gap-2 sm:gap-3"
-                >
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-sm sm:text-base">
-                    📅
-                  </div>
-                  Topic Wise Plan
-                </motion.h3>
-
-                <ul className="space-y-4">
-                  {roadmap.map((week, index) => (
-                    <motion.li
-                      key={week.week}
-                      initial={{ opacity: 0, x: -30 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 * index, duration: 0.4 }}
-                      className="border border-slate-600/50 p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl bg-gradient-to-r from-slate-600/30 to-slate-700/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 transition-all duration-300"
-                      whileHover={{ scale: 1.01, y: -1 }}
-                    >
-                      <motion.h4
-                        initial={{ y: 10, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 + 0.1 * index }}
-                        className="font-semibold text-white text-sm sm:text-base md:text-lg mb-2 sm:mb-3 flex items-center gap-2 sm:gap-3"
-                      >
-                        <span className="text-base sm:text-lg md:text-xl">
-                          📚
-                        </span>
-                        <span className="break-words">
-                          {week.week}: {week.title}
-                        </span>
-                      </motion.h4>
-                      <motion.ul
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 + 0.1 * index }}
-                        className="space-y-2"
-                      >
-                        {week.topics.map((topic, i) => (
-                          <motion.li
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 + 0.05 * i }}
-                            className="text-sm text-slate-300 flex items-center gap-3 hover:text-cyan-300 transition-colors duration-200"
-                            whileHover={{ x: 4 }}
-                          >
-                            <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></span>
-                            {topic}
-                          </motion.li>
-                        ))}
-                      </motion.ul>
-                    </motion.li>
-                  ))}
-                </ul>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-3 mt-4 sm:mt-6"
-                >
-                  <motion.button
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-2.5 sm:py-3 px-4 sm:px-5 rounded-lg sm:rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base"
-                    onClick={() => handleSaveButton()}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    💾 Save Roadmap
-                  </motion.button>
-                  <motion.button
-                    className="flex-1 py-3 px-5 rounded-xl font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-all duration-300"
-                    onClick={() => handleDiscardButton()}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    🗑 Discard
-                  </motion.button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence> */}
         </motion.div>
 
         {/* Saved Roadmaps */}

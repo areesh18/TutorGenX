@@ -9,6 +9,8 @@ import LearnPage from "./pages/LearnPage";
 import Layout from "./Layout";
 import Profile from "./pages/Profile";
 import Courses from "./pages/Courses";
+import CreateCourse from "./pages/CreateCourse";
+
 function AppWrapper() {
   return (
     <BrowserRouter>
@@ -29,6 +31,7 @@ function App() {
           <Route path="/learn/:roadmapId" element={<LearnPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/create-course" element={<CreateCourse />} />
         </Route>
       </Routes>
     </>
