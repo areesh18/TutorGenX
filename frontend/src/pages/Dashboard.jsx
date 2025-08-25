@@ -226,7 +226,7 @@ const RoadmapModal = ({ isOpen, onClose, roadmap, onSave, onDiscard }) => {
                 onClick={onSave}
                 className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-xl"
               >
-                💾 Save Roadmap
+                💾 Save Course
               </button>
               <button
                 onClick={onDiscard}
@@ -579,7 +579,7 @@ function Dashboard() {
                   Generating...
                 </>
               ) : (
-                <>🚀 Generate My Roadmap</>
+                <>🚀 Generate My Course</>
               )}
             </motion.button>
           </motion.form>
@@ -714,7 +714,7 @@ function Dashboard() {
                   <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8  rounded-lg flex items-center justify-center text-sm sm:text-base">
                     📁
                   </div>
-                  <span className="break-words">Your Saved Roadmaps</span>
+                  <span className="break-words">Your Saved Courses</span>
                 </h3>
                 <motion.button
                   onClick={handleDeleteAllClick}
