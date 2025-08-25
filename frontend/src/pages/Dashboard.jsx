@@ -5,7 +5,16 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Custom Modal Component
-const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confirmText = "Delete", cancelText = "Cancel", isDestructive = true }) => {
+const DeleteConfirmModal = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+  title,
+  message,
+  confirmText = "Delete",
+  cancelText = "Cancel",
+  isDestructive = true,
+}) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -24,13 +33,15 @@ const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confi
             className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-slate-700/50 relative"
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
+              background:
+                "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
               backdropFilter: "blur(20px)",
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+              boxShadow:
+                "0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
             }}
           >
             {/* Icon */}
-            <motion.div 
+            <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.1, type: "spring" }}
@@ -40,7 +51,7 @@ const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confi
             </motion.div>
 
             {/* Title */}
-            <motion.h3 
+            <motion.h3
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.15 }}
@@ -50,7 +61,7 @@ const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confi
             </motion.h3>
 
             {/* Message */}
-            <motion.p 
+            <motion.p
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -60,7 +71,7 @@ const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confi
             </motion.p>
 
             {/* Buttons */}
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.25 }}
@@ -77,8 +88,8 @@ const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confi
               <motion.button
                 onClick={onConfirm}
                 className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition-all duration-300 ${
-                  isDestructive 
-                    ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700" 
+                  isDestructive
+                    ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                     : "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 }`}
                 whileHover={{ scale: 1.02 }}
@@ -93,6 +104,145 @@ const DeleteConfirmModal = ({ isOpen, onConfirm, onCancel, title, message, confi
     </AnimatePresence>
   );
 };
+const RoadmapModal = ({ isOpen, onClose, roadmap, onSave, onDiscard }) => {
+  if (!roadmap) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 w-full max-w-7xl border border-slate-700/50"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              ✖
+            </button>
+
+            {/* Title */}
+            <h3 className="text-3xl font-bold text-white mb-10 flex items-center gap-2">
+              <span className="text-4xl">📅</span> Topic Wise Plan
+            </h3>
+
+            <div className="relative">
+              {/* Connector lines */}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#06b6d4" />
+                    <stop offset="100%" stopColor="#3b82f6" />
+                  </linearGradient>
+                </defs>
+                {roadmap.map((_, i) => {
+                  const colCount = 3; // 3 columns layout
+                  const row = Math.floor(i / colCount);
+                  const col = i % colCount;
+
+                  // draw line to next card in same row
+                  if (col < colCount - 1 && i + 1 < roadmap.length) {
+                    return (
+                      <line
+                        key={`h-${i}`}
+                        x1={`${(col + 1) * (100 / colCount)}%`}
+                        y1={`${row * 200 + 100}`}
+                        x2={`${(col + 1) * (100 / colCount) + 5}%`}
+                        y2={`${row * 200 + 100}`}
+                        stroke="url(#grad)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    );
+                  }
+
+                  // draw line to card below
+                  if (i + colCount < roadmap.length) {
+                    return (
+                      <line
+                        key={`v-${i}`}
+                        x1={`${col * (100 / colCount) + 16}%`}
+                        y1={`${row * 200 + 160}`}
+                        x2={`${col * (100 / colCount) + 16}%`}
+                        y2={`${(row + 1) * 200 + 40}`}
+                        stroke="url(#grad)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    );
+                  }
+
+                  return null;
+                })}
+              </svg>
+
+              {/* Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+                {roadmap.map((week, index) => (
+                  <motion.div
+                    key={week.week}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 * index }}
+                    className="bg-slate-700/40 border border-slate-600/40 rounded-xl p-4 hover:border-cyan-400/50 transition-all duration-300 shadow-md"
+                  >
+                    <h4 className="font-semibold text-white mb-2 text-sm">
+                      {index + 1}. {week.title}
+                    </h4>
+                    <ul className="space-y-1">
+                      {week.topics.map((topic, i) => (
+                        <li
+                          key={i}
+                          className="text-xs text-slate-300 flex gap-2 hover:text-cyan-300 transition-colors"
+                        >
+                          <span className="w-1 h-1 bg-cyan-400 rounded-full mt-1"></span>
+                          {topic}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-between gap-3 mt-10">
+              <button
+                onClick={onSave}
+                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-xl"
+              >
+                💾 Save Roadmap
+              </button>
+              <button
+                onClick={onDiscard}
+                className="flex-1 py-3 rounded-xl font-medium text-red-400 border border-red-500/30"
+              >
+                🗑 Discard
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+
 
 function Dashboard() {
   const [generatedTitle, setGeneratedTitle] = useState("");
@@ -103,14 +253,15 @@ function Dashboard() {
   const [UnsavedRoadmap, setUnsavedRoadmap] = useState(true);
   const [newGoal, setNewGoal] = useState("");
   const [loading, setLoading] = useState(false);
-  
+  const [showRoadmapModal, setShowRoadmapModal] = useState(false);
+
   // Modal states
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     type: null, // 'single' or 'all'
     roadmapId: null,
     title: "",
-    message: ""
+    message: "",
   });
 
   const navigate = useNavigate();
@@ -173,7 +324,7 @@ function Dashboard() {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      setShowRoadmapModal(false);
       setUnsavedRoadmap(false);
       setRoadmap([]);
       setMsg("Roadmap Saved✅");
@@ -187,6 +338,7 @@ function Dashboard() {
   const handleDiscardButton = () => {
     setNewGoal("");
     setRoadmap([]);
+    setShowRoadmapModal(false);
     setMsg("Roadmap Discarded");
   };
 
@@ -205,6 +357,7 @@ function Dashboard() {
         }
       );
       setRoadmap(res.data.roadmap);
+      setShowRoadmapModal(true);
       setUnsavedRoadmap(true);
       setNewGoal(res.data.goal);
       setGoal("");
@@ -231,10 +384,10 @@ function Dashboard() {
   const handleDeleteClick = (id, title = "Learning Roadmap") => {
     setDeleteModal({
       isOpen: true,
-      type: 'single',
+      type: "single",
       roadmapId: id,
       title: "Delete Roadmap?",
-      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`
+      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
     });
   };
 
@@ -242,24 +395,29 @@ function Dashboard() {
   const handleDeleteAllClick = () => {
     setDeleteModal({
       isOpen: true,
-      type: 'all',
+      type: "all",
       roadmapId: null,
       title: "Delete All Roadmaps?",
-      message: `Are you sure you want to delete all ${savedRoadmaps.length} roadmaps? This action cannot be undone.`
+      message: `Are you sure you want to delete all ${savedRoadmaps.length} roadmaps? This action cannot be undone.`,
     });
   };
 
   // Handle modal confirmation
   const handleDeleteConfirm = async () => {
     try {
-      if (deleteModal.type === 'single') {
-        await axios.delete(`http://localhost:8080/delete-roadmap?id=${deleteModal.roadmapId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setSavedRoadmaps((prev) => prev.filter((rm) => rm.ID !== deleteModal.roadmapId));
-      } else if (deleteModal.type === 'all') {
+      if (deleteModal.type === "single") {
+        await axios.delete(
+          `http://localhost:8080/delete-roadmap?id=${deleteModal.roadmapId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setSavedRoadmaps((prev) =>
+          prev.filter((rm) => rm.ID !== deleteModal.roadmapId)
+        );
+      } else if (deleteModal.type === "all") {
         await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -267,20 +425,38 @@ function Dashboard() {
         });
         setSavedRoadmaps([]);
       }
-      
+
       // Close modal
-      setDeleteModal({ isOpen: false, type: null, roadmapId: null, title: "", message: "" });
+      setDeleteModal({
+        isOpen: false,
+        type: null,
+        roadmapId: null,
+        title: "",
+        message: "",
+      });
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Failed to delete roadmap(s)");
       // Close modal even on error
-      setDeleteModal({ isOpen: false, type: null, roadmapId: null, title: "", message: "" });
+      setDeleteModal({
+        isOpen: false,
+        type: null,
+        roadmapId: null,
+        title: "",
+        message: "",
+      });
     }
   };
 
   // Handle modal cancellation
   const handleDeleteCancel = () => {
-    setDeleteModal({ isOpen: false, type: null, roadmapId: null, title: "", message: "" });
+    setDeleteModal({
+      isOpen: false,
+      type: null,
+      roadmapId: null,
+      title: "",
+      message: "",
+    });
   };
 
   return (
@@ -319,13 +495,20 @@ function Dashboard() {
       )}
 
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmModal 
+      <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
         title={deleteModal.title}
         message={deleteModal.message}
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
-        confirmText={deleteModal.type === 'all' ? "Delete All" : "Delete"}
+        confirmText={deleteModal.type === "all" ? "Delete All" : "Delete"}
+      />
+      <RoadmapModal
+        isOpen={showRoadmapModal}
+        onClose={() => setShowRoadmapModal(false)}
+        roadmap={roadmap}
+        onSave={handleSaveButton}
+        onDiscard={handleDiscardButton}
       />
 
       <div
@@ -412,7 +595,7 @@ function Dashboard() {
           )}
 
           {/* Generated Roadmap */}
-          <AnimatePresence>
+          {/*  <AnimatePresence>
             {roadmap.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -509,7 +692,7 @@ function Dashboard() {
                 </motion.div>
               </motion.div>
             )}
-          </AnimatePresence>
+          </AnimatePresence> */}
         </motion.div>
 
         {/* Saved Roadmaps */}
@@ -602,7 +785,12 @@ function Dashboard() {
                           </p>
                         </div>
                         <motion.button
-                          onClick={() => handleDeleteClick(roadmap.ID, roadmap?.title || "Learning Roadmap")}
+                          onClick={() =>
+                            handleDeleteClick(
+                              roadmap.ID,
+                              roadmap?.title || "Learning Roadmap"
+                            )
+                          }
                           className="text-xs text-red-400 hover:text-red-300 ml-2 p-2 hover:bg-red-500/10 rounded-lg transition-all"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
