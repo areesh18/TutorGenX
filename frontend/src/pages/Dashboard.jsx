@@ -327,7 +327,7 @@ function Dashboard() {
       setShowRoadmapModal(false);
       setUnsavedRoadmap(false);
       setRoadmap([]);
-      setMsg("Roadmap Saved✅");
+      setMsg("Course Saved✅");
       fetchSavedRoadmaps();
     } catch (err) {
       console.error("Error saving roadmap:", err);
@@ -339,13 +339,13 @@ function Dashboard() {
     setNewGoal("");
     setRoadmap([]);
     setShowRoadmapModal(false);
-    setMsg("Roadmap Discarded");
+    setMsg("Course Discarded");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMsg("Generating roadmap..");
+    setMsg("Generating course..");
     try {
       const res = await axios.post(
         "http://localhost:8080/roadmap",
@@ -361,7 +361,7 @@ function Dashboard() {
       setUnsavedRoadmap(true);
       setNewGoal(res.data.goal);
       setGoal("");
-      setMsg("Roadmap Generated");
+      setMsg("Course Generated");
     } catch (err) {
       setGoal("");
       console.error(err);
