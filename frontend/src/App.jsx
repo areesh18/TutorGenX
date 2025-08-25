@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import LearnPage from "./pages/LearnPage";
 import Layout from "./Layout";
 import Profile from "./pages/Profile";
+import Courses from "./pages/Courses";
 function AppWrapper() {
   return (
     <BrowserRouter>
@@ -27,6 +28,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/learn/:roadmapId" element={<LearnPage />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/courses" element={<Courses />} />
         </Route>
       </Routes>
     </>
