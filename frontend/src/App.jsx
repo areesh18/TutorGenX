@@ -4,11 +4,12 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
-import Navbar from "./components/Navbar";
 import LearnPage from "./pages/LearnPage";
 import Layout from "./Layout";
 import Profile from "./pages/Profile";
 import Courses from "./pages/Courses";
+import BookSection from "./pages/BookSection";
+import Ytsection from "./pages/Ytsection";
 
 
 function AppWrapper() {
@@ -31,6 +32,8 @@ function App() {
           <Route path="/learn/:roadmapId" element={<LearnPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/booksection" element={<BookSection />} />
+          <Route path="/ytsection" element={<Ytsection />} />
           
         </Route>
       </Routes>
