@@ -1,451 +1,309 @@
-// Layout.jsx
-import { NavLink, Outlet } from "react-router-dom";
-import { useState } from "react";
+"use client"
+
+/* Clean, educational Layout for React Router */
+import { NavLink, Outlet } from "react-router-dom"
+import { useState } from "react"
+
+function Item({
+  to,
+  label,
+  sublabel,
+  titleWhenCollapsed,
+  collapsed,
+  children, // icon
+}) {
+  return (
+    <NavLink
+      to={to}
+      title={collapsed ? titleWhenCollapsed || label : ""}
+      className={({ isActive }) =>
+        [
+          "group relative flex items-center w-full",
+          collapsed ? "lg:justify-center lg:gap-0" : "gap-3",
+          "px-3 py-2.5 rounded-md transition-colors",
+          isActive ? "bg-indigo-50 text-indigo-700" : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+        ].join(" ")
+      }
+    >
+      <span className="w-5 h-5 text-gray-500 shrink-0 [&>svg]:w-5 [&>svg]:h-5">{children}</span>
+
+      <span className={`${collapsed ? "flex lg:hidden" : "flex"} flex-col min-w-0`}>
+        <span className="font-medium leading-5 text-pretty">{label}</span>
+        {sublabel ? <span className="text-xs text-gray-500 leading-4">{sublabel}</span> : null}
+      </span>
+
+      {collapsed && (
+        <span className="hidden lg:block absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+          {label}
+        </span>
+      )}
+    </NavLink>
+  )
+}
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-  const toggleCollapse = () => setSidebarCollapsed(!sidebarCollapsed);
+  const toggleSidebar = () => setSidebarOpen((s) => !s)
+  const toggleCollapse = () => setSidebarCollapsed((c) => !c)
 
   return (
-    <div className="flex min-h-screen bg-gray-900 overflow-hidden">
-      {/* Mobile Overlay */}
+    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
+      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
+        <button
+          aria-label="Close sidebar"
           className="fixed inset-0 bg-black/30 backdrop-blur-sm z-20 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div
-        className={`
-        bg-gray-800 text-white flex flex-col border-r border-gray-700 transition-all duration-300 ease-in-out
-        fixed lg:static inset-y-0 left-0 z-30 transform 
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-        lg:translate-x-0
-        ${sidebarCollapsed && "lg:w-16"}
-        ${!sidebarCollapsed && "lg:w-64"}
-        w-64 h-screen flex-shrink-0
-      `}
+      <aside
+        className={[
+          "bg-white border-r border-gray-200 text-gray-900 flex flex-col transition-all duration-300 ease-in-out",
+          "fixed lg:static inset-y-0 left-0 z-30 transform",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          "lg:translate-x-0",
+          sidebarCollapsed ? "lg:w-16" : "lg:w-72",
+          "w-72",
+          "h-full",
+        ].join(" ")}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-amber-700 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+        {/* Brand / Header */}
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-md bg-indigo-600 text-white grid place-items-center">
+              {/* book icon */}
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                <path
+                  d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V19a0 0 0 0 1 0 0H7.5A2.5 2.5 0 0 1 5 16.5v-11Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <path d="M5 6h12.5A1.5 1.5 0 0 1 19 7.5V20" stroke="currentColor" strokeWidth="1.5" />
               </svg>
             </div>
             {!sidebarCollapsed && (
               <div>
-                <h1 className="text-lg font-bold text-white">AI LMS</h1>
-                <p className="text-sm text-gray-400">Smart Learning Platform</p>
+                <h1 className="text-base font-semibold tracking-tight">TutorGenX</h1>
+                <p className="text-xs text-gray-500">Smart Learning Platform</p>
               </div>
             )}
           </div>
 
-          {/* Desktop Collapse Toggle */}
+          {/* Desktop collapse */}
           <button
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={toggleCollapse}
-            className="hidden lg:block p-1.5 rounded-lg hover:bg-gray-700 transition-colors"
+            className="hidden lg:inline-flex p-2 rounded-md border hover:bg-gray-100 text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70"
           >
             <svg
-              className={`w-5 h-5 transition-transform ${
-                sidebarCollapsed ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
               viewBox="0 0 24 24"
+              fill="none"
+              className={`w-5 h-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`}
+              aria-hidden="true"
             >
+              {/* Proper chevron-left shape (points left by default, rotates 180° when collapsed to point right) */}
               <path
+                d="M15 19L8 12l7-7"
+                stroke="currentColor"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
               />
             </svg>
           </button>
 
-          {/* Mobile Close Button */}
+          {/* Mobile close */}
           <button
+            aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-2 rounded-md hover:bg-gray-100 text-gray-500"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
               <path
+                d="M6 18L18 6M6 6l12 12"
+                stroke="currentColor"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
               />
             </svg>
           </button>
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 px-4 py-6 overflow-y-auto min-h-0">
+        <nav className="flex-1 px-3 py-4 overflow-y-auto overflow-x-hidden">
           <div className="space-y-6">
-            {/* Main Navigation */}
             <div>
               {!sidebarCollapsed && (
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                  Navigation
-                </h3>
+                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Navigation</h3>
               )}
-              <div className="space-y-1">
-                <NavLink
+              <div className="space-y-1 group">
+                <Item
                   to="/dashboard"
-                  className={({ isActive }) =>
-                    `flex items-center ${
-                      sidebarCollapsed ? "justify-center" : "space-x-3"
-                    } px-3 py-2.5 rounded-lg transition-colors relative group ${
-                      isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`
-                  }
-                  title={sidebarCollapsed ? "Dashboard" : ""}
+                  label="Dashboard"
+                  sublabel="Learning overview"
+                  titleWhenCollapsed="Dashboard"
+                  collapsed={sidebarCollapsed}
                 >
-                  <svg
-                    className="w-5 h-5 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg viewBox="0 0 24 24" fill="none">
                     <path
+                      d="M3 12l7-7 4 4 7-7"
+                      stroke="currentColor"
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
                     />
                   </svg>
-                  {!sidebarCollapsed && (
-                    <div>
-                      <div className="font-medium">Dashboard</div>
-                      <div className="text-xs text-gray-500">
-                        Learning overview
-                      </div>
-                    </div>
-                  )}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                      Dashboard
-                    </div>
-                  )}
-                </NavLink>
+                </Item>
 
-                <NavLink
+                <Item
                   to="/courses"
-                  className={({ isActive }) =>
-                    `flex items-center ${
-                      sidebarCollapsed ? "justify-center" : "space-x-3"
-                    } px-3 py-2.5 rounded-lg transition-colors relative group ${
-                      isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`
-                  }
-                  title={sidebarCollapsed ? "Courses" : ""}
+                  label="Courses"
+                  sublabel="Browse courses"
+                  titleWhenCollapsed="Courses"
+                  collapsed={sidebarCollapsed}
                 >
-                  <svg
-                    className="w-5 h-5 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
-                  {!sidebarCollapsed && (
-                    <div>
-                      <div className="font-medium">Courses</div>
-                      <div className="text-xs text-gray-500">
-                        Browse courses
-                      </div>
-                    </div>
-                  )}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                      Courses
-                    </div>
-                  )}
-                </NavLink>
+                </Item>
 
-                <NavLink
+                <Item
                   to="/ytsection"
-                  className={({ isActive }) =>
-                    `flex items-center ${
-                      sidebarCollapsed ? "justify-center" : "space-x-3"
-                    } px-3 py-2.5 rounded-lg transition-colors relative group ${
-                      isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`
-                  }
-                  title={sidebarCollapsed ? "YT" : ""}
+                  label="Videos"
+                  sublabel="YouTube resources"
+                  titleWhenCollapsed="Videos"
+                  collapsed={sidebarCollapsed}
                 >
-                  <svg
-                    className="w-5 h-5 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg viewBox="0 0 24 24" fill="none">
                     <path
-                      strokeLinecap="round"
+                      d="M10 9l5 3-5 3V9z"
+                      stroke="currentColor"
+                      strokeWidth="2"
                       strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                  {!sidebarCollapsed && (
-                    <div>
-                      <div className="font-medium">YT</div>
-                      <div className="text-xs text-gray-500">YT</div>
-                    </div>
-                  )}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                      YT
-                    </div>
-                  )}
-                </NavLink>
-                <NavLink
-                  to="/booksection"
-                  className={({ isActive }) =>
-                    `flex items-center ${
-                      sidebarCollapsed ? "justify-center" : "space-x-3"
-                    } px-3 py-2.5 rounded-lg transition-colors relative group ${
-                      isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`
-                  }
-                  title={sidebarCollapsed ? "books" : ""}
-                >
-                  <svg
-                    className="w-5 h-5 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
                       strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                     />
+                    <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" strokeWidth="2" />
                   </svg>
-                  {!sidebarCollapsed && (
-                    <div>
-                      <div className="font-medium">Books</div>
-                      <div className="text-xs text-gray-500">Books</div>
-                    </div>
-                  )}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                      Books
-                    </div>
-                  )}
-                </NavLink>
+                </Item>
 
-                <NavLink
-                  to="/create-course"
-                  className={({ isActive }) =>
-                    `flex items-center ${
-                      sidebarCollapsed ? "justify-center" : "space-x-3"
-                    } px-3 py-2.5 rounded-lg transition-colors relative group ${
-                      isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`
-                  }
-                  title={sidebarCollapsed ? "Create Course" : ""}
+                <Item
+                  to="/booksection"
+                  label="Books"
+                  sublabel="Reading library"
+                  titleWhenCollapsed="Books"
+                  collapsed={sidebarCollapsed}
                 >
-                  <svg
-                    className="w-5 h-5 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg viewBox="0 0 24 24" fill="none">
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
+                      d="M6 4h10a2 2 0 012 2v14H6a2 2 0 01-2-2V6a2 2 0 012-2z"
+                      stroke="currentColor"
+                      strokeWidth="2"
                     />
+                    <path d="M6 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
-                  {!sidebarCollapsed && (
-                    <div>
-                      <div className="font-medium">Create Course</div>
-                      <div className="text-xs text-gray-500">
-                        AI-assisted creation
-                      </div>
-                    </div>
-                  )}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                      Create Course
-                    </div>
-                  )}
-                </NavLink>
+                </Item>
+
+                <Item
+                  to="/create-course"
+                  label="Create Course"
+                  sublabel="AI-assisted creation"
+                  titleWhenCollapsed="Create"
+                  collapsed={sidebarCollapsed}
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 4v16M20 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </Item>
               </div>
             </div>
 
-            {/* AI Features */}
             <div>
               {!sidebarCollapsed && (
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                  AI Features
-                </h3>
+                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">AI Features</h3>
               )}
-              <div className="space-y-1">
-                <NavLink
+              <div className="space-y-1 group">
+                <Item
                   to="/smart-learning"
-                  className={({ isActive }) =>
-                    `flex items-center ${
-                      sidebarCollapsed ? "justify-center" : "space-x-3"
-                    } px-3 py-2.5 rounded-lg transition-colors relative group ${
-                      isActive
-                        ? "bg-amber-100 text-amber-900"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    }`
-                  }
-                  title={sidebarCollapsed ? "Smart Learning" : ""}
+                  label="Smart Learning"
+                  sublabel="Personalized experience"
+                  titleWhenCollapsed="Smart Learning"
+                  collapsed={sidebarCollapsed}
                 >
-                  <svg
-                    className="w-5 h-5 text-amber-500 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg viewBox="0 0 24 24" fill="none" className="text-sky-500">
                     <path
+                      d="M12 3v2m6.36.64l-1.41 1.41M21 12h-2M4 12H3m3.05-6.36L4.64 7.05M8 15a4 4 0 108 0l-.5.5A2.5 2.5 0 0014 18v1a2 2 0 11-4 0v-1a2.5 2.5 0 00-1.5-2.5L8 15z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                     />
                   </svg>
-                  {!sidebarCollapsed && (
-                    <div>
-                      <div className="font-medium">Smart Learning</div>
-                      <div className="text-xs text-gray-500">
-                        AI personalizes your experience
-                      </div>
-                    </div>
-                  )}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                      Smart Learning
-                    </div>
-                  )}
-                </NavLink>
+                </Item>
               </div>
             </div>
           </div>
-        </div>
+        </nav>
 
-        {/* Profile Section */}
-        <div className="p-4 border-t border-gray-700 flex-shrink-0">
-          <NavLink
+        {/* Profile */}
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
+          <Item
             to="/profile"
-            className={({ isActive }) =>
-              `flex items-center ${
-                sidebarCollapsed ? "justify-center" : "space-x-3"
-              } px-3 py-2.5 rounded-lg transition-colors relative group ${
-                isActive
-                  ? "bg-amber-100 text-amber-900"
-                  : "text-gray-300 hover:bg-gray-700 hover:text-white"
-              }`
-            }
-            title={sidebarCollapsed ? "Profile" : ""}
+            label="Profile"
+            sublabel="Progress & settings"
+            titleWhenCollapsed="Profile"
+            collapsed={sidebarCollapsed}
           >
-            <svg
-              className="w-5 h-5 flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M6 4h10a2 2 0 012 2v14H6a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" />
+              <path d="M6 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            {!sidebarCollapsed && (
-              <div>
-                <div className="font-medium">Profile</div>
-                <div className="text-xs text-gray-500">
-                  View progress & settings
-                </div>
-              </div>
-            )}
-            {sidebarCollapsed && (
-              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                Profile
-              </div>
-            )}
-          </NavLink>
+          </Item>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 bg-gray-900 flex flex-col h-screen overflow-hidden">
-        {/* Top Bar for Mobile */}
-        <div className="lg:hidden bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
+      {/* Main */}
+      <div className="flex-1 min-w-0 flex flex-col h-full">
+        {/* Mobile top bar */}
+        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-lg text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            aria-label="Open sidebar"
+            className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+            <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+              <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
-          <h1 className="text-lg font-semibold text-white">AI LMS</h1>
+          <h2 className="text-base font-semibold">TutorGenX</h2>
           <div className="w-10 flex justify-end">
-            <div className="w-8 h-8 bg-amber-700 rounded-lg flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+            <div className="w-8 h-8 rounded-md bg-indigo-600 text-white grid place-items-center">
+              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
+                <path d="M6 4h10a2 2 0 012 2v14H6a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" />
               </svg>
             </div>
           </div>
         </div>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
-        </div>
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <div
+            className={`mx-auto w-full min-w-0 ${
+              sidebarCollapsed
+                ? "max-w-[100rem] 2xl:max-w-[110rem]" // ~1600–1760px when collapsed
+                : "max-w-[90rem] xl:max-w-[96rem]" // ~1440–1536px when expanded
+            }`}
+          >
+            {/* Provide a clean content container; Outlet renders page content */}
+            <Outlet />
+          </div>
+        </main>
       </div>
     </div>
-  );
+  )
 }

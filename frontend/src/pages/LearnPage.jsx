@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
@@ -204,30 +206,23 @@ function LearnPage() {
 
   if (!roadmap)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center max-w-xs sm:max-w-sm"
         >
           <div className="relative">
-            <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4"></div>
-            <div
-              className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin mx-auto"
-              style={{
-                animationDirection: "reverse",
-                animationDuration: "1.5s",
-              }}
-            ></div>
+            <div className="w-14 h-14 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
           </div>
-          <p className="text-white text-lg font-medium">Loading roadmap...</p>
+          <p className="text-gray-700 text-base font-medium">
+            Loading roadmap...
+          </p>
         </motion.div>
       </div>
     );
 
   const handlePrevButton = () => {
-
-
     if (!roadmap || !roadmap.weeks) {
       return;
     }
@@ -314,8 +309,6 @@ function LearnPage() {
   };
 
   const handleNextButton = () => {
-
-
     if (!roadmap || !roadmap.weeks) {
       console.warn("Roadmap or weeks missing");
       return;
@@ -347,8 +340,6 @@ function LearnPage() {
     const nextTopics = JSON.parse(nextWeek.topics);
     const nextTopic = nextTopics[nextTopicIndex];
 
-
- 
     if (!nextTopic) {
       console.warn("Next topic not found");
       return;
@@ -433,11 +424,11 @@ function LearnPage() {
 
     return (
       <>
-        {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Close roadmap sidebar"
           />
         )}
 
@@ -446,26 +437,19 @@ function LearnPage() {
   ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
   lg:translate-x-0 transition-transform duration-300
   fixed lg:sticky top-0 left-0 z-50 lg:z-auto
-  w-[85vw] xs:w-80 sm:w-96 lg:w-80 xl:w-96
-  h-screen lg:h-[90vh] 
-  bg-gradient-to-b from-slate-800/90 to-slate-900/90 
-  backdrop-blur-xl rounded-none lg:rounded-2xl 
-  border-r lg:border border-slate-700/50 
-  shadow-2xl self-start p-3 xs:p-4 sm:p-6 
+  w-[90vw] xs:w-72 sm:w-80 lg:w-72 xl:w-80 2xl:w-96 lg:max-w-[24rem] xl:max-w-[26rem]
+  h-screen lg:h-[90vh]
+  bg-white rounded-none lg:rounded-2xl
+  border-r lg:border border-gray-100
+  shadow-sm self-start p-3 xs:p-3 sm:p-4
   overflow-y-auto
-  ${compactMode ? "text-sm space-y-2 xs:space-y-3" : "space-y-3 xs:space-y-4"}
+  ${compactMode ? "text-sm space-y-2.5 xs:space-y-3" : "space-y-3 xs:space-y-4"}
 `}
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(148, 163, 184, 0.1)",
-          }}
         >
-          {/* Mobile close button */}
           <button
-            className="lg:hidden absolute top-4 right-4 text-white hover:text-red-400 transition-colors z-10"
+            className="lg:hidden absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors z-10"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Close roadmap sidebar"
           >
             <svg
               className="w-6 h-6"
@@ -482,18 +466,18 @@ function LearnPage() {
             </svg>
           </button>
 
-          {/* Header */}
           <div className="mb-3 xs:mb-4 sm:mb-6">
-            <h2 className="text-base xs:text-lg sm:text-xl font-bold flex items-center gap-2 xs:gap-3 text-white mb-2">
-              <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center text-sm xs:text-base flex-shrink-0">
+            <h2 className="text-base xs:text-lg sm:text-xl font-bold flex items-center gap-2 xs:gap-3 text-gray-900 mb-2">
+              <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-sm xs:text-base flex-shrink-0">
                 🧭
               </div>
-              <span className="truncate min-w-0">Roadmap</span>
+              <span className="min-w-0 whitespace-normal break-words text-pretty leading-tight">
+                Roadmap
+              </span>
             </h2>
           </div>
 
-          {/* Weeks */}
-          <motion.ul className="space-y-2">
+          <motion.ul className="space-y-3">
             {roadmap.weeks
               .slice()
               .sort((a, b) => a.week - b.week)
@@ -508,52 +492,52 @@ function LearnPage() {
                 return (
                   <motion.li
                     key={week.ID}
-                    className={`border border-slate-600/50 rounded-xl ${
-                      compactMode ? "p-2 xs:p-3 sm:p-3" : "p-3 xs:p-4 sm:p-4"
-                    } bg-gradient-to-r from-slate-700/30 to-slate-600/20 backdrop-blur-sm hover:from-slate-600/40 hover:to-slate-500/30 active:from-slate-500/50 active:to-slate-400/40 transition-all duration-300 touch-manipulation`}
-                    whileHover={{ scale: 1.01, y: -1 }}
+                    className={`border border-gray-100 rounded-lg bg-white hover:bg-gray-50 transition-colors ${
+                      compactMode
+                        ? "p-2.5 xs:p-3 sm:p-3"
+                        : "p-3 xs:p-3.5 sm:p-4"
+                    }`}
+                    whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.99 }}
                   >
-                    {/* Week Title */}
                     <button
                       onClick={() => setOpenWeek(isOpen ? null : idx)}
                       className={`flex items-center justify-between w-full text-left font-semibold ${
                         compactMode
                           ? "text-xs xs:text-sm sm:text-sm"
                           : "text-sm xs:text-base sm:text-base"
-                      } text-white group min-h-[44px] py-2 touch-manipulation`}
+                      } text-gray-900 group min-h-[44px] py-2`}
                     >
                       <div className="flex items-center min-w-0">
                         <motion.span
-                          className="mr-2 sm:mr-3 text-cyan-400 flex-shrink-0"
+                          className="mr-2 sm:mr-2.5 text-gray-400 flex-shrink-0"
                           animate={{ rotate: isOpen ? 90 : 0 }}
                           transition={{ duration: 0.2 }}
                         >
                           ▶
                         </motion.span>
-                        <span className="mr-2 sm:mr-3 text-base sm:text-lg flex-shrink-0">
+                        <span className="mr-2 sm:mr-2.5 text-base sm:text-lg flex-shrink-0">
                           📁
                         </span>
-                        <span className="group-hover:text-cyan-300 transition-colors truncate">
+                        <span className="group-hover:text-gray-700 transition-colors min-w-0 whitespace-normal break-words text-pretty leading-snug">
                           {week.week}. {week.title}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
-                        <div className="w-8 sm:w-12 h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
+                        <div className="w-10 sm:w-14 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                           <motion.div
-                            className="h-full bg-gradient-to-r from-green-400 to-emerald-500"
+                            className="h-full bg-indigo-600"
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercentage}%` }}
                             transition={{ duration: 1, delay: 0.2 }}
                           />
                         </div>
-                        <span className="text-xs text-gray-400 min-w-[2rem] sm:min-w-[3rem]">
+                        <span className="text-[11px] sm:text-xs text-gray-500 min-w-[2rem] sm:min-w-[3rem] text-right tabular-nums">
                           {completedTopics}/{topics.length}
                         </span>
                       </div>
                     </button>
 
-                    {/* Topics */}
                     <AnimatePresence>
                       {isOpen && (
                         <motion.ul
@@ -561,33 +545,33 @@ function LearnPage() {
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.3 }}
-                          className="mt-3 sm:mt-4 space-y-1 sm:space-y-2 overflow-hidden"
+                          className="mt-3 sm:mt-4 space-y-1.5 sm:space-y-2 overflow-hidden"
                         >
                           {topics.map((topic, i) => (
                             <motion.li
                               key={i}
                               initial={{ x: -20, opacity: 0 }}
                               animate={{ x: 0, opacity: 1 }}
-                              transition={{ delay: 0.1 * i }}
+                              transition={{ delay: 0.06 * i }}
                             >
                               <motion.button
                                 onClick={() =>
                                   handleExplainTopic(topic, idx, i)
                                 }
-                                className={`flex items-center w-full text-left rounded-xl px-2 xs:px-3 sm:px-3 py-2.5 xs:py-3 transition-all duration-200 min-h-[44px] touch-manipulation ${
+                                className={`flex items-center w-full text-left rounded-lg px-2 xs:px-3 sm:px-3 py-2.5 xs:py-3 transition-all duration-200 min-h-[44px] ${
                                   progress[i]
-                                    ? "text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/15 active:bg-green-500/20"
-                                    : "text-gray-300 hover:text-white hover:bg-slate-600/30 active:bg-slate-500/40"
+                                    ? "text-green-700 bg-green-50 border border-green-200"
+                                    : "text-gray-700 hover:bg-gray-100"
                                 } ${
                                   selectedTopic === topic
-                                    ? "bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-l-4 border-l-cyan-400 font-bold shadow-lg"
-                                    : ""
+                                    ? "border border-indigo-300 bg-indigo-50"
+                                    : "border border-transparent"
                                 }`}
                                 style={{
                                   fontSize: compactMode
-                                    ? "0.75rem"
+                                    ? "0.8125rem"
                                     : "0.875rem",
-                                  lineHeight: compactMode ? "1.2" : "1.4",
+                                  lineHeight: compactMode ? "1.25" : "1.4",
                                 }}
                                 whileHover={{ x: 2 }}
                                 whileTap={{ scale: 0.98 }}
@@ -598,7 +582,7 @@ function LearnPage() {
                                 <span
                                   className={`${
                                     progress[i] ? "line-through opacity-75" : ""
-                                  } truncate break-words hyphens-auto leading-tight`}
+                                  } min-w-0 whitespace-normal break-words text-pretty leading-snug line-clamp-3`}
                                 >
                                   {topic}
                                 </span>
@@ -619,84 +603,54 @@ function LearnPage() {
 
   //Main section
   const MainSection = () => (
-    <div
-      className="flex-1 rounded-none lg:rounded-2xl h-[100svh] lg:h-[90vh] w-full max-w-none lg:max-w-4xl flex flex-col overflow-hidden lg:mr-6 min-h-0"
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
-        backdropFilter: "blur(20px)",
-        border: "1px solid rgba(148, 163, 184, 0.1)",
-        boxShadow:
-          "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-      }}
-    >
+    <div className="flex-1 lg:flex-[3] xl:flex-[3.25] 2xl:flex-[3.5] min-w-0 rounded-none lg:rounded-2xl h=[100svh] lg:h-[90vh] w-full max-w-none flex flex-col overflow-hidden lg:mr-6 xl:mr-6 bg-white border border-gray-200 shadow-sm">
       {/* Header */}
-      <div className="p-4 sm:p-6 lg:p-8 border-b border-slate-700/50 flex-shrink-0">
-        {/* Mobile menu button and title */}
-        <div className="flex items-center mb-4 lg:mb-6">
+      <div className="p-4 sm:p-6 lg:p-8 border-b border-gray-200 flex-shrink-0 min-w-0">
+        <div className="flex items-center mb-4 lg:mb-6 min-w-0">
           <button
-            className="lg:hidden flex items-center gap-1 text-white hover:text-cyan-400 active:text-cyan-300 transition-all duration-300 mr-2 xs:mr-3 group relative touch-manipulation min-h-[44px] min-w-[44px]"
+            className="lg:hidden mr-3 group relative min-h-[44px] min-w-[44px]"
             onClick={handleRoadmapClick}
+            aria-label="Open roadmap"
           >
-            {/* Hint tooltip - only shows when showHint is true */}
             {showHint && (
-              <div className="absolute -bottom-14 xs:-bottom-12 left-0 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-2 xs:px-3 py-1.5 xs:py-2 rounded-lg text-xs font-bold whitespace-nowrap shadow-xl z-50 animate-bounce">
-                <div className="flex items-center gap-1">
-                  <span className="text-sm">👆</span>
-                  <span className="text-[10px] xs:text-xs">
-                    Tap for Roadmap
-                  </span>
-                </div>
-                <div className="absolute bottom-full left-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-cyan-500"></div>
+              <div className="absolute -bottom-12 left-0 bg-indigo-600 text-white px-2 xs:px-3 py-1.5 rounded-md text-xs font-medium shadow-sm z-50">
+                Tap for Roadmap
+                <div className="absolute bottom-full left-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-indigo-600"></div>
               </div>
             )}
 
-            <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-slate-700 via-slate-600 to-slate-800 rounded-xl flex items-center justify-center shadow-lg border border-slate-500/30 group-hover:border-cyan-400/50 group-hover:shadow-cyan-400/25 group-hover:scale-105 group-active:scale-95 transition-all duration-300">
+            <div className="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center shadow-sm">
               <svg
-                className="w-4 h-4 text-slate-300 group-hover:text-cyan-300"
+                className="w-5 h-5 text-gray-700"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 strokeWidth="2"
               >
-                <circle cx="12" cy="12" r="3" />
-                <circle cx="12" cy="5" r="1" />
-                <circle cx="12" cy="19" r="1" />
-                <path d="M12 8v1m0 6v1" strokeLinecap="round" />
-                <path
-                  d="M9 9l-1.5-1.5M15 15l1.5 1.5M6 12H4m16 0h-2M9 15l-1.5 1.5M15 9l1.5-1.5"
-                  strokeLinecap="round"
-                />
+                <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
               </svg>
             </div>
           </button>
 
-          <h1 className="text-base sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent flex-1 lg:flex-none">
+          <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900 flex-1 min-w-0 text-pretty break-words">
             {roadmap?.title || "Learning Roadmap"}
           </h1>
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-1 bg-slate-800/50 p-1 rounded-xl border border-slate-600/30 overflow-x-auto">
-          {["Content", "Simplify", "Quiz", "Example"].map((tab, index) => (
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl border border-gray-200 overflow-x-auto min-w-0">
+          {["Content", "Simplify", "Quiz", "Example"].map((tab) => (
             <motion.button
               key={tab}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 sm:py-3 font-semibold rounded-lg transition-all duration-300 relative overflow-hidden text-sm sm:text-base ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 font-semibold rounded-lg transition-colors text-sm sm:text-base ${
                 activeTab === tab.toLowerCase()
-                  ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/25"
-                  : "text-gray-400 hover:text-white hover:bg-slate-700/50"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-gray-600 hover:bg-white"
               }`}
               onClick={() => setActiveTab(tab.toLowerCase())}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
-              {activeTab === tab.toLowerCase() && (
-                <div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg"
-                  style={{ zIndex: -1 }}
-                />
-              )}
               {tab}
             </motion.button>
           ))}
@@ -705,7 +659,7 @@ function LearnPage() {
 
       {/* Main scrollable content */}
       <div
-        className="flex-1 text-zinc-100 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-8 space-y-3 sm:space-y-4 md:space-y-6 custom-scrollbar w-full"
+        className="flex-1 text-gray-700 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 md:space-y-8 custom-scrollbar w-full bg-white min-w-0"
         style={{
           height: "calc(100vh - 280px)",
           minHeight: "300px",
@@ -717,10 +671,10 @@ function LearnPage() {
           <div>
             {explanation === "" ? (
               <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 border border-gray-200 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl">
                   📘
                 </div>
-                <p className="text-gray-400 text-base sm:text-lg px-4">
+                <p className="text-gray-500 text-base sm:text-lg px-4">
                   Click a topic and switch to this tab to generate an
                   explanation.
                 </p>
@@ -728,28 +682,22 @@ function LearnPage() {
             ) : (
               <>
                 {selectedTopic && (
-                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm">
                       📘
                     </div>
                     <span className="break-words">{selectedTopic}</span>
                   </h2>
                 )}
 
-                <div
-                  className="prose prose-invert max-w-none w-full overflow-x-hidden
-    prose-headings:font-bold prose-headings:text-white prose-headings:mb-4
-    prose-h2:text-2xl prose-h3:text-xl prose-h3:text-blue-400
-    prose-p:text-base prose-p:leading-7 prose-p:mb-4"
-                >
+                <div className="prose max-w-none w-full overflow-x-hidden prose-headings:font-bold prose-h2:text-2xl prose-h3:text-xl prose-p:text-base prose-p:leading-7 prose-p:mb-4">
                   <ReactMarkdown
                     components={{
-                      // Enhanced code block rendering
                       code({ node, inline, className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || "");
                         return !inline && match ? (
-                          <div className="my-6 rounded-lg overflow-hidden border border-gray-700">
-                            <div className="bg-gray-800 px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
+                          <div className="my-6 rounded-lg overflow-hidden border border-gray-200">
+                            <div className="bg-gray-50 px-4 py-2 text-sm text-gray-600 border-b border-gray-200">
                               {match[1].toUpperCase()}
                             </div>
                             <SyntaxHighlighter
@@ -768,20 +716,18 @@ function LearnPage() {
                           </div>
                         ) : (
                           <code
-                            className="bg-gray-800 px-2 py-1 rounded text-blue-300 font-mono text-sm"
+                            className="bg-gray-100 px-2 py-1 rounded text-indigo-700 font-mono text-sm"
                             {...props}
                           >
                             {children}
                           </code>
                         );
                       },
-
-                      // Enhanced table rendering
                       table({ children, ...props }) {
                         return (
-                          <div className="my-6 overflow-x-auto rounded-lg border border-gray-700 bg-gray-900">
+                          <div className="my-6 overflow-x-auto rounded-lg border border-gray-200 bg-white">
                             <table
-                              className="w-full text-sm text-left text-gray-300"
+                              className="w-full text-sm text-left text-gray-700"
                               {...props}
                             >
                               {children}
@@ -789,186 +735,157 @@ function LearnPage() {
                           </div>
                         );
                       },
-
-                      // Table header styling
                       thead({ children, ...props }) {
                         return (
                           <thead
-                            className="text-xs text-gray-100 uppercase bg-gray-800 border-b border-gray-700"
+                            className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200"
                             {...props}
                           >
                             {children}
                           </thead>
                         );
                       },
-
-                      // Table header cell styling
                       th({ children, ...props }) {
                         return (
                           <th
-                            className="px-4 py-3 font-semibold text-blue-400 border-r border-gray-700 last:border-r-0"
+                            className="px-4 py-3 font-semibold text-gray-900 border-r border-gray-200 last:border-r-0"
                             {...props}
                           >
                             {children}
                           </th>
                         );
                       },
-
-                      // Table body styling
                       tbody({ children, ...props }) {
                         return (
-                          <tbody className="bg-gray-900" {...props}>
+                          <tbody className="bg-white" {...props}>
                             {children}
                           </tbody>
                         );
                       },
-
-                      // Table row styling with alternating colors
                       tr({ children, ...props }) {
                         return (
                           <tr
-                            className="border-b border-gray-700 hover:bg-gray-800 transition-colors"
+                            className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                             {...props}
                           >
                             {children}
                           </tr>
                         );
                       },
-
-                      // Table cell styling
                       td({ children, ...props }) {
                         return (
                           <td
-                            className="px-4 py-3 border-r border-gray-700 last:border-r-0"
+                            className="px-4 py-3 border-r border-gray-200 last:border-r-0"
                             {...props}
                           >
                             {children}
                           </td>
                         );
                       },
-
-                      // Enhanced blockquote for diagrams or special content
                       blockquote({ children, ...props }) {
                         return (
                           <div
-                            className="my-6 p-4 border-l-4 border-blue-500 bg-gray-800 rounded-r-lg"
+                            className="my-6 p-4 border-l-4 border-indigo-400 bg-indigo-50 rounded-r-lg"
                             {...props}
                           >
-                            <div className="text-gray-300 italic">
+                            <div className="text-gray-700 italic">
                               {children}
                             </div>
                           </div>
                         );
                       },
-
-                      // Enhanced list styling
                       ul({ children, ...props }) {
                         return (
                           <ul
-                            className="list-disc list-inside my-4 space-y-2 text-gray-300"
+                            className="list-disc list-inside my-4 space-y-2 text-gray-700"
                             {...props}
                           >
                             {children}
                           </ul>
                         );
                       },
-
                       ol({ children, ...props }) {
                         return (
                           <ol
-                            className="list-decimal list-inside my-4 space-y-2 text-gray-300"
+                            className="list-decimal list-inside my-4 space-y-2 text-gray-700"
                             {...props}
                           >
                             {children}
                           </ol>
                         );
                       },
-
-                      // Enhanced list items
                       li({ children, ...props }) {
                         return (
                           <li
-                            className="text-gray-300 leading-relaxed"
+                            className="text-gray-700 leading-relaxed"
                             {...props}
                           >
                             {children}
                           </li>
                         );
                       },
-
-                      // Enhanced headings with better spacing
                       h1({ children, ...props }) {
                         return (
                           <h1
-                            className="text-3xl font-bold text-white mb-6 mt-8 pb-2 border-b border-gray-700"
+                            className="text-3xl font-bold text-gray-900 mb-6 mt-8 pb-2 border-b border-gray-200"
                             {...props}
                           >
                             {children}
                           </h1>
                         );
                       },
-
                       h2({ children, ...props }) {
                         return (
                           <h2
-                            className="text-2xl font-bold text-white mb-4 mt-6 flex items-center gap-2"
+                            className="text-2xl font-bold text-gray-900 mb-4 mt-6 flex items-center gap-2"
                             {...props}
                           >
-                            <span className="w-2 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded"></span>
+                            <span className="w-2 h-6 bg-indigo-600 rounded"></span>
                             {children}
                           </h2>
                         );
                       },
-
                       h3({ children, ...props }) {
                         return (
                           <h3
-                            className="text-xl font-semibold text-blue-400 mb-3 mt-5"
+                            className="text-xl font-semibold text-indigo-700 mb-3 mt-5"
                             {...props}
                           >
                             {children}
                           </h3>
                         );
                       },
-
-                      // Enhanced paragraph styling
                       p({ children, ...props }) {
                         return (
                           <p
-                            className="text-gray-300 leading-7 mb-4"
+                            className="text-gray-700 leading-7 mb-4"
                             {...props}
                           >
                             {children}
                           </p>
                         );
                       },
-
-                      // Enhanced strong/bold text
                       strong({ children, ...props }) {
                         return (
                           <strong
-                            className="font-semibold text-white"
+                            className="font-semibold text-gray-900"
                             {...props}
                           >
                             {children}
                           </strong>
                         );
                       },
-
-                      // Enhanced emphasis/italic text
                       em({ children, ...props }) {
                         return (
-                          <em className="italic text-blue-300" {...props}>
+                          <em className="italic text-indigo-700" {...props}>
                             {children}
                           </em>
                         );
                       },
-
-                      // Enhanced horizontal rule
                       hr({ ...props }) {
                         return (
                           <hr
-                            className="my-8 border-0 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"
+                            className="my-8 border-0 h-px bg-gray-200"
                             {...props}
                           />
                         );
@@ -988,18 +905,18 @@ function LearnPage() {
           <div>
             {simplifiedExp === "" ? (
               <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 border border-gray-200 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
                   😅
                 </div>
-                <p className="text-gray-400 text-base sm:text-lg px-4">
+                <p className="text-gray-500 text-base sm:text-lg px-4">
                   Sorry we are currently down
                 </p>
               </div>
             ) : (
               <>
                 {selectedTopic && (
-                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-xs sm:text-sm">
+                  <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm">
                       🎯
                     </div>
                     <span className="break-words">
@@ -1007,35 +924,14 @@ function LearnPage() {
                     </span>
                   </h2>
                 )}
-                <div
-                  className="prose prose-invert prose-sm sm:prose-lg max-w-none w-full overflow-x-hidden"
-                  style={{
-                    "--tw-prose-body": "#e2e8f0",
-                    "--tw-prose-headings": "#ffffff",
-                    "--tw-prose-links": "#06b6d4",
-                    "--tw-prose-code": "#06b6d4",
-                    "--tw-prose-pre-bg": "rgba(15, 23, 42, 0.6)",
-                    "--tw-prose-pre-code": "#e2e8f0",
-                    "--tw-prose-bold": "#ffffff",
-                    "--tw-prose-strong": "#ffffff",
-                    "--tw-prose-italic": "#06b6d4",
-                    "--tw-prose-quote-borders": "#3b82f6",
-                    "--tw-prose-quotes": "#cbd5e1",
-                    "--tw-prose-th-borders": "#374151",
-                    "--tw-prose-td-borders": "#374151",
-                  }}
-                >
+                <div className="prose max-w-none w-full overflow-x-hidden">
                   <ReactMarkdown
                     components={{
-                      // Enhanced code block rendering with language header
                       code({ node, inline, className, children, ...props }) {
                         const match = /language-(\w+)/.exec(className || "");
                         return !inline && match ? (
-                          <div className="my-6 rounded-lg overflow-hidden border border-gray-700 shadow-lg">
-                            <div className="bg-gray-800 px-4 py-2 text-sm text-gray-300 border-b border-gray-700 flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <div className="my-6 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                            <div className="bg-gray-50 px-4 py-2 text-sm text-gray-600 border-b border-gray-200 flex items-center gap-2">
                               <span className="ml-2 font-mono text-xs uppercase tracking-wide">
                                 {match[1]}
                               </span>
@@ -1058,20 +954,18 @@ function LearnPage() {
                           </div>
                         ) : (
                           <code
-                            className="bg-gray-800/80 px-2 py-1 rounded-md text-cyan-300 font-mono text-sm border border-gray-700/50"
+                            className="bg-gray-100 px-2 py-1 rounded-md text-indigo-700 font-mono text-sm border border-gray-200"
                             {...props}
                           >
                             {children}
                           </code>
                         );
                       },
-
-                      // Enhanced table rendering
                       table({ children, ...props }) {
                         return (
-                          <div className="my-8 overflow-x-auto rounded-lg border border-slate-700 shadow-lg bg-slate-900/50 backdrop-blur-sm">
+                          <div className="my-8 overflow-x-auto rounded-lg border border-gray-200 shadow-sm bg-white">
                             <table
-                              className="w-full text-sm text-left text-gray-300 border-collapse min-w-full"
+                              className="w-full text-sm text-left text-gray-700 border-collapse min-w-full"
                               {...props}
                             >
                               {children}
@@ -1079,222 +973,179 @@ function LearnPage() {
                           </div>
                         );
                       },
-
-                      // Table header with gradient background
                       thead({ children, ...props }) {
                         return (
                           <thead
-                            className="text-sm text-gray-100 uppercase bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 border-b-2 border-slate-600"
+                            className="text-sm text-gray-700 uppercase bg-gray-50 border-b-2 border-gray-200"
                             {...props}
                           >
                             {children}
                           </thead>
                         );
                       },
-
-                      // Table header cells with better spacing
                       th({ children, ...props }) {
                         return (
                           <th
-                            className="px-6 py-4 font-semibold text-blue-400 border-r border-slate-600 last:border-r-0 whitespace-nowrap"
+                            className="px-6 py-4 font-semibold text-gray-900 border-r border-gray-200 last:border-r-0 whitespace-nowrap"
                             {...props}
                           >
                             {children}
                           </th>
                         );
                       },
-
-                      // Table body with alternating row colors
                       tbody({ children, ...props }) {
                         return (
                           <tbody
-                            className="bg-slate-900/30 divide-y divide-slate-700/50"
+                            className="bg-white divide-y divide-gray-100"
                             {...props}
                           >
                             {children}
                           </tbody>
                         );
                       },
-
-                      // Enhanced table rows with hover effects
                       tr({ children, ...props }) {
                         return (
                           <tr
-                            className="border-b border-slate-700/30 hover:bg-slate-800/40 transition-all duration-200 group"
+                            className="hover:bg-gray-50 transition-colors"
                             {...props}
                           >
                             {children}
                           </tr>
                         );
                       },
-
-                      // Table cells with proper padding and borders
                       td({ children, ...props }) {
                         return (
                           <td
-                            className="px-6 py-4 border-r border-slate-700/30 last:border-r-0 group-hover:text-gray-200 transition-colors duration-200"
+                            className="px-6 py-4 border-r border-gray-100 last:border-r-0"
                             {...props}
                           >
                             {children}
                           </td>
                         );
                       },
-
-                      // Enhanced blockquote with icon
                       blockquote({ children, ...props }) {
                         return (
                           <div
-                            className="my-6 p-6 border-l-4 border-blue-500 bg-gradient-to-r from-gray-800/80 to-gray-900/60 rounded-r-lg shadow-lg"
+                            className="my-6 p-6 border-l-4 border-indigo-400 bg-indigo-50 rounded-r-lg"
                             {...props}
                           >
                             <div className="flex items-start gap-3">
-                              <div className="text-blue-400 text-lg">💡</div>
-                              <div className="text-gray-300 italic leading-relaxed flex-1">
+                              <div className="text-indigo-600 text-lg">💡</div>
+                              <div className="text-gray-700 italic leading-relaxed flex-1">
                                 {children}
                               </div>
                             </div>
                           </div>
                         );
                       },
-
-                      // Enhanced headings with visual elements
                       h1({ children, ...props }) {
                         return (
                           <h1
-                            className="text-3xl sm:text-4xl font-bold text-white mb-6 mt-8 pb-3 border-b-2 border-gradient-to-r from-blue-500 to-purple-500 relative"
+                            className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 mt-8 pb-3 relative"
                             {...props}
                           >
-                            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent"></div>
                             {children}
+                            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-200"></span>
                           </h1>
                         );
                       },
-
                       h2({ children, ...props }) {
                         return (
                           <h2
-                            className="text-2xl sm:text-3xl font-bold text-white mb-4 mt-8 flex items-center gap-3 group"
+                            className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 mt-8 flex items-center gap-3"
                             {...props}
                           >
-                            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
-                            <span className="group-hover:text-blue-300 transition-colors duration-200">
-                              {children}
-                            </span>
+                            <div className="w-1 h-8 bg-indigo-600 rounded-full"></div>
+                            <span>{children}</span>
                           </h2>
                         );
                       },
-
                       h3({ children, ...props }) {
                         return (
                           <h3
-                            className="text-xl sm:text-2xl font-semibold text-blue-400 mb-3 mt-6 flex items-center gap-2"
+                            className="text-xl sm:text-2xl font-semibold text-indigo-700 mb-3 mt-6 flex items-center gap-2"
                             {...props}
                           >
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <div className="w-2 h-2 bg-indigo-600 rounded-full"></div>
                             {children}
                           </h3>
                         );
                       },
-
                       h4({ children, ...props }) {
                         return (
                           <h4
-                            className="text-lg sm:text-xl font-medium text-gray-200 mb-2 mt-4"
+                            className="text-lg sm:text-xl font-medium text-gray-900 mb-2 mt-4"
                             {...props}
                           >
                             {children}
                           </h4>
                         );
                       },
-
-                      // Enhanced lists with better spacing and icons
                       ul({ children, ...props }) {
                         return (
                           <ul
-                            className="list-none my-6 space-y-2 text-gray-300"
+                            className="list-disc my-6 space-y-2 text-gray-700 pl-5"
                             {...props}
                           >
                             {children}
                           </ul>
                         );
                       },
-
                       ol({ children, ...props }) {
                         return (
                           <ol
-                            className="list-none my-6 space-y-2 text-gray-300 counter-reset-item"
+                            className="list-decimal my-6 space-y-2 text-gray-700 pl-5"
                             {...props}
                           >
                             {children}
                           </ol>
                         );
                       },
-
-                      li({ children, node, ...props }) {
-                        const isOrdered = node?.parent?.tagName === "ol";
+                      li({ children, ...props }) {
                         return (
                           <li
-                            className={`text-gray-300 leading-relaxed flex items-start gap-3 ${
-                              isOrdered ? "counter-increment-item" : ""
-                            }`}
+                            className="text-gray-700 leading-relaxed"
                             {...props}
                           >
-                            {isOrdered ? (
-                              <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white text-xs font-bold rounded-full mt-0.5 flex-shrink-0">
-                                <span className="counter-item"></span>
-                              </span>
-                            ) : (
-                              <span className="text-blue-400 mt-1.5 flex-shrink-0">
-                                •
-                              </span>
-                            )}
-                            <span className="flex-1">{children}</span>
+                            {children}
                           </li>
                         );
                       },
-
-                      // Enhanced paragraph with better spacing
                       p({ children, ...props }) {
                         return (
                           <p
-                            className="text-gray-300 leading-8 mb-6 text-base sm:text-lg"
+                            className="text-gray-700 leading-8 mb-6 text-base sm:text-lg"
                             {...props}
                           >
                             {children}
                           </p>
                         );
                       },
-
-                      // Enhanced strong/bold text
                       strong({ children, ...props }) {
                         return (
                           <strong
-                            className="font-semibold text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text "
+                            className="font-semibold text-gray-900"
                             {...props}
                           >
                             {children}
                           </strong>
                         );
                       },
-
-                      // Enhanced emphasis/italic text
                       em({ children, ...props }) {
                         return (
                           <em
-                            className="italic text-blue-300 font-medium"
+                            className="italic text-indigo-700 font-medium"
                             {...props}
                           >
                             {children}
                           </em>
                         );
                       },
-
-                      // Enhanced links
                       a({ children, href, ...props }) {
                         return (
                           <a
                             href={href}
-                            className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/50 hover:decoration-blue-300 transition-colors duration-200"
+                            className="text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
                             target="_blank"
                             rel="noopener noreferrer"
                             {...props}
@@ -1303,64 +1154,10 @@ function LearnPage() {
                           </a>
                         );
                       },
-
-                      // Enhanced horizontal rule
                       hr({ ...props }) {
                         return (
-                          <div
-                            className="my-12 flex items-center justify-center"
-                            {...props}
-                          >
-                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-600 to-gray-600"></div>
-                            <div className="mx-4 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-                            <div className="flex-1 h-px bg-gradient-to-r from-gray-600 via-gray-600 to-transparent"></div>
-                          </div>
-                        );
-                      },
-
-                      // Add custom component for special content blocks
-                      div({ children, className, ...props }) {
-                        // Check if it's a special content block
-                        if (
-                          className?.includes("note") ||
-                          className?.includes("warning") ||
-                          className?.includes("tip")
-                        ) {
-                          const type = className.includes("warning")
-                            ? "warning"
-                            : className.includes("tip")
-                            ? "tip"
-                            : "note";
-
-                          const styles = {
-                            note: "border-blue-500 bg-blue-900/20 text-blue-100",
-                            tip: "border-green-500 bg-green-900/20 text-green-100",
-                            warning:
-                              "border-yellow-500 bg-yellow-900/20 text-yellow-100",
-                          };
-
-                          const icons = {
-                            note: "📝",
-                            tip: "💡",
-                            warning: "⚠️",
-                          };
-
-                          return (
-                            <div
-                              className={`my-6 p-6 border-l-4 rounded-r-lg ${styles[type]}`}
-                              {...props}
-                            >
-                              <div className="flex items-start gap-3">
-                                <span className="text-xl">{icons[type]}</span>
-                                <div className="flex-1">{children}</div>
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        return (
-                          <div className={className} {...props}>
-                            {children}
+                          <div className="my-12">
+                            <div className="h-px bg-gray-200" />
                           </div>
                         );
                       },
@@ -1369,18 +1166,6 @@ function LearnPage() {
                     {simplifiedExp}
                   </ReactMarkdown>
                 </div>
-
-                <style jsx>{`
-                  .counter-reset-item {
-                    counter-reset: item;
-                  }
-                  .counter-increment-item {
-                    counter-increment: item;
-                  }
-                  .counter-item:before {
-                    content: counter(item);
-                  }
-                `}</style>
               </>
             )}
           </div>
@@ -1403,10 +1188,10 @@ function LearnPage() {
           <div className="space-y-4 sm:space-y-6">
             {examples.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 sm:h-64 text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 border border-gray-200 rounded-2xl flex items-center justify-center mb-4 text-xl sm:text-2xl">
                   😅
                 </div>
-                <p className="text-gray-400 text-base sm:text-lg px-4">
+                <p className="text-gray-500 text-base sm:text-lg px-4">
                   Sorry we are currently down
                 </p>
               </div>
@@ -1414,63 +1199,48 @@ function LearnPage() {
               examples.map((ex, idx) => (
                 <div
                   key={idx}
-                  className="group relative bg-gradient-to-br from-slate-800/70 via-slate-700/50 to-slate-800/60 p-6 sm:p-8 rounded-2xl border border-slate-600/40 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-slate-500/60 hover:-translate-y-1"
+                  className="relative bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                 >
-                  {/* Subtle glow effect */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                  {/* Content container */}
                   <div className="relative z-10">
-                    {/* Enhanced header */}
                     <div className="flex items-start gap-4 mb-6">
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-lg sm:text-xl">
                           📌
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight group-hover:text-orange-200 transition-colors duration-300">
+                        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
                           {ex.title}
                         </h3>
-                        <div className="w-12 h-0.5 bg-gradient-to-r from-orange-500 to-red-500 mt-2 rounded-full"></div>
+                        <div className="w-12 h-0.5 bg-indigo-600 mt-2 rounded-full"></div>
                       </div>
                     </div>
 
-                    {/* Enhanced explanation */}
                     <div className="mb-6">
-                      <p className="text-gray-300 leading-relaxed text-base sm:text-lg font-light">
+                      <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
                         {ex.explanation}
                       </p>
                     </div>
 
-                    {/* Enhanced highlight section */}
                     <motion.div
-                      className="relative mb-6 p-4 sm:p-5 rounded-xl bg-gradient-to-r from-cyan-900/30 via-blue-900/20 to-cyan-900/30 border border-cyan-400/30 shadow-inner"
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ duration: 0.2 }}
+                      className="relative mb-6 p-4 sm:p-5 rounded-xl bg-indigo-50 border border-indigo-100"
+                      whileHover={{ scale: 1.01 }}
                     >
-                      {/* Highlight glow */}
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400/5 to-blue-400/5"></div>
-
                       <div className="relative flex items-start gap-3">
-                        <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full flex items-center justify-center mt-0.5">
-                          <span className="text-white text-sm">💡</span>
+                        <div className="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-sm">💡</span>
                         </div>
                         <div className="flex-1">
-                          <div className="text-xs uppercase tracking-wide text-cyan-300 font-semibold mb-1 opacity-80">
+                          <div className="text-xs uppercase tracking-wide text-indigo-700 font-semibold mb-1">
                             Key Insight
                           </div>
-                          <blockquote className="text-cyan-100 font-medium leading-relaxed text-sm sm:text-base">
+                          <blockquote className="text-indigo-900 font-medium leading-relaxed text-sm sm:text-base">
                             {ex.highlight}
                           </blockquote>
                         </div>
                       </div>
-
-                      {/* Decorative border */}
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-400 to-blue-400 rounded-l-xl"></div>
                     </motion.div>
 
-                    {/* Enhanced code section */}
                     {ex.code && (
                       <motion.div
                         className="relative"
@@ -1478,72 +1248,26 @@ function LearnPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
                       >
-                        {/* Code header */}
-                        <div className="flex items-center justify-between bg-slate-900/90 px-4 py-2 rounded-t-xl border border-slate-700/60">
-                          <div className="flex items-center gap-2">
-                            <div className="flex gap-1.5">
-                              <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-                              <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                              <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                            </div>
-                            <span className="text-xs text-gray-400 ml-2 font-mono">
-                              example.code
-                            </span>
-                          </div>
+                        <div className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-t-xl border border-gray-200">
+                          <span className="text-xs text-gray-500 font-mono">
+                            example.code
+                          </span>
                           <button
                             onClick={() => handleCopyCode(ex.code)}
-                            className="text-xs text-gray-400 hover:text-gray-300 transition-colors duration-200 px-2 py-1 rounded bg-slate-800/50 hover:bg-slate-700/50 flex items-center gap-1"
+                            className="text-xs text-gray-600 hover:text-gray-800 transition-colors px-2 py-1 rounded bg-white border border-gray-200"
                           >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                              />
-                            </svg>
                             Copy
                           </button>
                         </div>
 
-                        {/* Code content */}
-                        <motion.pre
-                          className="bg-slate-950/90 p-4 sm:p-6 rounded-b-xl text-sm sm:text-base overflow-x-auto border-l border-r border-b border-slate-700/60 shadow-inner relative"
-                          whileHover={{
-                            boxShadow: "0 0 20px rgba(34, 197, 94, 0.1)",
-                          }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <code className="text-green-400 font-mono leading-relaxed block">
+                        <motion.pre className="bg-gray-900 p-4 sm:p-6 rounded-b-xl text-sm sm:text-base overflow-x-auto border-l border-r border-b border-gray-200 text-green-400">
+                          <code className="font-mono leading-relaxed block">
                             {ex.code}
                           </code>
-
-                          {/* Subtle syntax highlighting effect */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-transparent to-blue-500/5 rounded-b-xl pointer-events-none"></div>
                         </motion.pre>
-
-                        {/* Code footer with language indicator */}
-                        <div className="flex items-center justify-between bg-slate-800/60 px-4 py-2 rounded-b-xl border-l border-r border-b border-slate-700/40 -mt-px">
-                          <div className="text-xs text-gray-500 font-mono">
-                            {ex.code.split("\n").length} lines
-                          </div>
-                        </div>
                       </motion.div>
                     )}
                   </div>
-
-                  {/* Hover indicator */}
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-2 h-2 bg-gradient-to-r from-orange-400 to-red-400 rounded-full animate-ping"></div>
-                  </div>
-
-                  {/* Bottom accent line */}
-                  <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-slate-500/50 to-transparent"></div>
                 </div>
               ))
             )}
@@ -1552,13 +1276,13 @@ function LearnPage() {
       </div>
 
       {/* Sticky bottom nav - MORE COMPACT FOR MOBILE */}
-      <div className="p-3 sm:p-4 md:p-6 border-t border-slate-700/50 bg-slate-800/30 backdrop-blur-sm flex-shrink-0">
+      <div className="p-3 sm:p-4 md:p-6 border-t border-gray-200 bg-white flex-shrink-0">
         <div className="flex items-center justify-between gap-1 sm:gap-3">
           <motion.button
-            className="flex items-center justify-center gap-1 sm:gap-2 bg-slate-700/50 hover:bg-slate-600/60 border border-slate-600/50 text-white rounded-lg sm:rounded-xl px-2 sm:px-6 py-2 sm:py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto"
+            className="flex items-center justify-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg sm:rounded-xl px-2 sm:px-6 py-2 sm:py-3 font-semibold transition-colors text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto"
             onClick={handlePrevButton}
-            whileHover={{ scale: 1.05, x: -5 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03, x: -2 }}
+            whileTap={{ scale: 0.97 }}
           >
             <span className="text-sm sm:text-lg">⬅️</span>
             <span className="hidden xs:inline sm:inline">Previous</span>
@@ -1567,14 +1291,14 @@ function LearnPage() {
 
           <motion.button
             disabled={updating}
-            className={`px-2 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto ${
+            className={`px-2 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-colors text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto ${
               isCurrentTopicCompleted()
-                ? "bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
-                : "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                ? "bg-rose-600 hover:bg-rose-700 text-white"
+                : "bg-emerald-600 hover:bg-emerald-700 text-white"
             } ${updating ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={handleMarkAsCompletedButton}
-            whileHover={!updating ? { scale: 1.05 } : {}}
-            whileTap={!updating ? { scale: 0.95 } : {}}
+            whileHover={!updating ? { scale: 1.03 } : {}}
+            whileTap={!updating ? { scale: 0.97 } : {}}
           >
             {updating ? (
               <span className="flex items-center justify-center gap-1 sm:gap-2">
@@ -1602,10 +1326,10 @@ function LearnPage() {
           </motion.button>
 
           <motion.button
-            className="flex items-center justify-center gap-1 sm:gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg sm:rounded-xl px-2 sm:px-6 py-2 sm:py-3 font-semibold transition-all duration-300 shadow-lg hover:shadow-xl text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto"
+            className="flex items-center justify-center gap-1 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg sm:rounded-xl px-2 sm:px-6 py-2 sm:py-3 font-semibold transition-colors text-xs sm:text-base min-w-0 flex-1 sm:flex-none sm:w-auto"
             onClick={handleNextButton}
-            whileHover={{ scale: 1.05, x: 5 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03, x: 2 }}
+            whileTap={{ scale: 0.97 }}
           >
             <span className="hidden xs:inline sm:inline">Next</span>
             <span className="xs:hidden sm:hidden">Next</span>
@@ -1618,47 +1342,29 @@ function LearnPage() {
   return (
     <>
       {loadingTabData && (
+        //  Refreshed loading overlay UI: lighter, accessible, responsive, no gradients
         <div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
         >
           <div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 sm:p-10 flex flex-col items-center justify-center min-w-[80vw] sm:min-w-[25vw] border border-slate-700/50"
+            className="bg-white text-slate-900 rounded-xl shadow-xl p-8 sm:p-10 ring-1 ring-gray-200 flex flex-col items-center justify-center min-w-[80vw] sm:min-w-[25vw]"
           >
-            <div className="relative mb-4 sm:mb-6">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
-              <div
-                className="absolute inset-0 w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin"
-                style={{
-                  animationDirection: "reverse",
-                  animationDuration: "1.5s",
-                }}
-              ></div>
+            <div className="relative mb-6">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 border-4 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
             </div>
-            <span className="text-white font-semibold text-base sm:text-lg">
-              Generating content...
-            </span>
-            <span className="text-gray-400 text-xs sm:text-sm mt-2">
-              This may take a moment
-            </span>
+            <span className="font-semibold text-base sm:text-lg">Generating content...</span>
+            <span className="text-slate-500 text-xs sm:text-sm mt-2">This may take a moment</span>
           </div>
         </div>
       )}
 
       {/* Main Content Area */}
-      <div
-        className="min-h-screen flex flex-col lg:flex-row justify-between mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 items-start gap-2 sm:gap-4 md:gap-6 overflow-x-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)",
-          backgroundSize: "400% 400%",
-          animation: "gradientShift 15s ease infinite",
-        }}
-      >
+      <div className="min-h-screen flex flex-col lg:flex-row justify-start mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 items-start gap-3 sm:gap-5 lg:gap-6 xl:gap-8 overflow-x-hidden bg-gray-50 w-full max-w-none">
         {/* Main Section (top on mobile, left on desktop) */}
         <MainSection />
         {/* Right Sidebar (bottom on mobile, right on desktop) */}
@@ -1666,16 +1372,6 @@ function LearnPage() {
       </div>
 
       <style jsx>{`
-        @keyframes gradientShift {
-          0%,
-          100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }

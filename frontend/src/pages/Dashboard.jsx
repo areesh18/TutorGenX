@@ -1,8 +1,8 @@
-import React from "react";
-import { useEffect, useState, useCallback } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
+"use client"
+import { useEffect, useState, useCallback } from "react"
+import { Navigate, useNavigate } from "react-router-dom"
+import axios from "axios"
+import { motion, AnimatePresence } from "framer-motion"
 
 // Custom Modal Component
 const DeleteConfirmModal = ({
@@ -22,90 +22,61 @@ const DeleteConfirmModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={onCancel}
         >
           <motion.div
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            initial={{ scale: 0.95, opacity: 0, y: 8 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.8, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-6 w-full max-w-md border border-slate-700/50 relative"
+            exit={{ scale: 0.95, opacity: 0, y: 8 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md border border-gray-200"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
-              backdropFilter: "blur(20px)",
-              boxShadow:
-                "0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-            }}
           >
             {/* Icon */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, type: "spring" }}
-              className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center"
-            >
-              <span className="text-2xl">⚠️</span>
-            </motion.div>
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full ring-8 ring-red-50 bg-red-100 flex items-center justify-center">
+              <span className="text-xl" aria-hidden>
+                ⚠️
+              </span>
+              <span className="sr-only">Warning</span>
+            </div>
 
             {/* Title */}
-            <motion.h3
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.15 }}
-              className="text-xl font-bold text-white text-center mb-3"
-            >
-              {title}
-            </motion.h3>
+            <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">{title}</h3>
 
             {/* Message */}
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-slate-300 text-center mb-6 leading-relaxed"
-            >
-              {message}
-            </motion.p>
+            <p className="text-gray-600 text-center mb-6 leading-relaxed">{message}</p>
 
             {/* Buttons */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="flex gap-3"
-            >
+            <div className="flex gap-3">
               <motion.button
                 onClick={onCancel}
-                className="flex-1 px-4 py-3 bg-slate-600/50 hover:bg-slate-600/70 text-white rounded-xl font-medium transition-all duration-300 border border-slate-600/30"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-200 font-medium transition-colors"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
                 {cancelText}
               </motion.button>
               <motion.button
                 onClick={onConfirm}
-                className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition-all duration-300 ${
-                  isDestructive
-                    ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
-                    : "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-white transition-colors ${
+                  isDestructive ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"
                 }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
                 {confirmText}
               </motion.button>
-            </motion.div>
+            </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
-};
+  )
+}
+
 const RoadmapModal = ({ isOpen, onClose, roadmap, onSave, onDiscard }) => {
-  if (!roadmap) return null;
+  if (!roadmap) return null
 
   return (
     <AnimatePresence>
@@ -114,104 +85,69 @@ const RoadmapModal = ({ isOpen, onClose, roadmap, onSave, onDiscard }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            initial={{ scale: 0.98, opacity: 0, y: 12 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 w-full max-w-7xl border border-slate-700/50"
+            exit={{ scale: 0.98, opacity: 0, y: 12 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+            className="relative bg-white rounded-xl shadow-xl flex flex-col w-full max-w-7xl border border-gray-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
-            >
-              ✖
-            </button>
+            {/* Header */}
+            <div className="flex-shrink-0 px-6 pt-6 pb-4 md:px-8 md:pt-8 md:pb-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl md:text-3xl font-semibold text-gray-900 flex items-center gap-3">
+                  <span className="text-3xl md:text-4xl" aria-hidden>
+                    📅
+                  </span>
+                  <span className="text-balance">Topic Wise Plan</span>
+                </h3>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+                  aria-label="Close"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-5 h-5"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
 
-            {/* Title */}
-            <h3 className="text-3xl font-bold text-white mb-10 flex items-center gap-2">
-              <span className="text-4xl">📅</span> Topic Wise Plan
-            </h3>
-
-            <div className="relative">
-              {/* Connector lines */}
-              <svg
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#3b82f6" />
-                  </linearGradient>
-                </defs>
-                {roadmap.map((_, i) => {
-                  const colCount = 3; // 3 columns layout
-                  const row = Math.floor(i / colCount);
-                  const col = i % colCount;
-
-                  // draw line to next card in same row
-                  if (col < colCount - 1 && i + 1 < roadmap.length) {
-                    return (
-                      <line
-                        key={`h-${i}`}
-                        x1={`${(col + 1) * (100 / colCount)}%`}
-                        y1={`${row * 200 + 100}`}
-                        x2={`${(col + 1) * (100 / colCount) + 5}%`}
-                        y2={`${row * 200 + 100}`}
-                        stroke="url(#grad)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    );
-                  }
-
-                  // draw line to card below
-                  if (i + colCount < roadmap.length) {
-                    return (
-                      <line
-                        key={`v-${i}`}
-                        x1={`${col * (100 / colCount) + 16}%`}
-                        y1={`${row * 200 + 160}`}
-                        x2={`${col * (100 / colCount) + 16}%`}
-                        y2={`${(row + 1) * 200 + 40}`}
-                        stroke="url(#grad)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    );
-                  }
-
-                  return null;
-                })}
-              </svg>
-
-              {/* Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+            {/* Content */}
+            <div className="flex-grow overflow-y-auto p-6 md:p-8 max-h-[65vh]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {roadmap.map((week, index) => (
                   <motion.div
                     key={week.week}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 * index }}
-                    className="bg-slate-700/40 border border-slate-600/40 rounded-xl p-4 hover:border-cyan-400/50 transition-all duration-300 shadow-md"
+                    transition={{ delay: 0.03 * index }}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors"
                   >
-                    <h4 className="font-semibold text-white mb-2 text-sm">
+                    <h4 className="font-semibold text-gray-900 mb-2 text-sm">
                       {index + 1}. {week.title}
                     </h4>
                     <ul className="space-y-1">
                       {week.topics.map((topic, i) => (
-                        <li
-                          key={i}
-                          className="text-xs text-slate-300 flex gap-2 hover:text-cyan-300 transition-colors"
-                        >
-                          <span className="w-1 h-1 bg-cyan-400 rounded-full mt-1"></span>
-                          {topic}
+                        <li key={i} className="text-xs text-gray-700 flex gap-2">
+                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-1.5 flex-shrink-0" />
+                          <span>{topic}</span>
                         </li>
                       ))}
                     </ul>
@@ -220,40 +156,40 @@ const RoadmapModal = ({ isOpen, onClose, roadmap, onSave, onDiscard }) => {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex justify-between gap-3 mt-10">
-              <button
-                onClick={onSave}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-xl"
-              >
-                💾 Save Course
-              </button>
-              <button
-                onClick={onDiscard}
-                className="flex-1 py-3 rounded-xl font-medium text-red-400 border border-red-500/30"
-              >
-                🗑 Discard
-              </button>
+            {/* Footer / Actions */}
+            <div className="flex-shrink-0 px-6 py-4 md:px-8 md:py-5 border-t border-gray-200 bg-gray-50/50 rounded-b-xl">
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  onClick={onDiscard}
+                  className="px-4 py-2.5 rounded-lg font-medium text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors"
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={onSave}
+                  className="px-4 py-2.5 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                >
+                  Save Course
+                </button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
-};
-
-
+  )
+}
 
 function Dashboard() {
-  const [generatedTitle, setGeneratedTitle] = useState("");
-  const [goal, setGoal] = useState("");
-  const [roadmap, setRoadmap] = useState([]);
-  const [msg, setMsg] = useState("");
-  const [savedRoadmaps, setSavedRoadmaps] = useState([]);
-  const [UnsavedRoadmap, setUnsavedRoadmap] = useState(true);
-  const [newGoal, setNewGoal] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showRoadmapModal, setShowRoadmapModal] = useState(false);
+  const [generatedTitle, setGeneratedTitle] = useState("")
+  const [goal, setGoal] = useState("")
+  const [roadmap, setRoadmap] = useState([])
+  const [msg, setMsg] = useState("")
+  const [savedRoadmaps, setSavedRoadmaps] = useState([])
+  const [UnsavedRoadmap, setUnsavedRoadmap] = useState(true)
+  const [newGoal, setNewGoal] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [showRoadmapModal, setShowRoadmapModal] = useState(false)
 
   // Modal states
   const [deleteModal, setDeleteModal] = useState({
@@ -262,18 +198,18 @@ function Dashboard() {
     roadmapId: null,
     title: "",
     message: "",
-  });
+  })
 
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const userData = localStorage.getItem("user");
-  const user = userData ? JSON.parse(userData) : null;
-  const userName = user?.name || user?.email?.split("@")[0] || "User";
+  const navigate = useNavigate()
+  const token = localStorage.getItem("token")
+  const userData = localStorage.getItem("user")
+  const user = userData ? JSON.parse(userData) : null
+  const userName = user?.name || user?.email?.split("@")[0] || "User"
 
   function formatPossessive(name) {
-    if (!name) return "";
-    const lower = name.toLowerCase();
-    return lower.endsWith("s") ? `${name}'` : `${name}'s`;
+    if (!name) return ""
+    const lower = name.toLowerCase()
+    return lower.endsWith("s") ? `${name}'` : `${name}'s`
   }
 
   const fetchSavedRoadmaps = useCallback(async () => {
@@ -282,22 +218,22 @@ function Dashboard() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-      setSavedRoadmaps(res.data);
+      })
+      setSavedRoadmaps(res.data)
     } catch (err) {
-      console.error("Error fetching saved roadmaps:", err);
+      console.error("Error fetching saved roadmaps:", err)
     }
-  }, [token]);
+  }, [token])
 
   useEffect(() => {
-    fetchSavedRoadmaps();
-  }, [token, fetchSavedRoadmaps]);
+    fetchSavedRoadmaps()
+  }, [token, fetchSavedRoadmaps])
 
-  if (!token) return <Navigate to="/login" />;
+  if (!token) return <Navigate to="/login" />
 
   const handleSaveButton = async () => {
     try {
-      let finalTitle = newGoal;
+      let finalTitle = newGoal
 
       try {
         const titleRes = await axios.post(
@@ -307,12 +243,12 @@ function Dashboard() {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          }
-        );
-        finalTitle = titleRes.data.title;
-        setGeneratedTitle(finalTitle);
+          },
+        )
+        finalTitle = titleRes.data.title
+        setGeneratedTitle(finalTitle)
       } catch (titleErr) {
-        console.error("Failed to generate title:", titleErr);
+        console.error("Failed to generate title:", titleErr)
       }
 
       await axios.post(
@@ -322,31 +258,31 @@ function Dashboard() {
           title: finalTitle,
           roadmap,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setShowRoadmapModal(false);
-      setUnsavedRoadmap(false);
-      setRoadmap([]);
-      setMsg("Course Saved✅");
-      fetchSavedRoadmaps();
-      navigate("/courses");
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+      setShowRoadmapModal(false)
+      setUnsavedRoadmap(false)
+      setRoadmap([])
+      setMsg("Course Saved✅")
+      fetchSavedRoadmaps()
+      navigate("/courses")
     } catch (err) {
-      console.error("Error saving roadmap:", err);
-      alert("Failed to save roadmap");
+      console.error("Error saving roadmap:", err)
+      alert("Failed to save roadmap")
     }
-  };
+  }
 
   const handleDiscardButton = () => {
-    setNewGoal("");
-    setRoadmap([]);
-    setShowRoadmapModal(false);
-    setMsg("Course Discarded");
-  };
+    setNewGoal("")
+    setRoadmap([])
+    setShowRoadmapModal(false)
+    setMsg("Course Discarded")
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMsg("Generating course..");
+    e.preventDefault()
+    setLoading(true)
+    setMsg("Generating course..")
     try {
       const res = await axios.post(
         "http://localhost:8080/roadmap",
@@ -355,31 +291,27 @@ function Dashboard() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
-      setRoadmap(res.data.roadmap);
-      setShowRoadmapModal(true);
-      setUnsavedRoadmap(true);
-      setNewGoal(res.data.goal);
-      setGoal("");
-      setMsg("Course Generated");
+        },
+      )
+      setRoadmap(res.data.roadmap)
+      setShowRoadmapModal(true)
+      setUnsavedRoadmap(true)
+      setNewGoal(res.data.goal)
+      setGoal("")
+      setMsg("Course Generated")
     } catch (err) {
-      setGoal("");
-      console.error(err);
+      setGoal("")
+      console.error(err)
 
-      if (
-        err.response &&
-        err.response.data &&
-        typeof err.response.data === "string"
-      ) {
-        setMsg(err.response.data);
+      if (err.response && err.response.data && typeof err.response.data === "string") {
+        setMsg(err.response.data)
       } else {
-        setMsg("Failed to generate roadmap");
+        setMsg("Failed to generate roadmap")
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Open delete modal for single roadmap
   const handleDeleteClick = (id, title = "Learning Roadmap") => {
@@ -389,8 +321,8 @@ function Dashboard() {
       roadmapId: id,
       title: "Delete Roadmap?",
       message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
-    });
-  };
+    })
+  }
 
   // Open delete modal for all roadmaps
   const handleDeleteAllClick = () => {
@@ -400,31 +332,26 @@ function Dashboard() {
       roadmapId: null,
       title: "Delete All Roadmaps?",
       message: `Are you sure you want to delete all ${savedRoadmaps.length} roadmaps? This action cannot be undone.`,
-    });
-  };
+    })
+  }
 
   // Handle modal confirmation
   const handleDeleteConfirm = async () => {
     try {
       if (deleteModal.type === "single") {
-        await axios.delete(
-          `http://localhost:8080/delete-roadmap?id=${deleteModal.roadmapId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setSavedRoadmaps((prev) =>
-          prev.filter((rm) => rm.ID !== deleteModal.roadmapId)
-        );
+        await axios.delete(`http://localhost:8080/delete-roadmap?id=${deleteModal.roadmapId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        setSavedRoadmaps((prev) => prev.filter((rm) => rm.ID !== deleteModal.roadmapId))
       } else if (deleteModal.type === "all") {
         await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-        setSavedRoadmaps([]);
+        })
+        setSavedRoadmaps([])
       }
 
       // Close modal
@@ -434,10 +361,10 @@ function Dashboard() {
         roadmapId: null,
         title: "",
         message: "",
-      });
+      })
     } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Failed to delete roadmap(s)");
+      console.error("Delete failed:", err)
+      alert("Failed to delete roadmap(s)")
       // Close modal even on error
       setDeleteModal({
         isOpen: false,
@@ -445,9 +372,9 @@ function Dashboard() {
         roadmapId: null,
         title: "",
         message: "",
-      });
+      })
     }
-  };
+  }
 
   // Handle modal cancellation
   const handleDeleteCancel = () => {
@@ -457,8 +384,8 @@ function Dashboard() {
       roadmapId: null,
       title: "",
       message: "",
-    });
-  };
+    })
+  }
 
   return (
     <>
@@ -468,29 +395,18 @@ function Dashboard() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
         >
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-10 flex flex-col items-center justify-center min-w-[25vw] border border-slate-700/50"
+            className="bg-white rounded-xl shadow-xl p-8 flex flex-col items-center justify-center min-w-[280px] border border-gray-200"
           >
-            <div className="relative mb-6">
-              <div className="w-16 h-16 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
-              <div
-                className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 border-b-purple-400 rounded-full animate-spin"
-                style={{
-                  animationDirection: "reverse",
-                  animationDuration: "1.5s",
-                }}
-              ></div>
+            <div className="relative mb-4">
+              <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
             </div>
-            <span className="text-white font-semibold text-lg">
-              Generating roadmap...
-            </span>
-            <span className="text-gray-400 text-sm mt-2">
-              This may take a moment
-            </span>
+            <span className="text-gray-900 font-medium">Generating roadmap...</span>
+            <span className="text-gray-500 text-sm mt-1">This may take a moment</span>
           </motion.div>
         </motion.div>
       )}
@@ -504,6 +420,8 @@ function Dashboard() {
         onCancel={handleDeleteCancel}
         confirmText={deleteModal.type === "all" ? "Delete All" : "Delete"}
       />
+
+      {/* Roadmap Preview Modal */}
       <RoadmapModal
         isOpen={showRoadmapModal}
         onClose={() => setShowRoadmapModal(false)}
@@ -512,347 +430,89 @@ function Dashboard() {
         onDiscard={handleDiscardButton}
       />
 
-      <div
-        className="min-h-screen p-3 sm:p-4 md:p-6 font-sans"
-        style={{
-          background:
-            "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%)",
-          backgroundSize: "400% 400%",
-          animation: "gradientShift 15s ease infinite",
-        }}
-      >
+      {/* Page background + hero */}
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8 font-sans">
         {/* Main Content Card */}
         <motion.div
-          initial={{ y: 50, opacity: 0 }}
+          initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-slate-700/50"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)",
-            backdropFilter: "blur(20px)",
-            boxShadow:
-              "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-          }}
+          transition={{ duration: 0.4 }}
+          className="max-w-2xl mx-auto p-6 md:p-8 rounded-2xl border border-gray-200 bg-white shadow-sm"
         >
           {/* Title */}
           <motion.h2
-            initial={{ y: -20, opacity: 0 }}
+            initial={{ y: -8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 text-center bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3"
+            transition={{ delay: 0.15 }}
+            className="text-2xl md:text-3xl font-semibold mb-6 text-center text-gray-900 text-balance"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10  rounded-lg sm:rounded-xl flex items-center justify-center text-base sm:text-lg md:text-xl text-white">
-              ✋🏻
-            </div>
-            <span className="text-center break-words">
-              {formatPossessive(userName)} Learning Assistant
+            <span className="mr-2" aria-hidden>
+              👋
             </span>
+            {formatPossessive(userName)} Learning Assistant
           </motion.h2>
 
           {/* Input Form */}
           <motion.form
             onSubmit={handleSubmit}
-            className="mb-4 sm:mb-6 md:mb-8"
-            initial={{ opacity: 0, y: 20 }}
+            className="space-y-3"
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.2 }}
           >
             <motion.textarea
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. I want to become a data scientist specializing in AI..."
-              className="w-full p-3 sm:p-4 border border-slate-600 rounded-lg sm:rounded-xl bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm sm:text-base transition-all duration-300"
+              className="w-full p-4 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 resize-none text-base"
               rows={2}
               required
-              whileFocus={{ scale: 1.01 }}
+              whileFocus={{ scale: 1.005 }}
             />
             <motion.button
               type="submit"
               disabled={loading}
-              className="mt-3 sm:mt-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 w-full text-sm sm:text-base md:text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              whileHover={!loading ? { scale: 1.02 } : {}}
-              whileTap={!loading ? { scale: 0.98 } : {}}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              whileHover={!loading ? { scale: 1.01 } : {}}
+              whileTap={!loading ? { scale: 0.99 } : {}}
             >
               {loading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Generating...
                 </>
               ) : (
-                <>🚀 Generate My Course</>
+                <>Generate My Course</>
               )}
             </motion.button>
           </motion.form>
 
           {msg && (
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center text-sm mb-4 text-slate-300"
+              className="text-center text-sm mt-4 text-gray-600"
             >
               {msg}
             </motion.p>
           )}
         </motion.div>
 
-        {/* Saved Roadmaps */}
-        <AnimatePresence>
+        {/* Saved Roadmaps (hidden by request) */}
+        {/* <AnimatePresence>
           {savedRoadmaps.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-6 sm:mt-8 max-w-7xl mx-auto"
+              className="mt-8 max-w-7xl mx-auto"
             >
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="flex justify-between items-center mb-6"
-              >
-                <h3 className="text-lg sm:text-xl md:text-2xl  font-bold text-white flex items-center gap-2 sm:gap-3">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8  rounded-lg flex items-center justify-center text-sm sm:text-base">
-                    📁
-                  </div>
-                  <span className="break-words">Your Saved Courses</span>
-                </h3>
-                <motion.button
-                  onClick={handleDeleteAllClick}
-                  className="text-sm text-red-400 hover:text-red-300 border border-white px-2 py-1 rounded  hover:underline transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Delete All
-                </motion.button>
-              </motion.div>
-
-              <motion.div
-                className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                {savedRoadmaps.map((roadmap, i) => {
-                  let totalTopics = 0;
-                  let completedTopics = 0;
-
-                  roadmap.weeks.forEach((week) => {
-                    let topics = [];
-                    let progress = [];
-                    try {
-                      topics = JSON.parse(week.topics || "[]");
-                      progress = JSON.parse(week.progress || "[]");
-                    } catch (err) {
-                      console.error("JSON parse error:", err);
-                    }
-                    totalTopics += topics.length;
-                    completedTopics += progress.filter((p) => p).length;
-                  });
-
-                  const progressPercent =
-                    totalTopics === 0
-                      ? 0
-                      : Math.round((completedTopics / totalTopics) * 100);
-
-                  return (
-                    <motion.div
-                      key={roadmap.ID || i}
-                      initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ delay: 0.1 * i, duration: 0.4 }}
-                      className="rounded-xl sm:rounded-2xl border border-slate-700/50 p-3 sm:p-4 md:p-6 transition-all duration-300 hover:border-slate-600/70"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.9) 100%)",
-                        backdropFilter: "blur(20px)",
-                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
-                      }}
-                      whileHover={{ y: -5, scale: 1.02 }}
-                    >
-                      <motion.div
-                        initial={{ y: -10, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 + 0.1 * i }}
-                        className="flex justify-between items-start mb-4"
-                      >
-                        <div className="flex-1">
-                          <h2 className="text-lg font-bold text-white leading-tight mb-2 flex items-center gap-2">
-                            🎯 {roadmap?.title || "Learning Roadmap"}
-                          </h2>
-                          <p className="text-xs text-slate-400">
-                            Created on{" "}
-                            {new Date(roadmap.CreatedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <motion.button
-                          onClick={() =>
-                            handleDeleteClick(
-                              roadmap.ID,
-                              roadmap?.title || "Learning Roadmap"
-                            )
-                          }
-                          className="text-xs text-red-400 hover:text-red-300 ml-2 p-2 hover:bg-red-500/10 rounded-lg transition-all"
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          ❌ Delete
-                        </motion.button>
-                      </motion.div>
-
-                      {/* Progress */}
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3 + 0.1 * i }}
-                        className="mb-5"
-                      >
-                        <div className="flex justify-between items-center text-xs text-slate-300 mb-2">
-                          <span>
-                            Progress: {completedTopics} / {totalTopics}
-                          </span>
-                          <span className="font-semibold text-white">
-                            {progressPercent}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-600/50 rounded-full h-2.5 overflow-hidden">
-                          <motion.div
-                            className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progressPercent}%` }}
-                            transition={{ duration: 1, delay: 0.5 + 0.1 * i }}
-                          />
-                        </div>
-                      </motion.div>
-
-                      {/* Week List */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.4 + 0.1 * i }}
-                        className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar"
-                      >
-                        {roadmap.weeks
-                          .slice()
-                          .sort((a, b) => a.week - b.week)
-                          .map((week, weekIndex) => {
-                            let topics = [];
-                            let progress = [];
-                            try {
-                              topics = JSON.parse(week.topics || "[]");
-                              progress = JSON.parse(week.progress || "[]");
-                            } catch (err) {
-                              return null;
-                            }
-                            while (progress.length < topics.length)
-                              progress.push(false);
-
-                            return (
-                              <motion.div
-                                key={week.ID}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.1 * weekIndex }}
-                                className="bg-slate-700/40 border border-slate-600/30 rounded-xl p-4 backdrop-blur-sm hover:bg-slate-600/40 transition-all duration-300"
-                                whileHover={{ x: 4 }}
-                              >
-                                <motion.h4
-                                  initial={{ y: -5, opacity: 0 }}
-                                  animate={{ y: 0, opacity: 1 }}
-                                  transition={{ delay: 0.2 + 0.1 * weekIndex }}
-                                  className="font-semibold text-white text-sm mb-3 flex items-center gap-2"
-                                >
-                                  📚 {week.week}: {week.title}
-                                </motion.h4>
-                                <motion.ul
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ delay: 0.3 + 0.1 * weekIndex }}
-                                  className="space-y-1"
-                                >
-                                  {topics.map((topic, topicIndex) => (
-                                    <motion.li
-                                      key={topicIndex}
-                                      initial={{ opacity: 0, x: -10 }}
-                                      animate={{ opacity: 1, x: 0 }}
-                                      transition={{ delay: 0.05 * topicIndex }}
-                                      className={`text-sm flex items-center gap-2 transition-colors duration-200 ${
-                                        progress[topicIndex]
-                                          ? "line-through text-slate-400"
-                                          : "text-slate-300 hover:text-cyan-300"
-                                      }`}
-                                      whileHover={{ x: 2 }}
-                                    >
-                                      <motion.span
-                                        className={`w-1.5 h-1.5 rounded-full ${
-                                          progress[topicIndex]
-                                            ? "bg-green-500"
-                                            : "bg-slate-500"
-                                        }`}
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{
-                                          delay: 0.1 + 0.05 * topicIndex,
-                                          type: "spring",
-                                        }}
-                                      />
-                                      {topic}
-                                    </motion.li>
-                                  ))}
-                                </motion.ul>
-                              </motion.div>
-                            );
-                          })}
-                      </motion.div>
-
-                      <motion.button
-                        onClick={() => navigate(`/learn/${roadmap.ID}`)}
-                        className="mt-5 w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3 px-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 + 0.1 * i }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        Start Learning →
-                      </motion.button>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence> */}
       </div>
-
-      <style jsx>{`
-        @keyframes gradientShift {
-          0%,
-          100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(51, 65, 85, 0.3);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #06b6d4 0%, #3b82f6 100%);
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(180deg, #0891b2 0%, #2563eb 100%);
-        }
-      `}</style>
     </>
-  );
+  )
 }
 
-export default Dashboard;
+export default Dashboard
