@@ -57,6 +57,7 @@ func main() {
 	router.Handle("/example", utils.ValidateToken(http.HandlerFunc(handlers.GenerateExamples))).Methods("POST")
 	router.Handle("/booksection", utils.ValidateToken(http.HandlerFunc(handlers.BookHandler))).Methods("POST")
 	router.Handle("/pdftext", utils.ValidateToken(http.HandlerFunc(handlers.UploadHandler))).Methods("POST")
+	router.Handle("/quizfrompdf", utils.ValidateToken(http.HandlerFunc(handlers.GenerateQuizFromPdf))).Methods("POST")
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
 	handlerWithCORS := utils.CORSMiddleware(router)
