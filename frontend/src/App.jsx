@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import Courses from "./pages/Courses";
 import BookSection from "./pages/BookSection";
 import Ytsection from "./pages/Ytsection";
+import QuizFromPDF from "./pages/QuizFromPDF";  
 
 
 function AppWrapper() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/booksection" element={<BookSection />} />
           <Route path="/ytsection" element={<Ytsection />} />
+          <Route path="/quizfrompdf" element={<QuizFromPDF />} />
           
         </Route>
       </Routes>

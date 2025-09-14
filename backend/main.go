@@ -56,8 +56,18 @@ func main() {
 	router.Handle("/simplify", utils.ValidateToken(http.HandlerFunc(handlers.Simplify))).Methods("POST")
 	router.Handle("/example", utils.ValidateToken(http.HandlerFunc(handlers.GenerateExamples))).Methods("POST")
 	router.Handle("/booksection", utils.ValidateToken(http.HandlerFunc(handlers.BookHandler))).Methods("POST")
+	// PDF text extraction
 	router.Handle("/pdftext", utils.ValidateToken(http.HandlerFunc(handlers.UploadHandler))).Methods("POST")
+	router.HandleFunc("/pdftext", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}).Methods("OPTIONS")
+
+	// Quiz from PDF
 	router.Handle("/quizfrompdf", utils.ValidateToken(http.HandlerFunc(handlers.GenerateQuizFromPdf))).Methods("POST")
+	router.HandleFunc("/quizfrompdf", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}).Methods("OPTIONS")
+
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
 	handlerWithCORS := utils.CORSMiddleware(router)
