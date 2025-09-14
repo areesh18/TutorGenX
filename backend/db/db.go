@@ -20,7 +20,7 @@ func ConnectDB() {
 	}
 	DB = db
 
-	db.AutoMigrate(&models.User{}, &models.Roadmap{}, &models.RoadmapWeek{}, &models.Content{})
+	db.AutoMigrate(&models.User{}, &models.Roadmap{}, &models.RoadmapWeek{}, &models.Content{}, &models.FlashcardSet{}, &models.QuizSet{})
 
 	fmt.Println("✅ Database connected and User table migrated!")
 }
