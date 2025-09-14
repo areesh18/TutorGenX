@@ -67,6 +67,11 @@ func main() {
 	router.HandleFunc("/quizfrompdf", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}).Methods("OPTIONS")
+	// In backend/main.go
+	router.Handle("/flashcards", utils.ValidateToken(http.HandlerFunc(handlers.GenerateFlashcards))).Methods("POST")
+	router.HandleFunc("/flashcards", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}).Methods("OPTIONS")
 
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
