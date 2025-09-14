@@ -8,10 +8,13 @@ import (
 	"os"
 	"strings"
 
+	"tutor_genX/db"
+	"tutor_genX/models"
 	"tutor_genX/utils"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sashabaranov/go-openai"
+	"gorm.io/gorm"
 )
 
 const flashcardChunkSize = 10000 // A safe chunk size for Groq API
@@ -31,11 +34,12 @@ type FlashcardResponse struct {
 
 func GenerateFlashcards(w http.ResponseWriter, r *http.Request) {
 	// JWT validation
-	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	userEmail := claims["email"].(string)
 
 	var req FlashcardRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -47,6 +51,28 @@ func GenerateFlashcards(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "PDF text is required", http.StatusBadRequest)
 		return
 	}
+	// 1. Check for existing content in the database
+	var flashcardSet models.FlashcardSet
+	// Use a hash or a unique identifier from the text as a key to check for cached content
+	result := db.DB.Where("user_email = ? AND pdf_text = ?", userEmail, req.PDFtext[:50]).First(&flashcardSet)
+
+	if result.Error == nil {
+		if flashcardSet.Flashcards != "" {
+			var cachedFlashcards FlashcardResponse
+			if err := json.Unmarshal([]byte(flashcardSet.Flashcards), &cachedFlashcards); err != nil {
+				http.Error(w, "Failed to parse cached flashcards", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(cachedFlashcards)
+			return
+		}
+	} else if result.Error != gorm.ErrRecordNotFound {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// 2. Content not in cache: proceed with generation
 
 	apiKey := os.Getenv("GROQ_API_KEY")
 	if apiKey == "" {
@@ -120,6 +146,19 @@ Generate flashcards now:`, chunk)
 	}
 
 	finalResponse := FlashcardResponse{Flashcards: allFlashcards}
+	flashcardsJSON, _ := json.Marshal(finalResponse)
+
+	// 2. Save the new flashcards to the database
+	if result.Error == gorm.ErrRecordNotFound {
+		newFlashcardSet := models.FlashcardSet{
+			UserEmail:  userEmail,
+			PDFText:    req.PDFtext[:50],
+			Flashcards: string(flashcardsJSON),
+		}
+		db.DB.Create(&newFlashcardSet)
+	} else {
+		db.DB.Model(&flashcardSet).Where("user_email = ? AND pdf_text = ?", userEmail, req.PDFtext[:50]).Update("flashcards", string(flashcardsJSON))
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(finalResponse)

@@ -9,10 +9,13 @@ import (
 	"os"
 	"strings"
 
+	"tutor_genX/db"
+	"tutor_genX/models"
 	"tutor_genX/utils"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sashabaranov/go-openai"
+	"gorm.io/gorm"
 )
 
 const maxChunkSize = 10000
@@ -21,23 +24,14 @@ type QuizRequest2 struct {
 	PDFtext string `json:"pdftext"`
 }
 
-/* type QuizQuestion struct {
-	Question string   `json:"question"`
-	Options  []string `json:"options"`
-	Answer   string   `json:"answer"`
-}
-
-type QuizResponse struct {
-	Quiz []QuizQuestion `json:"quiz"`
-} */
-
 func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
 	//jwt validation
-	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	userEmail := claims["email"].(string)
 
 	var req QuizRequest2
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -49,6 +43,26 @@ func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "PDF text is required", http.StatusBadRequest)
 		return
 	}
+	// 1. Check for existing content in the database
+	var quizSet models.QuizSet
+	result := db.DB.Where("user_email = ? AND pdf_text = ?", userEmail, req.PDFtext[:50]).First(&quizSet)
+	if result.Error == nil {
+		if quizSet.Quiz != "" {
+			var cachedQuiz QuizResponse
+			if err := json.Unmarshal([]byte(quizSet.Quiz), &cachedQuiz); err != nil {
+				http.Error(w, "Failed to parse cached quiz", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(cachedQuiz)
+			return
+		}
+	} else if result.Error != gorm.ErrRecordNotFound {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// 2. Content not in cache: proceed with generation
 
 	apiKey := os.Getenv("GROQ_API_KEY")
 	if apiKey == "" {
@@ -133,6 +147,19 @@ Generate quiz now:`, chunk)
 	}
 
 	finalResponse := QuizResponse{Quiz: allQuizQuestions}
+	quizJSON, _ := json.Marshal(finalResponse)
+
+	// 2. Save the new quiz to the database
+	if result.Error == gorm.ErrRecordNotFound {
+		newQuizSet := models.QuizSet{
+			UserEmail: userEmail,
+			PDFText:   req.PDFtext[:50],
+			Quiz:      string(quizJSON),
+		}
+		db.DB.Create(&newQuizSet)
+	} else {
+		db.DB.Model(&quizSet).Where("user_email = ? AND pdf_text = ?", userEmail, req.PDFtext[:50]).Update("quiz", string(quizJSON))
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(finalResponse)
