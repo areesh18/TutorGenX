@@ -1,3 +1,4 @@
+// handlers/quiz_form_pdf.go
 package handlers
 
 import (
@@ -6,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"tutor_genX/utils"
 
@@ -13,9 +15,21 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
+const maxChunkSize = 10000
+
 type QuizRequest2 struct {
 	PDFtext string `json:"pdftext"`
 }
+
+/* type QuizQuestion struct {
+	Question string   `json:"question"`
+	Options  []string `json:"options"`
+	Answer   string   `json:"answer"`
+}
+
+type QuizResponse struct {
+	Quiz []QuizQuestion `json:"quiz"`
+} */
 
 func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
 	//jwt validation
@@ -24,9 +38,7 @@ func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	/* userID := claims["email"].(string) */
 
-	//parse request body
 	var req QuizRequest2
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -34,11 +46,10 @@ func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.PDFtext == "" {
-		http.Error(w, "Topic and explanation are required", http.StatusBadRequest)
+		http.Error(w, "PDF text is required", http.StatusBadRequest)
 		return
 	}
 
-	//setup groq
 	apiKey := os.Getenv("GROQ_API_KEY")
 	if apiKey == "" {
 		http.Error(w, "GROQ_API_KEY not set", http.StatusInternalServerError)
@@ -48,7 +59,12 @@ func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
 	cfg.BaseURL = "https://api.groq.com/openai/v1"
 	client := openai.NewClientWithConfig(cfg)
 
-	prompt := fmt.Sprintf(`You are a quiz generator. Create EXACTLY 3-5 multiple choice questions based ONLY on the provided text.
+	var allQuizQuestions []QuizQuestion
+
+	textChunks := chunkText(req.PDFtext, maxChunkSize)
+
+	for _, chunk := range textChunks {
+		prompt := fmt.Sprintf(`You are a quiz generator. Create EXACTLY 3-5 multiple choice questions based ONLY on the provided text.
 
 STRICT REQUIREMENTS:
 1. Base questions ONLY on facts explicitly mentioned in the explanation
@@ -71,34 +87,65 @@ OUTPUT FORMAT (JSON only, no markdown or extra text):
 
 VALIDATION:
 - If explanation is too short for 3 questions, create fewer but high-quality ones
-- If explanation contains no factual content, return: {"quiz": [], "error": "Insufficient content for quiz generation"}
+- If explanation contains no factual content, return: {"quiz": []}
 
 text: %s
 
-Generate quiz now:`, req.PDFtext)
+Generate quiz now:`, chunk)
 
-	resp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model: "llama-3.3-70b-versatile",
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: prompt,
+		resp, err := client.CreateChatCompletion(
+			context.Background(),
+			openai.ChatCompletionRequest{
+				Model: "llama-3.3-70b-versatile",
+				Messages: []openai.ChatCompletionMessage{
+					{
+						Role:    openai.ChatMessageRoleUser,
+						Content: prompt,
+					},
 				},
 			},
-		},
-	)
+		)
 
-	if err != nil {
-		http.Error(w, "Failed to generate quiz: "+err.Error(), http.StatusInternalServerError)
+		if err != nil {
+			fmt.Printf("Error generating quiz for a chunk: %v\n", err)
+			continue
+		}
+
+		var generatedQuiz QuizResponse
+		responseContent := strings.TrimSpace(resp.Choices[0].Message.Content)
+
+		if strings.Contains(responseContent, `"quiz": []`) {
+			// Handle cases where the API explicitly returns an empty quiz
+			continue
+		}
+
+		if err := json.Unmarshal([]byte(responseContent), &generatedQuiz); err != nil {
+			fmt.Printf("Error parsing quiz JSON for a chunk: %v\n", err)
+			continue
+		}
+
+		allQuizQuestions = append(allQuizQuestions, generatedQuiz.Quiz...)
+	}
+
+	if len(allQuizQuestions) == 0 {
+		http.Error(w, "Insufficient content for quiz generation", http.StatusBadRequest)
 		return
 	}
-	var generatedQuiz QuizResponse
-	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &generatedQuiz); err != nil {
-		http.Error(w, "Failed to parse quiz", http.StatusInternalServerError)
-		return
-	}
+
+	finalResponse := QuizResponse{Quiz: allQuizQuestions}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(generatedQuiz)
+	json.NewEncoder(w).Encode(finalResponse)
+}
+
+func chunkText(text string, size int) []string {
+	var chunks []string
+	for i := 0; i < len(text); i += size {
+		end := i + size
+		if end > len(text) {
+			end = len(text)
+		}
+		chunks = append(chunks, text[i:end])
+	}
+	return chunks
 }
