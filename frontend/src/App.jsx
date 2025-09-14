@@ -11,6 +11,7 @@ import Courses from "./pages/Courses";
 import BookSection from "./pages/BookSection";
 import Ytsection from "./pages/Ytsection";
 import QuizFromPDF from "./pages/QuizFromPDF";  
+import Flashcards from "./pages/Flashcards";
 
 
 function AppWrapper() {
@@ -36,6 +37,7 @@ function App() {
           <Route path="/booksection" element={<BookSection />} />
           <Route path="/ytsection" element={<Ytsection />} />
           <Route path="/quizfrompdf" element={<QuizFromPDF />} />
+          <Route path="/flashcards" element={<Flashcards />} />
           
         </Route>
       </Routes>

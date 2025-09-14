@@ -221,6 +221,18 @@ export default function Layout() {
                   </svg>
                 </Item>
                 <Item
+                  to="/flashcards"
+                  label="Create Flashcards"
+                  sublabel="AI-assisted creation"
+                  titleWhenCollapsed="Create"
+                  collapsed={sidebarCollapsed}
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 4v16M20 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </Item>
+                
+                <Item
                   to="/create-course"
                   label="Create Course"
                   sublabel="AI-assisted creation"
