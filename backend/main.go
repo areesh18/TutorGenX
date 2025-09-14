@@ -72,6 +72,8 @@ func main() {
 	router.HandleFunc("/flashcards", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}).Methods("OPTIONS")
+	router.Handle("/my-quizzes", utils.ValidateToken(http.HandlerFunc(handlers.GetUserQuizzesFromPdf))).Methods("GET")
+	router.Handle("/my-flashcards", utils.ValidateToken(http.HandlerFunc(handlers.GetUserFlashcardsFromPdf))).Methods("GET")
 
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
