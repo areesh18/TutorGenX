@@ -99,7 +99,7 @@ function Courses() {
 
   const fetchSavedRoadmaps = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:8080/roadmaps", {
+      const res = await axios.get("http://localhost:8080/getsavedcourses", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

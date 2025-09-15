@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
+import CreateCourse from "./pages/CreateCourse";
 import Landing from "./pages/Landing";
 import LearnPage from "./pages/LearnPage";
 import Layout from "./Layout";
@@ -12,6 +12,7 @@ import BookSection from "./pages/BookSection";
 import Ytsection from "./pages/Ytsection";
 import QuizFromPDF from "./pages/QuizFromPDF";  
 import Flashcards from "./pages/Flashcards";
+import Dashboard from "./pages/Dashboard";
 
 
 function AppWrapper() {
@@ -30,7 +31,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create-course" element={<CreateCourse />} />
           <Route path="/learn/:roadmapId" element={<LearnPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/courses" element={<Courses />} />
@@ -38,6 +39,7 @@ function App() {
           <Route path="/ytsection" element={<Ytsection />} />
           <Route path="/quizfrompdf" element={<QuizFromPDF />} />
           <Route path="/flashcards" element={<Flashcards />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           
         </Route>
       </Routes>
