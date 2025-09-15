@@ -2,14 +2,25 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, Brain, Zap, ChevronLeft, ChevronRight, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import {
+  X,
+  BookOpen,
+  Brain,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 
 // Modern Modal Component
 const Modal = ({ isOpen, onClose, title, children, size = "default" }) => {
   const sizeClasses = {
     default: "max-w-lg",
     large: "max-w-4xl",
-    small: "max-w-md"
+    small: "max-w-md",
   };
 
   return (
@@ -53,10 +64,10 @@ const Modal = ({ isOpen, onClose, title, children, size = "default" }) => {
 const FlashcardModal = ({ isOpen, onClose, flashcardData }) => {
   const [currentCard, setCurrentCard] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  
+
   let flashcards = [];
   try {
-    const parsed = JSON.parse(flashcardData?.flashcards || '{}');
+    const parsed = JSON.parse(flashcardData?.flashcards || "{}");
     flashcards = parsed.flashcards || [];
   } catch (err) {
     console.error("Flashcards parse error:", err);
@@ -68,7 +79,9 @@ const FlashcardModal = ({ isOpen, onClose, flashcardData }) => {
   };
 
   const prevCard = () => {
-    setCurrentCard((prev) => (prev - 1 + flashcards.length) % flashcards.length);
+    setCurrentCard(
+      (prev) => (prev - 1 + flashcards.length) % flashcards.length
+    );
     setShowAnswer(false);
   };
 
@@ -80,9 +93,9 @@ const FlashcardModal = ({ isOpen, onClose, flashcardData }) => {
   }, [isOpen]);
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
       title={`Flashcards • ${flashcards.length} cards`}
       size="large"
     >
@@ -96,12 +109,18 @@ const FlashcardModal = ({ isOpen, onClose, flashcardData }) => {
           <div className="space-y-6">
             {/* Progress Bar */}
             <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>Card {currentCard + 1} of {flashcards.length}</span>
+              <span>
+                Card {currentCard + 1} of {flashcards.length}
+              </span>
               <div className="flex items-center gap-2">
                 <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-indigo-600 rounded-full transition-all duration-300"
-                    style={{ width: `${((currentCard + 1) / flashcards.length) * 100}%` }}
+                    style={{
+                      width: `${
+                        ((currentCard + 1) / flashcards.length) * 100
+                      }%`,
+                    }}
                   />
                 </div>
               </div>
@@ -118,16 +137,24 @@ const FlashcardModal = ({ isOpen, onClose, flashcardData }) => {
                 onClick={() => setShowAnswer(!showAnswer)}
               >
                 <div className="text-center space-y-4">
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    showAnswer ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'
-                  }`}>
-                    {showAnswer ? 'Answer' : 'Question'}
+                  <div
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      showAnswer
+                        ? "bg-green-100 text-green-700"
+                        : "bg-indigo-100 text-indigo-700"
+                    }`}
+                  >
+                    {showAnswer ? "Answer" : "Question"}
                   </div>
                   <p className="text-lg text-gray-800 leading-relaxed">
-                    {showAnswer ? flashcards[currentCard]?.back : flashcards[currentCard]?.front}
+                    {showAnswer
+                      ? flashcards[currentCard]?.back
+                      : flashcards[currentCard]?.front}
                   </p>
                   {!showAnswer && (
-                    <p className="text-sm text-gray-500">Click to reveal answer</p>
+                    <p className="text-sm text-gray-500">
+                      Click to reveal answer
+                    </p>
                   )}
                 </div>
               </motion.div>
@@ -143,12 +170,12 @@ const FlashcardModal = ({ isOpen, onClose, flashcardData }) => {
                 <ChevronLeft size={18} />
                 Previous
               </button>
-              
+
               <button
                 onClick={() => setShowAnswer(!showAnswer)}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                {showAnswer ? 'Show Question' : 'Show Answer'}
+                {showAnswer ? "Show Question" : "Show Answer"}
               </button>
 
               <button
@@ -176,7 +203,7 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
 
   let questions = [];
   try {
-    const parsed = JSON.parse(quizData?.quiz || '{}');
+    const parsed = JSON.parse(quizData?.quiz || "{}");
     questions = parsed.quiz || [];
   } catch (err) {
     console.error("Quiz parse error:", err);
@@ -190,9 +217,9 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
   };
 
   const handleAnswerSelect = (questionIndex, answer) => {
-    setSelectedAnswers(prev => ({
+    setSelectedAnswers((prev) => ({
       ...prev,
-      [questionIndex]: answer
+      [questionIndex]: answer,
     }));
   };
 
@@ -228,10 +255,12 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
   }, [isOpen]);
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={showResults ? "Quiz Results" : `Quiz • ${questions.length} questions`}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        showResults ? "Quiz Results" : `Quiz • ${questions.length} questions`
+      }
       size="large"
     >
       <div className="p-6">
@@ -244,13 +273,18 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
           <div className="space-y-6">
             {/* Results Summary */}
             <div className="text-center space-y-4">
-              <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${
-                score >= questions.length * 0.7 ? 'bg-green-100' : 'bg-orange-100'
-              }`}>
-                {score >= questions.length * 0.7 ? 
-                  <CheckCircle2 className="w-10 h-10 text-green-600" /> :
+              <div
+                className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${
+                  score >= questions.length * 0.7
+                    ? "bg-green-100"
+                    : "bg-orange-100"
+                }`}
+              >
+                {score >= questions.length * 0.7 ? (
+                  <CheckCircle2 className="w-10 h-10 text-green-600" />
+                ) : (
                   <XCircle className="w-10 h-10 text-orange-600" />
-                }
+                )}
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-gray-900">
@@ -267,23 +301,33 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
               {questions.map((q, index) => {
                 const userAnswer = selectedAnswers[index];
                 const isCorrect = userAnswer === q.answer;
-                
+
                 return (
-                  <div key={index} className={`p-4 rounded-xl border ${
-                    isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                  }`}>
+                  <div
+                    key={index}
+                    className={`p-4 rounded-xl border ${
+                      isCorrect
+                        ? "bg-green-50 border-green-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium text-gray-900">
                         {index + 1}. {q.question}
                       </h4>
-                      {isCorrect ? 
-                        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" /> :
+                      {isCorrect ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      ) : (
                         <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                      }
+                      )}
                     </div>
                     <div className="space-y-1 text-sm">
-                      <p className={`${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                        Your answer: {userAnswer || 'Not answered'}
+                      <p
+                        className={`${
+                          isCorrect ? "text-green-700" : "text-red-700"
+                        }`}
+                      >
+                        Your answer: {userAnswer || "Not answered"}
                       </p>
                       {!isCorrect && (
                         <p className="text-green-700">
@@ -311,11 +355,17 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
           <div className="space-y-6">
             {/* Progress */}
             <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>Question {currentQuestion + 1} of {questions.length}</span>
+              <span>
+                Question {currentQuestion + 1} of {questions.length}
+              </span>
               <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-indigo-600 rounded-full transition-all duration-300"
-                  style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+                  style={{
+                    width: `${
+                      ((currentQuestion + 1) / questions.length) * 100
+                    }%`,
+                  }}
                 />
               </div>
             </div>
@@ -325,7 +375,7 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
               <h3 className="text-xl font-medium text-gray-900">
                 {questions[currentQuestion]?.question}
               </h3>
-              
+
               <div className="space-y-3">
                 {questions[currentQuestion]?.options?.map((option, index) => (
                   <button
@@ -333,8 +383,8 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
                     onClick={() => handleAnswerSelect(currentQuestion, option)}
                     className={`w-full p-4 text-left rounded-xl border transition-all ${
                       selectedAnswers[currentQuestion] === option
-                        ? 'border-indigo-300 bg-indigo-50 text-indigo-900'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? "border-indigo-300 bg-indigo-50 text-indigo-900"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
                     <span className="font-medium text-sm text-gray-500 mr-3">
@@ -358,7 +408,8 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
               </button>
 
               <div className="text-sm text-gray-500">
-                {Object.keys(selectedAnswers).length} / {questions.length} answered
+                {Object.keys(selectedAnswers).length} / {questions.length}{" "}
+                answered
               </div>
 
               <button
@@ -366,8 +417,12 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
                 disabled={!selectedAnswers[currentQuestion]}
                 className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {currentQuestion === questions.length - 1 ? 'Finish Quiz' : 'Next'}
-                {currentQuestion !== questions.length - 1 && <ChevronRight size={18} />}
+                {currentQuestion === questions.length - 1
+                  ? "Finish Quiz"
+                  : "Next"}
+                {currentQuestion !== questions.length - 1 && (
+                  <ChevronRight size={18} />
+                )}
               </button>
             </div>
           </div>
@@ -425,7 +480,11 @@ const DeleteConfirmModal = ({
             >
               {message}
             </motion.p>
-            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex gap-3">
+            <motion.div
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="flex gap-3"
+            >
               <motion.button
                 onClick={onCancel}
                 className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -437,7 +496,9 @@ const DeleteConfirmModal = ({
               <motion.button
                 onClick={onConfirm}
                 className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium text-white ${
-                  isDestructive ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"
+                  isDestructive
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-indigo-600 hover:bg-indigo-700"
                 }`}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
@@ -503,15 +564,16 @@ const Dashboard = () => {
   }, [token, fetchData]);
 
   if (!token) return <p className="text-center p-6">Please login first.</p>;
-  
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading your dashboard...</p>
+
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   const openFlashcardModal = (fc) => {
     setSelectedFlashcard(fc);
@@ -535,7 +597,7 @@ const Dashboard = () => {
   };
 
   // Open delete modal for all courses
-  const handleDeleteAllClick = () => {
+  const handleDeleteAllCourseClick = () => {
     setDeleteModal({
       isOpen: true,
       type: "all",
@@ -544,16 +606,39 @@ const Dashboard = () => {
       message: `Are you sure you want to delete all ${courses.length} courses? This action cannot be undone.`,
     });
   };
+  // Open delete modal for all courses
+  const handleDeleteAllQuizClick = () => {
+    setDeleteModal({
+      isOpen: true,
+      type: "all",
+      courseId: null,
+      title: "Delete All Quizzes?",
+      message: `Are you sure you want to delete all ${quizzes.length} quizzes? This action cannot be undone.`,
+    });
+  };
+  // Open delete modal for all courses
+  const handleDeleteAllFlashCardsClick = () => {
+    setDeleteModal({
+      isOpen: true,
+      type: "all",
+      courseId: null,
+      title: "Delete All Flashcards?",
+      message: `Are you sure you want to delete all ${flashcards.length} flashcards? This action cannot be undone.`,
+    });
+  };
 
   // Handle modal confirmation
   const handleDeleteConfirm = async () => {
     try {
       if (deleteModal.type === "single") {
-        await axios.delete(`http://localhost:8080/delete-roadmap?id=${deleteModal.courseId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await axios.delete(
+          `http://localhost:8080/delete-roadmap?id=${deleteModal.courseId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         setCourses((prev) => prev.filter((c) => c.ID !== deleteModal.courseId));
       } else if (deleteModal.type === "all") {
         await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
@@ -607,13 +692,13 @@ const Dashboard = () => {
       />
 
       {/* Modals */}
-      <FlashcardModal 
+      <FlashcardModal
         isOpen={flashcardModalOpen}
         onClose={() => setFlashcardModalOpen(false)}
         flashcardData={selectedFlashcard}
       />
-      
-      <QuizModal 
+
+      <QuizModal
         isOpen={quizModalOpen}
         onClose={() => setQuizModalOpen(false)}
         quizData={selectedQuiz}
@@ -623,7 +708,9 @@ const Dashboard = () => {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Track your learning progress and access your content</p>
+          <p className="text-gray-600">
+            Track your learning progress and access your content
+          </p>
         </div>
 
         {/* Stats Overview */}
@@ -634,31 +721,37 @@ const Dashboard = () => {
                 <BookOpen className="w-6 h-6 text-indigo-600" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">{courses.length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {courses.length}
+                </p>
                 <p className="text-gray-600">Courses</p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center">
               <div className="p-3 bg-orange-100 rounded-xl">
                 <Zap className="w-6 h-6 text-orange-600" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">{quizzes.length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {quizzes.length}
+                </p>
                 <p className="text-gray-600">Quizzes</p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center">
               <div className="p-3 bg-green-100 rounded-xl">
                 <Brain className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-2xl font-bold text-gray-900">{flashcards.length}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {flashcards.length}
+                </p>
                 <p className="text-gray-600">Flashcard Sets</p>
               </div>
             </div>
@@ -668,10 +761,12 @@ const Dashboard = () => {
         {/* Saved Courses */}
         <section className="mb-16">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-gray-900">Your Courses</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Your Courses
+            </h2>
             {courses.length > 0 && (
               <button
-                onClick={handleDeleteAllClick}
+                onClick={handleDeleteAllCourseClick}
                 className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
               >
                 Delete All
@@ -686,9 +781,11 @@ const Dashboard = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {courses.map((course, i) => {
-                let totalTopics = 0, completedTopics = 0;
+                let totalTopics = 0,
+                  completedTopics = 0;
                 course.weeks.forEach((week) => {
-                  let topics = [], progress = [];
+                  let topics = [],
+                    progress = [];
                   try {
                     topics = JSON.parse(week.topics || "[]");
                     progress = JSON.parse(week.progress || "[]");
@@ -698,7 +795,10 @@ const Dashboard = () => {
                   totalTopics += topics.length;
                   completedTopics += progress.filter((p) => p).length;
                 });
-                const progressPercent = totalTopics === 0 ? 0 : Math.round((completedTopics / totalTopics) * 100);
+                const progressPercent =
+                  totalTopics === 0
+                    ? 0
+                    : Math.round((completedTopics / totalTopics) * 100);
 
                 return (
                   <motion.div
@@ -721,11 +821,17 @@ const Dashboard = () => {
                           🎯 {course?.title || "Learning Course"}
                         </h2>
                         <p className="text-xs text-gray-500">
-                          Created on {new Date(course.CreatedAt).toLocaleDateString()}
+                          Created on{" "}
+                          {new Date(course.CreatedAt).toLocaleDateString()}
                         </p>
                       </div>
                       <button
-                        onClick={() => handleDeleteClick(course.ID, course?.title || "Learning Course")}
+                        onClick={() =>
+                          handleDeleteClick(
+                            course.ID,
+                            course?.title || "Learning Course"
+                          )
+                        }
                         className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
                       >
                         Delete
@@ -743,7 +849,9 @@ const Dashboard = () => {
                         <span>
                           Progress: {completedTopics} / {totalTopics}
                         </span>
-                        <span className="font-semibold text-gray-900">{progressPercent}%</span>
+                        <span className="font-semibold text-gray-900">
+                          {progressPercent}%
+                        </span>
                       </div>
                       <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
                         <motion.div
@@ -762,8 +870,8 @@ const Dashboard = () => {
                       transition={{ delay: 0.2 + 0.05 * i }}
                       className="max-h-48 space-y-3 overflow-y-auto mb-4"
                       style={{
-                        scrollbarWidth: 'thin',
-                        scrollbarColor: '#c7d2fe #f3f4f6'
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "#c7d2fe #f3f4f6",
                       }}
                     >
                       {course.weeks
@@ -778,7 +886,8 @@ const Dashboard = () => {
                           } catch (err) {
                             return null;
                           }
-                          while (progress.length < topics.length) progress.push(false);
+                          while (progress.length < topics.length)
+                            progress.push(false);
 
                           return (
                             <motion.div
@@ -818,7 +927,9 @@ const Dashboard = () => {
                                   >
                                     <motion.span
                                       className={`h-1.5 w-1.5 rounded-full ${
-                                        progress[topicIndex] ? "bg-indigo-600" : "bg-gray-400"
+                                        progress[topicIndex]
+                                          ? "bg-indigo-600"
+                                          : "bg-gray-400"
                                       }`}
                                       initial={{ scale: 0.8 }}
                                       animate={{ scale: 1 }}
@@ -853,7 +964,19 @@ const Dashboard = () => {
 
         {/* Saved Quizzes */}
         <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-900">Your Quizzes</h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Your Quizzes
+            </h2>
+            {quizzes.length > 0 && (
+              <button
+                onClick={handleDeleteAllQuizClick}
+                className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                Delete All
+              </button>
+            )}
+          </div>
           {quizzes.length === 0 ? (
             <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
               <Zap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -870,19 +993,26 @@ const Dashboard = () => {
                   className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group"
                   onClick={() => openQuizModal(quiz)}
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div className=" flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Quiz #{quiz.ID}</h3>
-                      <p className="text-sm text-gray-500">Source: {quiz.pdf_text}</p>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        Quiz #{quiz.ID}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Source: {quiz.pdf_text}
+                      </p>
                     </div>
+
                     <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
                       <Zap className="w-4 h-4 text-orange-600" />
                     </div>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Ready to test your knowledge?</span>
+                      <span className="text-sm text-gray-600">
+                        Ready to test your knowledge?
+                      </span>
                       <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
                         <ChevronRight className="w-4 h-4 text-indigo-600" />
                       </div>
@@ -895,8 +1025,20 @@ const Dashboard = () => {
         </section>
 
         {/* Saved Flashcards */}
-        <section>
-          <h2 className="text-2xl font-semibold mb-6 text-gray-900">Your Flashcards</h2>
+        <section className="">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Your Flashcards
+            </h2>
+            {flashcards.length > 0 && (
+              <button
+                onClick={handleDeleteAllFlashCardsClick}
+                className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                Delete All
+              </button>
+            )}
+          </div>
           {flashcards.length === 0 ? (
             <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
               <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -915,17 +1057,23 @@ const Dashboard = () => {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Flashcards #{fc.ID}</h3>
-                      <p className="text-sm text-gray-500">Source: {fc.pdf_text}</p>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        Flashcards #{fc.ID}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Source: {fc.pdf_text}
+                      </p>
                     </div>
                     <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
                       <Brain className="w-4 h-4 text-green-600" />
                     </div>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Practice with flashcards</span>
+                      <span className="text-sm text-gray-600">
+                        Practice with flashcards
+                      </span>
                       <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
                         <ChevronRight className="w-4 h-4 text-indigo-600" />
                       </div>
