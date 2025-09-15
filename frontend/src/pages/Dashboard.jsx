@@ -377,6 +377,82 @@ const QuizModal = ({ isOpen, onClose, quizData }) => {
   );
 };
 
+const DeleteConfirmModal = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+  title,
+  message,
+  confirmText = "Delete",
+  cancelText = "Cancel",
+  isDestructive = true,
+}) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={onCancel}
+        >
+          <motion.div
+            initial={{ scale: 0.98, opacity: 0, y: 8 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.98, opacity: 0, y: 8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl ring-1 ring-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <span className="text-xl text-red-600" aria-hidden="true">
+                ⚠️
+              </span>
+              <span className="sr-only">Warning</span>
+            </div>
+            <motion.h3
+              initial={{ y: 6, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="mb-2 text-center text-lg font-semibold text-gray-900"
+            >
+              {title}
+            </motion.h3>
+            <motion.p
+              initial={{ y: 6, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="mb-6 text-center text-sm leading-relaxed text-gray-600"
+            >
+              {message}
+            </motion.p>
+            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex gap-3">
+              <motion.button
+                onClick={onCancel}
+                className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                {cancelText}
+              </motion.button>
+              <motion.button
+                onClick={onConfirm}
+                className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium text-white ${
+                  isDestructive ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"
+                }`}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                aria-label={confirmText}
+              >
+                {confirmText}
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const Dashboard = () => {
   const [courses, setCourses] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
@@ -388,6 +464,13 @@ const Dashboard = () => {
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [selectedFlashcard, setSelectedFlashcard] = useState(null);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    type: null, // 'single' or 'all'
+    courseId: null,
+    title: "",
+    message: "",
+  });
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -440,8 +523,89 @@ const Dashboard = () => {
     setQuizModalOpen(true);
   };
 
+  // Open delete modal for single course
+  const handleDeleteClick = (id, title = "Learning Course") => {
+    setDeleteModal({
+      isOpen: true,
+      type: "single",
+      courseId: id,
+      title: "Delete Course?",
+      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+    });
+  };
+
+  // Open delete modal for all courses
+  const handleDeleteAllClick = () => {
+    setDeleteModal({
+      isOpen: true,
+      type: "all",
+      courseId: null,
+      title: "Delete All Courses?",
+      message: `Are you sure you want to delete all ${courses.length} courses? This action cannot be undone.`,
+    });
+  };
+
+  // Handle modal confirmation
+  const handleDeleteConfirm = async () => {
+    try {
+      if (deleteModal.type === "single") {
+        await axios.delete(`http://localhost:8080/delete-roadmap?id=${deleteModal.courseId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setCourses((prev) => prev.filter((c) => c.ID !== deleteModal.courseId));
+      } else if (deleteModal.type === "all") {
+        await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setCourses([]);
+      }
+      setDeleteModal({
+        isOpen: false,
+        type: null,
+        courseId: null,
+        title: "",
+        message: "",
+      });
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete course(s)");
+      setDeleteModal({
+        isOpen: false,
+        type: null,
+        courseId: null,
+        title: "",
+        message: "",
+      });
+    }
+  };
+
+  // Handle modal cancellation
+  const handleDeleteCancel = () => {
+    setDeleteModal({
+      isOpen: false,
+      type: null,
+      courseId: null,
+      title: "",
+      message: "",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        title={deleteModal.title}
+        message={deleteModal.message}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        confirmText={deleteModal.type === "all" ? "Delete All" : "Delete"}
+      />
+
       {/* Modals */}
       <FlashcardModal 
         isOpen={flashcardModalOpen}
@@ -503,7 +667,17 @@ const Dashboard = () => {
 
         {/* Saved Courses */}
         <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-900">Your Courses</h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-gray-900">Your Courses</h2>
+            {courses.length > 0 && (
+              <button
+                onClick={handleDeleteAllClick}
+                className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                Delete All
+              </button>
+            )}
+          </div>
           {courses.length === 0 ? (
             <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
               <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -550,6 +724,12 @@ const Dashboard = () => {
                           Created on {new Date(course.CreatedAt).toLocaleDateString()}
                         </p>
                       </div>
+                      <button
+                        onClick={() => handleDeleteClick(course.ID, course?.title || "Learning Course")}
+                        className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                      >
+                        Delete
+                      </button>
                     </motion.div>
 
                     {/* Progress */}
