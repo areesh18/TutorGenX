@@ -163,3 +163,52 @@ Generate flashcards now:`, chunk)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(finalResponse)
 }
+
+func DeleteAllFlashcards(w http.ResponseWriter, r *http.Request) {
+	// Get user email from JWT claims
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userEmail := claims["email"].(string)
+
+	// Delete all flashcard sets for this user
+	if err := db.DB.Where("user_email = ?", userEmail).Delete(&models.FlashcardSet{}).Error; err != nil {
+		http.Error(w, "Failed to delete flashcards", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "All flashcards deleted"}`))
+}
+
+func DeleteFlashcard(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userEmail := claims["email"].(string)
+
+	// Get ID from query param
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing flashcard ID", http.StatusBadRequest)
+		return
+	}
+
+	var flashcardSet models.FlashcardSet
+	if err := db.DB.First(&flashcardSet, "id = ? AND user_email = ?", idStr, userEmail).Error; err != nil {
+		http.Error(w, "Flashcard not found", http.StatusNotFound)
+		return
+	}
+
+	if err := db.DB.Delete(&flashcardSet).Error; err != nil {
+		http.Error(w, "Failed to delete flashcard", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Flashcard deleted successfully"}`))
+}
