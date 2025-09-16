@@ -606,24 +606,47 @@ const Dashboard = () => {
       message: `Are you sure you want to delete all ${courses.length} courses? This action cannot be undone.`,
     });
   };
-  // Open delete modal for all courses
+  // Open delete modal for single quiz
+  const handleDeleteQuiz = (id) => {
+    setDeleteModal({
+      isOpen: true,
+      type: "single-quiz",
+      quizId: id,
+      title: "Delete Quiz?",
+      message: `Are you sure you want to delete this quiz? This action cannot be undone.`,
+    });
+  };
+
+  // Open delete modal for all quizzes
   const handleDeleteAllQuizClick = () => {
     setDeleteModal({
       isOpen: true,
-      type: "all",
-      courseId: null,
+      type: "all-quiz",
+      quizId: null,
       title: "Delete All Quizzes?",
       message: `Are you sure you want to delete all ${quizzes.length} quizzes? This action cannot be undone.`,
     });
   };
-  // Open delete modal for all courses
+
+  // Open delete modal for single flashcard
+  const handleDeleteFlashcard = (id) => {
+    setDeleteModal({
+      isOpen: true,
+      type: "single-flashcard",
+      flashcardId: id,
+      title: "Delete Flashcard Set?",
+      message: `Are you sure you want to delete this flashcard set? This action cannot be undone.`,
+    });
+  };
+
+  // Open delete modal for all flashcards
   const handleDeleteAllFlashCardsClick = () => {
     setDeleteModal({
       isOpen: true,
-      type: "all",
-      courseId: null,
-      title: "Delete All Flashcards?",
-      message: `Are you sure you want to delete all ${flashcards.length} flashcards? This action cannot be undone.`,
+      type: "all-flashcard",
+      flashcardId: null,
+      title: "Delete All Flashcard Sets?",
+      message: `Are you sure you want to delete all ${flashcards.length} flashcard sets? This action cannot be undone.`,
     });
   };
 
@@ -633,35 +656,57 @@ const Dashboard = () => {
       if (deleteModal.type === "single") {
         await axios.delete(
           `http://localhost:8080/delete-roadmap?id=${deleteModal.courseId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setCourses((prev) => prev.filter((c) => c.ID !== deleteModal.courseId));
       } else if (deleteModal.type === "all") {
         await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setCourses([]);
+      } else if (deleteModal.type === "single-quiz") {
+        await axios.delete(
+          `http://localhost:8080/delete-quiz?id=${deleteModal.quizId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setQuizzes((prev) => prev.filter((q) => q.ID !== deleteModal.quizId));
+      } else if (deleteModal.type === "all-quiz") {
+        await axios.delete(`http://localhost:8080/delete-all-quizzes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setQuizzes([]);
+      } else if (deleteModal.type === "single-flashcard") {
+        await axios.delete(
+          `http://localhost:8080/delete-flashcard?id=${deleteModal.flashcardId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setFlashcards((prev) =>
+          prev.filter((fc) => fc.ID !== deleteModal.flashcardId)
+        );
+      } else if (deleteModal.type === "all-flashcard") {
+        await axios.delete(`http://localhost:8080/delete-all-flashcards`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFlashcards([]);
       }
       setDeleteModal({
         isOpen: false,
         type: null,
         courseId: null,
+        quizId: null,
+        flashcardId: null,
         title: "",
         message: "",
       });
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Failed to delete course(s)");
+      alert("Failed to delete item(s)");
       setDeleteModal({
         isOpen: false,
         type: null,
         courseId: null,
+        quizId: null,
+        flashcardId: null,
         title: "",
         message: "",
       });
@@ -674,6 +719,8 @@ const Dashboard = () => {
       isOpen: false,
       type: null,
       courseId: null,
+      quizId: null,
+      flashcardId: null,
       title: "",
       message: "",
     });
@@ -989,34 +1036,37 @@ const Dashboard = () => {
                   key={quiz.ID || i}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * i }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                  transition={{ delay: 0.05 * i }}
+                  className="bg-white rounded-xl p-5 border border-gray-200 hover:border-orange-200 hover:shadow-lg transition-all duration-200 cursor-pointer group"
                   onClick={() => openQuizModal(quiz)}
                 >
-                  <div className=" flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-orange-50 rounded-lg group-hover:bg-orange-100 transition-colors">
+                        <Zap className="w-4 h-4 text-orange-600" />
+                      </div>
+                      <h3 className="font-medium text-gray-900">
                         Quiz #{quiz.ID}
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        Source: {quiz.pdf_text}
-                      </p>
                     </div>
-
-                    <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
-                      <Zap className="w-4 h-4 text-orange-600" />
-                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteQuiz(quiz.ID);
+                      }}
+                      className="text-xs text-red-600 hover:bg-red-50 px-2 py-1 rounded font-medium"
+                    >
+                      Delete
+                    </button>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        Ready to test your knowledge?
-                      </span>
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <ChevronRight className="w-4 h-4 text-indigo-600" />
-                      </div>
-                    </div>
+                  <p className="text-sm text-gray-600 mb-4">{quiz.pdf_text}</p>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                      Test Knowledge
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors" />
                   </div>
                 </motion.div>
               ))}
@@ -1041,7 +1091,7 @@ const Dashboard = () => {
           </div>
           {flashcards.length === 0 ? (
             <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
-              <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <Brain className="w-16 h-16 text-gray-300  mx-auto mb-4" />
               <p className="text-gray-500">No flashcards yet</p>
             </div>
           ) : (
@@ -1051,33 +1101,37 @@ const Dashboard = () => {
                   key={fc.ID || i}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * i }}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                  transition={{ delay: 0.05 * i }}
+                  className="bg-white rounded-xl p-5 border border-gray-200 hover:border-indigo-200 hover:shadow-lg transition-all duration-200 cursor-pointer group"
                   onClick={() => openFlashcardModal(fc)}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">
-                        Flashcards #{fc.ID}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
+                        <Brain className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <h3 className="font-medium text-gray-900">
+                        Set #{fc.ID}
                       </h3>
-                      <p className="text-sm text-gray-500">
-                        Source: {fc.pdf_text}
-                      </p>
                     </div>
-                    <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                      <Brain className="w-4 h-4 text-green-600" />
-                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFlashcard(fc.ID);
+                      }}
+                      className="text-xs text-red-600 hover:bg-red-50 px-2 py-1 rounded font-medium"
+                    >
+                      Delete
+                    </button>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        Practice with flashcards
-                      </span>
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <ChevronRight className="w-4 h-4 text-indigo-600" />
-                      </div>
-                    </div>
+                  <p className="text-sm text-gray-600 mb-4">{fc.pdf_text}</p>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                      Study Cards
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
                   </div>
                 </motion.div>
               ))}
