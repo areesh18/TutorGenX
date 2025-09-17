@@ -60,6 +60,388 @@ const Modal = ({ isOpen, onClose, title, children, size = "default" }) => {
   );
 };
 
+// YouTube Videos Modal Component
+const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [summary, setSummary] = useState([]);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState('');
+  const token = localStorage.getItem("token");
+
+  // Convert timestamp to seconds
+  const timestampToSeconds = (timestamp) => {
+    const parts = timestamp.split(':');
+    if (parts.length === 2) {
+      // MM:SS format
+      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    } else if (parts.length === 3) {
+      // HH:MM:SS format
+      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+    }
+    return 0;
+  };
+
+  // Handle timestamp click
+  const handleTimestampClick = (timestamp) => {
+    const seconds = timestampToSeconds(timestamp);
+    const newUrl = `https://www.youtube.com/embed/${selectedVideo.videoId}?start=${seconds}&autoplay=1&enablejsapi=1`;
+    setCurrentVideoUrl(newUrl);
+  };
+
+  // Reset selected video when modal opens/closes or videos change
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedVideo(null);
+      setSummary([]);
+      setSummaryError(null);
+      setCurrentVideoUrl('');
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setSelectedVideo(null);
+    setSummary([]);
+    setSummaryError(null);
+    setCurrentVideoUrl('');
+  }, [videos]);
+
+  // Fetch video summary
+  const fetchVideoSummary = async (videoId) => {
+    setSummaryLoading(true);
+    setSummaryError(null);
+    setSummary([]);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/video-summary", // Replace with your actual endpoint
+        { videoId: videoId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setSummary(response.data.summary || []);
+    } catch (error) {
+      console.error("Error fetching video summary:", error);
+      setSummaryError("Failed to load video summary. Please try again.");
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  const handleVideoSelect = (video) => {
+    setSelectedVideo(video);
+    const initialUrl = `https://www.youtube.com/embed/${video.videoId}?autoplay=1&enablejsapi=1`;
+    setCurrentVideoUrl(initialUrl);
+    // Fetch summary when video is selected
+    fetchVideoSummary(video.videoId);
+  };
+
+  const handleBackToList = () => {
+    setSelectedVideo(null);
+    setSummary([]);
+    setSummaryError(null);
+    setCurrentVideoUrl('');
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className={`w-full ${
+              selectedVideo ? "max-w-6xl" : "max-w-4xl"
+            } max-h-[90vh] overflow-hidden rounded-xl bg-white shadow-2xl`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center gap-3">
+                {selectedVideo && (
+                  <button
+                    onClick={handleBackToList}
+                    className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  >
+                    ←
+                  </button>
+                )}
+                <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <span className="text-red-600">📺</span>
+                  {selectedVideo
+                    ? selectedVideo.title
+                    : `YouTube Videos for "${title}"`}
+                </h3>
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div
+              className="overflow-y-auto p-6"
+              style={{ maxHeight: "calc(90vh - 80px)" }}
+            >
+              {selectedVideo ? (
+                // Video Player View with Summary
+                <div className="space-y-6">
+                  {/* Video Player */}
+                  <div className="aspect-video w-full">
+                    <iframe
+                      key={currentVideoUrl} // This will force re-render when URL changes
+                      src={currentVideoUrl}
+                      title={selectedVideo.title}
+                      className="w-full h-full rounded-lg youtube-iframe"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+
+                  {/* Video Info */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      {selectedVideo.title}
+                    </h4>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <a
+                        href={`https://youtube.com/watch?v=${selectedVideo.videoId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-medium"
+                      >
+                        🔗 Watch on YouTube
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Video Summary Section */}
+                  <div className="bg-white border border-gray-200 rounded-lg">
+                    <div className="border-b border-gray-200 px-4 py-3">
+                      <h5 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <span className="text-blue-600">📝</span>
+                        Video Summary
+                      </h5>
+                    </div>
+                    
+                    <div className="p-4">
+                      {summaryLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span className="ml-3 text-gray-600">Generating summary...</span>
+                        </div>
+                      ) : summaryError ? (
+                        <div className="text-center py-8">
+                          <div className="text-red-500 mb-2">⚠️</div>
+                          <p className="text-red-600 text-sm mb-3">{summaryError}</p>
+                          <button
+                            onClick={() => fetchVideoSummary(selectedVideo.videoId)}
+                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
+                          >
+                            Try Again
+                          </button>
+                        </div>
+                      ) : summary.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="text-gray-400 mb-2">📄</div>
+                          <p className="text-gray-600">No summary available for this video.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                          {summary.map((item, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="flex gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <div className="flex-shrink-0">
+                                <button
+                                  onClick={() => handleTimestampClick(item.timestamp)}
+                                  className="inline-flex items-center justify-center w-16 h-8 bg-blue-100 text-blue-700 text-xs font-mono rounded hover:bg-blue-200 hover:text-blue-800 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                  title={`Jump to ${item.timestamp}`}
+                                >
+                                  {item.timestamp}
+                                </button>
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-gray-800 text-sm leading-relaxed">
+                                  {item.summaryText}
+                                </p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <span className="ml-3 text-gray-600">Loading videos...</span>
+                </div>
+              ) : videos.length === 0 ? (
+                <div className="text-center py-12">
+                  <span className="text-4xl">📹</span>
+                  <p className="mt-4 text-gray-600">
+                    No videos found for this topic.
+                  </p>
+                </div>
+              ) : (
+                // Video List View
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {videos.map((video, index) => (
+                    <motion.div
+                      key={video.videoId}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleVideoSelect(video)}
+                    >
+                      <div className="relative w-full h-48 group">
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full h-full object-cover relative z-0"
+                        />
+                        <div className="absolute inset-0 z-10 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                          <div className="bg-red-600 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            ▶
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-medium text-gray-900 line-clamp-2 hover:text-indigo-600">
+                          {video.title}
+                        </h4>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Click to watch with summary
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// Books Modal Component
+const BooksModal = ({ isOpen, onClose, books, loading, title }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="w-full max-w-4xl max-h-[80vh] overflow-hidden rounded-xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <span className="text-amber-600">📚</span>
+                Books for "{title}"
+              </h3>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div
+              className="overflow-y-auto p-6"
+              style={{ maxHeight: "calc(80vh - 80px)" }}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <span className="ml-3 text-gray-600">Loading books...</span>
+                </div>
+              ) : books.length === 0 ? (
+                <div className="text-center py-12">
+                  <span className="text-4xl">📖</span>
+                  <p className="mt-4 text-gray-600">
+                    No books found for this topic.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {books.map((book, index) => (
+                    <motion.div
+                      key={book.key}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                    >
+                      <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {book.title}
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Author: {book.author_name?.join(", ") || "Unknown"}
+                      </p>
+                      <p className="text-sm text-gray-500 mb-3">
+                        Published: {book.first_publish_year || "Unknown"}
+                      </p>
+                      {book.download_url && (
+                        <a
+                          href={book.download_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-1.5 rounded-md bg-indigo-100 text-indigo-700 text-sm font-medium hover:bg-indigo-200 transition-colors"
+                        >
+                          📖 Read Online
+                        </a>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // Flashcard Modal Component
 const FlashcardModal = ({ isOpen, onClose, flashcardData }) => {
   const [currentCard, setCurrentCard] = useState(0);
@@ -525,6 +907,23 @@ const Dashboard = () => {
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [selectedFlashcard, setSelectedFlashcard] = useState(null);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+
+  // YouTube Modal State
+  const [youtubeModal, setYoutubeModal] = useState({
+    isOpen: false,
+    videos: [],
+    loading: false,
+    title: "",
+  });
+
+  // Books Modal State
+  const [booksModal, setBooksModal] = useState({
+    isOpen: false,
+    books: [],
+    loading: false,
+    title: "",
+  });
+
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     type: null, // 'single' or 'all'
@@ -650,6 +1049,78 @@ const Dashboard = () => {
     });
   };
 
+  // Handle YouTube button click
+  const handleYouTubeClick = async (courseTitle) => {
+    setYoutubeModal({
+      isOpen: true,
+      videos: [],
+      loading: true,
+      title: courseTitle,
+    });
+
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/ytsection",
+        { topic: courseTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setYoutubeModal((prev) => ({
+        ...prev,
+        videos: res.data.videos || [],
+        loading: false,
+      }));
+    } catch (err) {
+      console.error("Error fetching YouTube videos:", err);
+      setYoutubeModal((prev) => ({
+        ...prev,
+        videos: [],
+        loading: false,
+      }));
+    }
+  };
+
+  // Handle Books button click
+  const handleBooksClick = async (courseTitle) => {
+    setBooksModal({
+      isOpen: true,
+      books: [],
+      loading: true,
+      title: courseTitle,
+    });
+
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/booksection",
+        { topic: courseTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setBooksModal((prev) => ({
+        ...prev,
+        books: res.data.books || [],
+        loading: false,
+      }));
+    } catch (err) {
+      console.error("Error fetching books:", err);
+      setBooksModal((prev) => ({
+        ...prev,
+        books: [],
+        loading: false,
+      }));
+    }
+  };
+
   // Handle modal confirmation
   const handleDeleteConfirm = async () => {
     try {
@@ -738,6 +1209,24 @@ const Dashboard = () => {
         confirmText={deleteModal.type === "all" ? "Delete All" : "Delete"}
       />
 
+      {/* YouTube Modal */}
+      <YouTubeModal
+        isOpen={youtubeModal.isOpen}
+        onClose={() => setYoutubeModal((prev) => ({ ...prev, isOpen: false }))}
+        videos={youtubeModal.videos}
+        loading={youtubeModal.loading}
+        title={youtubeModal.title}
+      />
+
+      {/* Books Modal */}
+      <BooksModal
+        isOpen={booksModal.isOpen}
+        onClose={() => setBooksModal((prev) => ({ ...prev, isOpen: false }))}
+        books={booksModal.books}
+        loading={booksModal.loading}
+        title={booksModal.title}
+      />
+
       {/* Modals */}
       <FlashcardModal
         isOpen={flashcardModalOpen}
@@ -805,208 +1294,302 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Saved Courses */}
+        {/* Saved Courses - Updated Section */}
         <section className="mb-16">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Your Courses
-            </h2>
-            {courses.length > 0 && (
-              <button
-                onClick={handleDeleteAllCourseClick}
-                className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
-              >
-                Delete All
-              </button>
-            )}
-          </div>
-          {courses.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
-              <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No saved courses yet</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course, i) => {
-                let totalTopics = 0,
-                  completedTopics = 0;
-                course.weeks.forEach((week) => {
-                  let topics = [],
-                    progress = [];
-                  try {
-                    topics = JSON.parse(week.topics || "[]");
-                    progress = JSON.parse(week.progress || "[]");
-                  } catch (err) {
-                    console.error("Parse error:", err);
-                  }
-                  totalTopics += topics.length;
-                  completedTopics += progress.filter((p) => p).length;
-                });
-                const progressPercent =
-                  totalTopics === 0
-                    ? 0
-                    : Math.round((completedTopics / totalTopics) * 100);
-
-                return (
+          <div className="min-h-screen bg-gray-50 px-4 py-6 sm:p-8 font-sans text-gray-900">
+            {/* Saved Roadmaps */}
+            <AnimatePresence>
+              {courses.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35 }}
+                  className="mx-auto mt-2 max-w-7xl"
+                >
                   <motion.div
-                    key={course.ID || i}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 * i, duration: 0.25 }}
-                    className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md sm:p-5"
-                    whileHover={{ y: -4 }}
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="mb-6 flex items-center justify-between"
                   >
-                    {/* Card header */}
-                    <motion.div
-                      initial={{ y: -6, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.1 + 0.05 * i }}
-                      className="mb-3 flex items-start justify-between"
-                    >
-                      <div className="flex-1">
-                        <h2 className="mb-1 flex items-center gap-2 text-base font-semibold text-gray-900">
-                          🎯 {course?.title || "Learning Course"}
-                        </h2>
-                        <p className="text-xs text-gray-500">
-                          Created on{" "}
-                          {new Date(course.CreatedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleDeleteClick(
-                            course.ID,
-                            course?.title || "Learning Course"
-                          )
-                        }
-                        className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
-                      >
-                        Delete
-                      </button>
-                    </motion.div>
-
-                    {/* Progress */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.15 + 0.05 * i }}
-                      className="mb-4"
-                    >
-                      <div className="mb-2 flex items-center justify-between text-xs text-gray-600">
-                        <span>
-                          Progress: {completedTopics} / {totalTopics}
-                        </span>
-                        <span className="font-semibold text-gray-900">
-                          {progressPercent}%
-                        </span>
-                      </div>
-                      <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-                        <motion.div
-                          className="h-full rounded-full bg-indigo-600"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${progressPercent}%` }}
-                          transition={{ duration: 0.6, delay: 0.2 + 0.05 * i }}
-                        />
-                      </div>
-                    </motion.div>
-
-                    {/* Week List */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.2 + 0.05 * i }}
-                      className="max-h-48 space-y-3 overflow-y-auto mb-4"
-                      style={{
-                        scrollbarWidth: "thin",
-                        scrollbarColor: "#c7d2fe #f3f4f6",
-                      }}
-                    >
-                      {course.weeks
-                        .slice()
-                        .sort((a, b) => a.week - b.week)
-                        .map((week, weekIndex) => {
-                          let topics = [];
-                          let progress = [];
-                          try {
-                            topics = JSON.parse(week.topics || "[]");
-                            progress = JSON.parse(week.progress || "[]");
-                          } catch (err) {
-                            return null;
-                          }
-                          while (progress.length < topics.length)
-                            progress.push(false);
-
-                          return (
-                            <motion.div
-                              key={week.ID}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.05 * weekIndex }}
-                              className="rounded-lg border border-gray-200 bg-gray-50 p-3 hover:bg-gray-100"
-                              whileHover={{ x: 2 }}
-                            >
-                              <motion.h4
-                                initial={{ y: -4, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.1 + 0.05 * weekIndex }}
-                                className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-900"
-                              >
-                                📚 Week {week.week}: {week.title}
-                              </motion.h4>
-                              <motion.ul
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.15 + 0.05 * weekIndex }}
-                                className="space-y-1.5"
-                              >
-                                {topics.map((topic, topicIndex) => (
-                                  <motion.li
-                                    key={topicIndex}
-                                    initial={{ opacity: 0, x: -6 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.03 * topicIndex }}
-                                    className={`flex items-center gap-2 text-sm ${
-                                      progress[topicIndex]
-                                        ? "line-through text-gray-400"
-                                        : "text-gray-700 hover:text-indigo-700"
-                                    }`}
-                                    whileHover={{ x: 1 }}
-                                  >
-                                    <motion.span
-                                      className={`h-1.5 w-1.5 rounded-full ${
-                                        progress[topicIndex]
-                                          ? "bg-indigo-600"
-                                          : "bg-gray-400"
-                                      }`}
-                                      initial={{ scale: 0.8 }}
-                                      animate={{ scale: 1 }}
-                                    />
-                                    {topic}
-                                  </motion.li>
-                                ))}
-                              </motion.ul>
-                            </motion.div>
-                          );
-                        })}
-                    </motion.div>
-
-                    {/* CTA */}
+                    <h3 className="flex items-center gap-2 text-xl font-semibold sm:text-2xl">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-indigo-100 text-indigo-700">
+                        📚
+                      </span>
+                      <span className="text-balance">Your Saved Courses</span>
+                    </h3>
                     <motion.button
-                      onClick={() => navigate(`/learn/${course.ID}`)}
-                      className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-indigo-700"
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.25 + 0.05 * i }}
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
+                      onClick={handleDeleteAllCourseClick}
+                      className="rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      aria-label="Delete all saved courses"
                     >
-                      Start Learning →
+                      Delete All
                     </motion.button>
                   </motion.div>
-                );
-              })}
-            </div>
-          )}
+
+                  {/* Cards grid */}
+                  <motion.div
+                    className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    {courses.map((roadmap, i) => {
+                      let totalTopics = 0;
+                      let completedTopics = 0;
+
+                      roadmap.weeks.forEach((week) => {
+                        let topics = [];
+                        let progress = [];
+                        try {
+                          topics = JSON.parse(week.topics || "[]");
+                          progress = JSON.parse(week.progress || "[]");
+                        } catch (err) {
+                          console.error("JSON parse error:", err);
+                        }
+                        totalTopics += topics.length;
+                        completedTopics += progress.filter((p) => p).length;
+                      });
+
+                      const progressPercent =
+                        totalTopics === 0
+                          ? 0
+                          : Math.round((completedTopics / totalTopics) * 100);
+
+                      return (
+                        <motion.div
+                          key={roadmap.ID || i}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.05 * i, duration: 0.25 }}
+                          className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md sm:p-5"
+                          whileHover={{ y: -4 }}
+                        >
+                          {/* Card header */}
+                          <motion.div
+                            initial={{ y: -6, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.1 + 0.05 * i }}
+                            className="mb-3 flex items-start justify-between"
+                          >
+                            <div className="flex-1">
+                              <h2 className="mb-1 flex items-center gap-2 text-base font-semibold text-gray-900">
+                                🎯 {roadmap?.title || "Learning Roadmap"}
+                              </h2>
+                              <p className="text-xs text-gray-500">
+                                Created on{" "}
+                                {new Date(roadmap.CreatedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <motion.button
+                              onClick={() =>
+                                handleDeleteClick(
+                                  roadmap.ID,
+                                  roadmap?.title || "Learning Roadmap"
+                                )
+                              }
+                              className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              aria-label="Delete roadmap"
+                            >
+                              Delete
+                            </motion.button>
+                          </motion.div>
+
+                          {/* YouTube and Books buttons */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.12 + 0.05 * i }}
+                            className="mb-3 flex gap-2"
+                          >
+                            <motion.button
+                              onClick={() =>
+                                handleYouTubeClick(
+                                  roadmap?.title || "Learning Roadmap"
+                                )
+                              }
+                              className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <span className="text-sm">📺</span>
+                              YouTube
+                            </motion.button>
+                            <motion.button
+                              onClick={() =>
+                                handleBooksClick(
+                                  roadmap?.title || "Learning Roadmap"
+                                )
+                              }
+                              className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-600 hover:bg-amber-100 transition-colors"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <span className="text-sm">📚</span>
+                              Books
+                            </motion.button>
+                          </motion.div>
+
+                          {/* Progress */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.15 + 0.05 * i }}
+                            className="mb-4"
+                          >
+                            <div className="mb-2 flex items-center justify-between text-xs text-gray-600">
+                              <span>
+                                Progress: {completedTopics} / {totalTopics}
+                              </span>
+                              <span className="font-semibold text-gray-900">
+                                {progressPercent}%
+                              </span>
+                            </div>
+                            <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
+                              <motion.div
+                                className="h-full rounded-full bg-indigo-600"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progressPercent}%` }}
+                                transition={{
+                                  duration: 0.6,
+                                  delay: 0.2 + 0.05 * i,
+                                }}
+                              />
+                            </div>
+                          </motion.div>
+
+                          {/* Week List */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 + 0.05 * i }}
+                            className="custom-scrollbar max-h-48 space-y-3 overflow-y-auto"
+                          >
+                            {roadmap.weeks
+                              .slice()
+                              .sort((a, b) => a.week - b.week)
+                              .map((week, weekIndex) => {
+                                let topics = [];
+                                let progress = [];
+                                try {
+                                  topics = JSON.parse(week.topics || "[]");
+                                  progress = JSON.parse(week.progress || "[]");
+                                } catch (err) {
+                                  return null;
+                                }
+                                while (progress.length < topics.length)
+                                  progress.push(false);
+
+                                return (
+                                  <motion.div
+                                    key={week.ID}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.05 * weekIndex }}
+                                    className="rounded-lg border border-gray-200 bg-gray-50 p-3 hover:bg-gray-100"
+                                    whileHover={{ x: 2 }}
+                                  >
+                                    <motion.h4
+                                      initial={{ y: -4, opacity: 0 }}
+                                      animate={{ y: 0, opacity: 1 }}
+                                      transition={{ delay: 0.1 + 0.05 * weekIndex }}
+                                      className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-900"
+                                    >
+                                      📚 {week.week}: {week.title}
+                                    </motion.h4>
+                                    <motion.ul
+                                      initial={{ opacity: 0 }}
+                                      animate={{ opacity: 1 }}
+                                      transition={{
+                                        delay: 0.15 + 0.05 * weekIndex,
+                                      }}
+                                      className="space-y-1.5"
+                                    >
+                                      {topics.map((topic, topicIndex) => (
+                                        <motion.li
+                                          key={topicIndex}
+                                          initial={{ opacity: 0, x: -6 }}
+                                          animate={{ opacity: 1, x: 0 }}
+                                          transition={{ delay: 0.03 * topicIndex }}
+                                          className={`flex items-center gap-2 text-sm ${
+                                            progress[topicIndex]
+                                              ? "line-through text-gray-400"
+                                              : "text-gray-700 hover:text-indigo-700"
+                                          }`}
+                                          whileHover={{ x: 1 }}
+                                        >
+                                          <motion.span
+                                            className={`h-1.5 w-1.5 rounded-full ${
+                                              progress[topicIndex]
+                                                ? "bg-indigo-600"
+                                                : "bg-gray-400"
+                                            }`}
+                                            initial={{ scale: 0.8 }}
+                                            animate={{ scale: 1 }}
+                                          />
+                                          {topic}
+                                        </motion.li>
+                                      ))}
+                                    </motion.ul>
+                                  </motion.div>
+                                );
+                              })}
+                          </motion.div>
+
+                          {/* CTA */}
+                          <motion.button
+                            onClick={() => navigate(`/learn/${roadmap.ID}`)}
+                            className="mt-5 w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-indigo-700"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.25 + 0.05 * i }}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                          >
+                            Start Learning →
+                          </motion.button>
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Empty state for when there are no courses */}
+            {courses.length === 0 && (
+              <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
+                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No saved courses yet</p>
+              </div>
+            )}
+          </div>
+
+          <style jsx>{`
+            .custom-scrollbar::-webkit-scrollbar {
+              width: 8px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+              background: #f3f4f6; /* gray-100 */
+              border-radius: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+              background: #c7d2fe; /* indigo-200 */
+              border-radius: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+              background: #a5b4fc; /* indigo-300 */
+            }
+            .line-clamp-2 {
+              overflow: hidden;
+              display: -webkit-box;
+              -webkit-box-orient: vertical;
+              -webkit-line-clamp: 2;
+            }
+          `}</style>
         </section>
 
         {/* Saved Quizzes */}
