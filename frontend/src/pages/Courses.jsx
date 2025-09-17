@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom"
 import axios from "axios"
 import { motion, AnimatePresence } from "framer-motion"
 
-// Custom Modal Component
+// Custom Modal Component for Delete Confirmation
 const DeleteConfirmModal = ({
   isOpen,
   onConfirm,
@@ -84,6 +84,239 @@ const DeleteConfirmModal = ({
   )
 }
 
+// YouTube Videos Modal Component
+const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
+  const [selectedVideo, setSelectedVideo] = useState(null)
+
+  // Reset selected video when modal opens/closes or videos change
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedVideo(null)
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    setSelectedVideo(null)
+  }, [videos])
+
+  const handleVideoSelect = (video) => {
+    setSelectedVideo(video)
+  }
+
+  const handleBackToList = () => {
+    setSelectedVideo(null)
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className={`w-full ${selectedVideo ? 'max-w-6xl' : 'max-w-4xl'} max-h-[90vh] overflow-hidden rounded-xl bg-white shadow-2xl`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center gap-3">
+                {selectedVideo && (
+                  <button
+                    onClick={handleBackToList}
+                    className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  >
+                    ←
+                  </button>
+                )}
+                <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <span className="text-red-600">📺</span>
+                  {selectedVideo ? selectedVideo.title : `YouTube Videos for "${title}"`}
+                </h3>
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="overflow-y-auto p-6" style={{ maxHeight: "calc(90vh - 80px)" }}>
+              {selectedVideo ? (
+                // Video Player View
+                <div className="space-y-4">
+                  <div className="aspect-video w-full">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1`}
+                      title={selectedVideo.title}
+                      className="w-full h-full rounded-lg"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">{selectedVideo.title}</h4>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <a
+                        href={`https://youtube.com/watch?v=${selectedVideo.videoId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 font-medium"
+                      >
+                        🔗 Watch on YouTube
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ) : loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <span className="ml-3 text-gray-600">Loading videos...</span>
+                </div>
+              ) : videos.length === 0 ? (
+                <div className="text-center py-12">
+                  <span className="text-4xl">📹</span>
+                  <p className="mt-4 text-gray-600">No videos found for this topic.</p>
+                </div>
+              ) : (
+                // Video List View
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {videos.map((video, index) => (
+                    <motion.div
+                      key={video.videoId}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleVideoSelect(video)}
+                    >
+                      <div className="relative">
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                          <div className="bg-red-600 text-white rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity">
+                            ▶
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-medium text-gray-900 line-clamp-2 hover:text-indigo-600">
+                          {video.title}
+                        </h4>
+                        <p className="text-sm text-gray-500 mt-1">Click to watch</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+// Books Modal Component
+const BooksModal = ({ isOpen, onClose, books, loading, title }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="w-full max-w-4xl max-h-[80vh] overflow-hidden rounded-xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <span className="text-amber-600">📚</span>
+                Books for "{title}"
+              </h3>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="overflow-y-auto p-6" style={{ maxHeight: "calc(80vh - 80px)" }}>
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  <span className="ml-3 text-gray-600">Loading books...</span>
+                </div>
+              ) : books.length === 0 ? (
+                <div className="text-center py-12">
+                  <span className="text-4xl">📖</span>
+                  <p className="mt-4 text-gray-600">No books found for this topic.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {books.map((book, index) => (
+                    <motion.div
+                      key={book.key}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                    >
+                      <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {book.title}
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Author: {book.author_name?.join(", ") || "Unknown"}
+                      </p>
+                      <p className="text-sm text-gray-500 mb-3">
+                        Published: {book.first_publish_year || "Unknown"}
+                      </p>
+                      {book.download_url && (
+                        <a
+                          href={book.download_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-1.5 rounded-md bg-indigo-100 text-indigo-700 text-sm font-medium hover:bg-indigo-200 transition-colors"
+                        >
+                          📖 Read Online
+                        </a>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 function Courses() {
   const [savedRoadmaps, setSavedRoadmaps] = useState([])
   const [deleteModal, setDeleteModal] = useState({
@@ -92,6 +325,22 @@ function Courses() {
     roadmapId: null,
     title: "",
     message: "",
+  })
+
+  // YouTube Modal State
+  const [youtubeModal, setYoutubeModal] = useState({
+    isOpen: false,
+    videos: [],
+    loading: false,
+    title: "",
+  })
+
+  // Books Modal State
+  const [booksModal, setBooksModal] = useState({
+    isOpen: false,
+    books: [],
+    loading: false,
+    title: "",
   })
 
   const navigate = useNavigate()
@@ -190,6 +439,78 @@ function Courses() {
     })
   }
 
+  // Handle YouTube button click
+  const handleYouTubeClick = async (courseTitle) => {
+    setYoutubeModal({
+      isOpen: true,
+      videos: [],
+      loading: true,
+      title: courseTitle,
+    })
+
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/ytsection",
+        { topic: courseTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      
+      setYoutubeModal(prev => ({
+        ...prev,
+        videos: res.data.videos || [],
+        loading: false,
+      }))
+    } catch (err) {
+      console.error("Error fetching YouTube videos:", err)
+      setYoutubeModal(prev => ({
+        ...prev,
+        videos: [],
+        loading: false,
+      }))
+    }
+  }
+
+  // Handle Books button click
+  const handleBooksClick = async (courseTitle) => {
+    setBooksModal({
+      isOpen: true,
+      books: [],
+      loading: true,
+      title: courseTitle,
+    })
+
+    try {
+      const res = await axios.post(
+        "http://localhost:8080/booksection",
+        { topic: courseTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      
+      setBooksModal(prev => ({
+        ...prev,
+        books: res.data.books || [],
+        loading: false,
+      }))
+    } catch (err) {
+      console.error("Error fetching books:", err)
+      setBooksModal(prev => ({
+        ...prev,
+        books: [],
+        loading: false,
+      }))
+    }
+  }
+
   return (
     <>
       {/* Delete Confirmation Modal */}
@@ -200,6 +521,24 @@ function Courses() {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
         confirmText={deleteModal.type === "all" ? "Delete All" : "Delete"}
+      />
+
+      {/* YouTube Modal */}
+      <YouTubeModal
+        isOpen={youtubeModal.isOpen}
+        onClose={() => setYoutubeModal(prev => ({ ...prev, isOpen: false }))}
+        videos={youtubeModal.videos}
+        loading={youtubeModal.loading}
+        title={youtubeModal.title}
+      />
+
+      {/* Books Modal */}
+      <BooksModal
+        isOpen={booksModal.isOpen}
+        onClose={() => setBooksModal(prev => ({ ...prev, isOpen: false }))}
+        books={booksModal.books}
+        loading={booksModal.loading}
+        title={booksModal.title}
       />
 
       <div className="min-h-screen bg-gray-50 px-4 py-6 sm:p-8 font-sans text-gray-900">
@@ -219,7 +558,7 @@ function Courses() {
               >
                 <h3 className="flex items-center gap-2 text-xl font-semibold sm:text-2xl">
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-indigo-100 text-indigo-700">
-                    📁
+                    📝
                   </span>
                   <span className="text-balance">Your Saved Courses</span>
                 </h3>
@@ -292,6 +631,33 @@ function Courses() {
                           aria-label="Delete roadmap"
                         >
                           Delete
+                        </motion.button>
+                      </motion.div>
+
+                      {/* YouTube and Books buttons */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.12 + 0.05 * i }}
+                        className="mb-3 flex gap-2"
+                      >
+                        <motion.button
+                          onClick={() => handleYouTubeClick(roadmap?.title || "Learning Roadmap")}
+                          className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <span className="text-sm">📺</span>
+                          YouTube
+                        </motion.button>
+                        <motion.button
+                          onClick={() => handleBooksClick(roadmap?.title || "Learning Roadmap")}
+                          className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-600 hover:bg-amber-100 transition-colors"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <span className="text-sm">📚</span>
+                          Books
                         </motion.button>
                       </motion.div>
 
@@ -426,6 +792,12 @@ function Courses() {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #a5b4fc; /* indigo-300 */
+        }
+        .line-clamp-2 {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
         }
       `}</style>
     </>
