@@ -1,8 +1,8 @@
-"use client"
-import { useEffect, useState, useCallback } from "react"
-import { Navigate, useNavigate } from "react-router-dom"
-import axios from "axios"
-import { motion, AnimatePresence } from "framer-motion"
+"use client";
+import { useEffect, useState, useCallback } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Custom Modal Component for Delete Confirmation
 const DeleteConfirmModal = ({
@@ -56,7 +56,11 @@ const DeleteConfirmModal = ({
               {message}
             </motion.p>
 
-            <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex gap-3">
+            <motion.div
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="flex gap-3"
+            >
               <motion.button
                 onClick={onCancel}
                 className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -68,7 +72,9 @@ const DeleteConfirmModal = ({
               <motion.button
                 onClick={onConfirm}
                 className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium text-white ${
-                  isDestructive ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"
+                  isDestructive
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-indigo-600 hover:bg-indigo-700"
                 }`}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
@@ -81,31 +87,31 @@ const DeleteConfirmModal = ({
         </motion.div>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
 // YouTube Videos Modal Component
 const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
-  const [selectedVideo, setSelectedVideo] = useState(null)
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   // Reset selected video when modal opens/closes or videos change
   useEffect(() => {
     if (!isOpen) {
-      setSelectedVideo(null)
+      setSelectedVideo(null);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   useEffect(() => {
-    setSelectedVideo(null)
-  }, [videos])
+    setSelectedVideo(null);
+  }, [videos]);
 
   const handleVideoSelect = (video) => {
-    setSelectedVideo(video)
-  }
+    setSelectedVideo(video);
+  };
 
   const handleBackToList = () => {
-    setSelectedVideo(null)
-  }
+    setSelectedVideo(null);
+  };
 
   return (
     <AnimatePresence>
@@ -122,7 +128,9 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className={`w-full ${selectedVideo ? 'max-w-6xl' : 'max-w-4xl'} max-h-[90vh] overflow-hidden rounded-xl bg-white shadow-2xl`}
+            className={`w-full ${
+              selectedVideo ? "max-w-6xl" : "max-w-4xl"
+            } max-h-[90vh] overflow-hidden rounded-xl bg-white shadow-2xl`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -138,7 +146,9 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
                 )}
                 <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                   <span className="text-red-600">📺</span>
-                  {selectedVideo ? selectedVideo.title : `YouTube Videos for "${title}"`}
+                  {selectedVideo
+                    ? selectedVideo.title
+                    : `YouTube Videos for "${title}"`}
                 </h3>
               </div>
               <button
@@ -150,7 +160,10 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto p-6" style={{ maxHeight: "calc(90vh - 80px)" }}>
+            <div
+              className="overflow-y-auto p-6"
+              style={{ maxHeight: "calc(90vh - 80px)" }}
+            >
               {selectedVideo ? (
                 // Video Player View
                 <div className="space-y-4">
@@ -165,7 +178,9 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
                     />
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900 mb-2">{selectedVideo.title}</h4>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      {selectedVideo.title}
+                    </h4>
                     <div className="flex items-center gap-4 text-sm text-gray-600">
                       <a
                         href={`https://youtube.com/watch?v=${selectedVideo.videoId}`}
@@ -186,7 +201,9 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
               ) : videos.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="text-4xl">📹</span>
-                  <p className="mt-4 text-gray-600">No videos found for this topic.</p>
+                  <p className="mt-4 text-gray-600">
+                    No videos found for this topic.
+                  </p>
                 </div>
               ) : (
                 // Video List View
@@ -200,14 +217,14 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
                       className="rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
                       onClick={() => handleVideoSelect(video)}
                     >
-                      <div className="relative">
+                      <div className="relative w-full h-48 group">
                         <img
                           src={video.thumbnail}
                           alt={video.title}
-                          className="w-full h-48 object-cover"
+                          className="w-full h-full object-cover relative z-0"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-                          <div className="bg-red-600 text-white rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 z-10 bg-black/0 group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
+                          <div className="bg-red-600 text-white rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             ▶
                           </div>
                         </div>
@@ -216,7 +233,9 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
                         <h4 className="font-medium text-gray-900 line-clamp-2 hover:text-indigo-600">
                           {video.title}
                         </h4>
-                        <p className="text-sm text-gray-500 mt-1">Click to watch</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Click to watch
+                        </p>
                       </div>
                     </motion.div>
                   ))}
@@ -227,8 +246,8 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
         </motion.div>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
 // Books Modal Component
 const BooksModal = ({ isOpen, onClose, books, loading, title }) => {
@@ -265,7 +284,10 @@ const BooksModal = ({ isOpen, onClose, books, loading, title }) => {
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto p-6" style={{ maxHeight: "calc(80vh - 80px)" }}>
+            <div
+              className="overflow-y-auto p-6"
+              style={{ maxHeight: "calc(80vh - 80px)" }}
+            >
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -274,7 +296,9 @@ const BooksModal = ({ isOpen, onClose, books, loading, title }) => {
               ) : books.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="text-4xl">📖</span>
-                  <p className="mt-4 text-gray-600">No books found for this topic.</p>
+                  <p className="mt-4 text-gray-600">
+                    No books found for this topic.
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -314,18 +338,18 @@ const BooksModal = ({ isOpen, onClose, books, loading, title }) => {
         </motion.div>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
 function Courses() {
-  const [savedRoadmaps, setSavedRoadmaps] = useState([])
+  const [savedRoadmaps, setSavedRoadmaps] = useState([]);
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     type: null, // 'single' or 'all'
     roadmapId: null,
     title: "",
     message: "",
-  })
+  });
 
   // YouTube Modal State
   const [youtubeModal, setYoutubeModal] = useState({
@@ -333,7 +357,7 @@ function Courses() {
     videos: [],
     loading: false,
     title: "",
-  })
+  });
 
   // Books Modal State
   const [booksModal, setBooksModal] = useState({
@@ -341,10 +365,10 @@ function Courses() {
     books: [],
     loading: false,
     title: "",
-  })
+  });
 
-  const navigate = useNavigate()
-  const token = localStorage.getItem("token")
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   const fetchSavedRoadmaps = useCallback(async () => {
     try {
@@ -352,18 +376,18 @@ function Courses() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      setSavedRoadmaps(res.data)
+      });
+      setSavedRoadmaps(res.data);
     } catch (err) {
-      console.error("Error fetching saved roadmaps:", err)
+      console.error("Error fetching saved roadmaps:", err);
     }
-  }, [token])
+  }, [token]);
 
   useEffect(() => {
-    fetchSavedRoadmaps()
-  }, [token, fetchSavedRoadmaps])
+    fetchSavedRoadmaps();
+  }, [token, fetchSavedRoadmaps]);
 
-  if (!token) return <Navigate to="/login" />
+  if (!token) return <Navigate to="/login" />;
 
   // Open delete modal for single roadmap
   const handleDeleteClick = (id, title = "Learning Roadmap") => {
@@ -373,8 +397,8 @@ function Courses() {
       roadmapId: id,
       title: "Delete Roadmap?",
       message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
-    })
-  }
+    });
+  };
 
   // Open delete modal for all roadmaps
   const handleDeleteAllClick = () => {
@@ -384,26 +408,31 @@ function Courses() {
       roadmapId: null,
       title: "Delete All Roadmaps?",
       message: `Are you sure you want to delete all ${savedRoadmaps.length} roadmaps? This action cannot be undone.`,
-    })
-  }
+    });
+  };
 
   // Handle modal confirmation
   const handleDeleteConfirm = async () => {
     try {
       if (deleteModal.type === "single") {
-        await axios.delete(`http://localhost:8080/delete-roadmap?id=${deleteModal.roadmapId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        setSavedRoadmaps((prev) => prev.filter((rm) => rm.ID !== deleteModal.roadmapId))
+        await axios.delete(
+          `http://localhost:8080/delete-roadmap?id=${deleteModal.roadmapId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setSavedRoadmaps((prev) =>
+          prev.filter((rm) => rm.ID !== deleteModal.roadmapId)
+        );
       } else if (deleteModal.type === "all") {
         await axios.delete(`http://localhost:8080/delete-all-roadmaps`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        setSavedRoadmaps([])
+        });
+        setSavedRoadmaps([]);
       }
 
       // Close modal
@@ -413,10 +442,10 @@ function Courses() {
         roadmapId: null,
         title: "",
         message: "",
-      })
+      });
     } catch (err) {
-      console.error("Delete failed:", err)
-      alert("Failed to delete roadmap(s)")
+      console.error("Delete failed:", err);
+      alert("Failed to delete roadmap(s)");
       // Close modal even on error
       setDeleteModal({
         isOpen: false,
@@ -424,9 +453,9 @@ function Courses() {
         roadmapId: null,
         title: "",
         message: "",
-      })
+      });
     }
-  }
+  };
 
   // Handle modal cancellation
   const handleDeleteCancel = () => {
@@ -436,8 +465,8 @@ function Courses() {
       roadmapId: null,
       title: "",
       message: "",
-    })
-  }
+    });
+  };
 
   // Handle YouTube button click
   const handleYouTubeClick = async (courseTitle) => {
@@ -446,7 +475,7 @@ function Courses() {
       videos: [],
       loading: true,
       title: courseTitle,
-    })
+    });
 
     try {
       const res = await axios.post(
@@ -458,22 +487,22 @@ function Courses() {
             "Content-Type": "application/json",
           },
         }
-      )
-      
-      setYoutubeModal(prev => ({
+      );
+
+      setYoutubeModal((prev) => ({
         ...prev,
         videos: res.data.videos || [],
         loading: false,
-      }))
+      }));
     } catch (err) {
-      console.error("Error fetching YouTube videos:", err)
-      setYoutubeModal(prev => ({
+      console.error("Error fetching YouTube videos:", err);
+      setYoutubeModal((prev) => ({
         ...prev,
         videos: [],
         loading: false,
-      }))
+      }));
     }
-  }
+  };
 
   // Handle Books button click
   const handleBooksClick = async (courseTitle) => {
@@ -482,7 +511,7 @@ function Courses() {
       books: [],
       loading: true,
       title: courseTitle,
-    })
+    });
 
     try {
       const res = await axios.post(
@@ -494,22 +523,22 @@ function Courses() {
             "Content-Type": "application/json",
           },
         }
-      )
-      
-      setBooksModal(prev => ({
+      );
+
+      setBooksModal((prev) => ({
         ...prev,
         books: res.data.books || [],
         loading: false,
-      }))
+      }));
     } catch (err) {
-      console.error("Error fetching books:", err)
-      setBooksModal(prev => ({
+      console.error("Error fetching books:", err);
+      setBooksModal((prev) => ({
         ...prev,
         books: [],
         loading: false,
-      }))
+      }));
     }
-  }
+  };
 
   return (
     <>
@@ -526,7 +555,7 @@ function Courses() {
       {/* YouTube Modal */}
       <YouTubeModal
         isOpen={youtubeModal.isOpen}
-        onClose={() => setYoutubeModal(prev => ({ ...prev, isOpen: false }))}
+        onClose={() => setYoutubeModal((prev) => ({ ...prev, isOpen: false }))}
         videos={youtubeModal.videos}
         loading={youtubeModal.loading}
         title={youtubeModal.title}
@@ -535,7 +564,7 @@ function Courses() {
       {/* Books Modal */}
       <BooksModal
         isOpen={booksModal.isOpen}
-        onClose={() => setBooksModal(prev => ({ ...prev, isOpen: false }))}
+        onClose={() => setBooksModal((prev) => ({ ...prev, isOpen: false }))}
         books={booksModal.books}
         loading={booksModal.loading}
         title={booksModal.title}
@@ -581,23 +610,26 @@ function Courses() {
                 transition={{ delay: 0.1 }}
               >
                 {savedRoadmaps.map((roadmap, i) => {
-                  let totalTopics = 0
-                  let completedTopics = 0
+                  let totalTopics = 0;
+                  let completedTopics = 0;
 
                   roadmap.weeks.forEach((week) => {
-                    let topics = []
-                    let progress = []
+                    let topics = [];
+                    let progress = [];
                     try {
-                      topics = JSON.parse(week.topics || "[]")
-                      progress = JSON.parse(week.progress || "[]")
+                      topics = JSON.parse(week.topics || "[]");
+                      progress = JSON.parse(week.progress || "[]");
                     } catch (err) {
-                      console.error("JSON parse error:", err)
+                      console.error("JSON parse error:", err);
                     }
-                    totalTopics += topics.length
-                    completedTopics += progress.filter((p) => p).length
-                  })
+                    totalTopics += topics.length;
+                    completedTopics += progress.filter((p) => p).length;
+                  });
 
-                  const progressPercent = totalTopics === 0 ? 0 : Math.round((completedTopics / totalTopics) * 100)
+                  const progressPercent =
+                    totalTopics === 0
+                      ? 0
+                      : Math.round((completedTopics / totalTopics) * 100);
 
                   return (
                     <motion.div
@@ -620,11 +652,17 @@ function Courses() {
                             🎯 {roadmap?.title || "Learning Roadmap"}
                           </h2>
                           <p className="text-xs text-gray-500">
-                            Created on {new Date(roadmap.CreatedAt).toLocaleDateString()}
+                            Created on{" "}
+                            {new Date(roadmap.CreatedAt).toLocaleDateString()}
                           </p>
                         </div>
                         <motion.button
-                          onClick={() => handleDeleteClick(roadmap.ID, roadmap?.title || "Learning Roadmap")}
+                          onClick={() =>
+                            handleDeleteClick(
+                              roadmap.ID,
+                              roadmap?.title || "Learning Roadmap"
+                            )
+                          }
                           className="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -642,7 +680,11 @@ function Courses() {
                         className="mb-3 flex gap-2"
                       >
                         <motion.button
-                          onClick={() => handleYouTubeClick(roadmap?.title || "Learning Roadmap")}
+                          onClick={() =>
+                            handleYouTubeClick(
+                              roadmap?.title || "Learning Roadmap"
+                            )
+                          }
                           className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
@@ -651,7 +693,11 @@ function Courses() {
                           YouTube
                         </motion.button>
                         <motion.button
-                          onClick={() => handleBooksClick(roadmap?.title || "Learning Roadmap")}
+                          onClick={() =>
+                            handleBooksClick(
+                              roadmap?.title || "Learning Roadmap"
+                            )
+                          }
                           className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-600 hover:bg-amber-100 transition-colors"
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
@@ -672,14 +718,19 @@ function Courses() {
                           <span>
                             Progress: {completedTopics} / {totalTopics}
                           </span>
-                          <span className="font-semibold text-gray-900">{progressPercent}%</span>
+                          <span className="font-semibold text-gray-900">
+                            {progressPercent}%
+                          </span>
                         </div>
                         <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
                           <motion.div
                             className="h-full rounded-full bg-indigo-600"
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercent}%` }}
-                            transition={{ duration: 0.6, delay: 0.2 + 0.05 * i }}
+                            transition={{
+                              duration: 0.6,
+                              delay: 0.2 + 0.05 * i,
+                            }}
                           />
                         </div>
                       </motion.div>
@@ -695,15 +746,16 @@ function Courses() {
                           .slice()
                           .sort((a, b) => a.week - b.week)
                           .map((week, weekIndex) => {
-                            let topics = []
-                            let progress = []
+                            let topics = [];
+                            let progress = [];
                             try {
-                              topics = JSON.parse(week.topics || "[]")
-                              progress = JSON.parse(week.progress || "[]")
+                              topics = JSON.parse(week.topics || "[]");
+                              progress = JSON.parse(week.progress || "[]");
                             } catch (err) {
-                              return null
+                              return null;
                             }
-                            while (progress.length < topics.length) progress.push(false)
+                            while (progress.length < topics.length)
+                              progress.push(false);
 
                             return (
                               <motion.div
@@ -725,7 +777,9 @@ function Courses() {
                                 <motion.ul
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
-                                  transition={{ delay: 0.15 + 0.05 * weekIndex }}
+                                  transition={{
+                                    delay: 0.15 + 0.05 * weekIndex,
+                                  }}
                                   className="space-y-1.5"
                                 >
                                   {topics.map((topic, topicIndex) => (
@@ -743,7 +797,9 @@ function Courses() {
                                     >
                                       <motion.span
                                         className={`h-1.5 w-1.5 rounded-full ${
-                                          progress[topicIndex] ? "bg-indigo-600" : "bg-gray-400"
+                                          progress[topicIndex]
+                                            ? "bg-indigo-600"
+                                            : "bg-gray-400"
                                         }`}
                                         initial={{ scale: 0.8 }}
                                         animate={{ scale: 1 }}
@@ -753,7 +809,7 @@ function Courses() {
                                   ))}
                                 </motion.ul>
                               </motion.div>
-                            )
+                            );
                           })}
                       </motion.div>
 
@@ -770,7 +826,7 @@ function Courses() {
                         Start Learning →
                       </motion.button>
                     </motion.div>
-                  )
+                  );
                 })}
               </motion.div>
             </motion.div>
@@ -801,7 +857,7 @@ function Courses() {
         }
       `}</style>
     </>
-  )
+  );
 }
 
-export default Courses
+export default Courses;
