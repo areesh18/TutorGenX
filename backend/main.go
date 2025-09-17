@@ -79,6 +79,7 @@ func main() {
 	router.Handle("/my-quizzes", utils.ValidateToken(http.HandlerFunc(handlers.GetUserQuizzesFromPdf))).Methods("GET")
 	router.Handle("/my-flashcards", utils.ValidateToken(http.HandlerFunc(handlers.GetUserFlashcardsFromPdf))).Methods("GET")
 	router.Handle("/ytsection", utils.ValidateToken(http.HandlerFunc(handlers.YouTubeHandler))).Methods("POST")
+	router.Handle("/video-summary", utils.ValidateToken(http.HandlerFunc(handlers.GetYouTubeVideoSummaryGemini))).Methods("POST")
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
 	handlerWithCORS := utils.CORSMiddleware(router)
