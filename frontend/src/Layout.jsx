@@ -172,7 +172,7 @@ export default function Layout() {
                     <path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </Item>
-                <Item
+                {/* <Item
                   to="/ytsection"
                   label="Videos"
                   sublabel="YouTube resources"
@@ -189,7 +189,7 @@ export default function Layout() {
                     />
                     <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" strokeWidth="2" />
                   </svg>
-                </Item>
+                </Item> */}
                 <Item
                   to="/booksection"
                   label="Books"
@@ -241,30 +241,7 @@ export default function Layout() {
                 </Item>
               </div>
             </div>
-            <div>
-              {!sidebarCollapsed && (
-                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">AI Features</h3>
-              )}
-              <div className="space-y-1 group">
-                <Item
-                  to="/smart-learning"
-                  label="Smart Learning"
-                  sublabel="Personalized experience"
-                  titleWhenCollapsed="Smart Learning"
-                  collapsed={sidebarCollapsed}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" className="text-sky-500">
-                    <path
-                      d="M12 3v2m6.36.64l-1.41 1.41M21 12h-2M4 12H3m3.05-6.36L4.64 7.05M8 15a4 4 0 108 0l-.5.5A2.5 2.5 0 0014 18v1a2 2 0 11-4 0v-1a2.5 2.5 0 00-1.5-2.5L8 15z"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Item>
-              </div>
-            </div>
+            
           </div>
         </nav>
 
