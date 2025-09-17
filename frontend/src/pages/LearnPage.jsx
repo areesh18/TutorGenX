@@ -9,7 +9,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"; // theme (you can pick another)
 import QuizSection from "./QuizSection"; // Add this line after other imports/*  */
+import { useChatbotContext } from "../context/ChatbotContext";
 function LearnPage() {
+  const { setLearningContext } = useChatbotContext(); // Get the context setter
+  
   const { roadmapId } = useParams();
   const [roadmap, setRoadmap] = useState(null);
   const [activeTab, setActiveTab] = useState("content");
@@ -137,7 +140,15 @@ function LearnPage() {
     currentTopicIndex,
     contentCache.examples,
   ]);
-
+// This useEffect will run whenever the topic or explanation changes
+  useEffect(() => {
+    if (selectedTopic && explanation && explanation !== "Loading...") {
+      setLearningContext({ topic: selectedTopic, explanation });
+    } else {
+      // Clear context when there's no topic
+      setLearningContext({ topic: '', explanation: '' });
+    }
+  }, [selectedTopic, explanation, setLearningContext]);
   useEffect(() => {
     const generateSimplifiedExp = async () => {
       if (!selectedTopic || !explanation || explanation === "Loading...")

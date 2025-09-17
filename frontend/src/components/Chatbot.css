@@ -1,0 +1,11 @@
+/* frontend/src/components/Chatbot.css */
+.react-chatbot-kit-chat-container {
+    width: 350px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+}
+
+.react-chatbot-kit-chat-header {
+    border-top-right-radius: 1rem;
+    border-top-left-radius: 1rem;
+}
