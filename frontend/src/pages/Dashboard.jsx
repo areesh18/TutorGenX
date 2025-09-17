@@ -1296,16 +1296,14 @@ const Dashboard = () => {
 
         {/* Saved Courses - Updated Section */}
         <section className="mb-16">
-          <div className="min-h-screen bg-gray-50 px-4 py-6 sm:p-8 font-sans text-gray-900">
-            {/* Saved Roadmaps */}
-            <AnimatePresence>
-              {courses.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="mx-auto mt-2 max-w-7xl"
-                >
+          {/* Saved Roadmaps */}
+          <AnimatePresence>
+            {courses.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
                   <motion.div
                     initial={{ y: -10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -1566,31 +1564,31 @@ const Dashboard = () => {
                 <p className="text-gray-500">No saved courses yet</p>
               </div>
             )}
-          </div>
-
-          <style jsx>{`
-            .custom-scrollbar::-webkit-scrollbar {
-              width: 8px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-track {
-              background: #f3f4f6; /* gray-100 */
-              border-radius: 4px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-              background: #c7d2fe; /* indigo-200 */
-              border-radius: 4px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-              background: #a5b4fc; /* indigo-300 */
-            }
-            .line-clamp-2 {
-              overflow: hidden;
-              display: -webkit-box;
-              -webkit-box-orient: vertical;
-              -webkit-line-clamp: 2;
-            }
-          `}</style>
         </section>
+
+        <style jsx>{`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f3f4f6; /* gray-100 */
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c7d2fe; /* indigo-200 */
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a5b4fc; /* indigo-300 */
+          }
+          .line-clamp-2 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+          }
+        `}</style>
+        
 
         {/* Saved Quizzes */}
         <section className="mb-16">
