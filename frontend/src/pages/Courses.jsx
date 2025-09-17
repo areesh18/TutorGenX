@@ -93,24 +93,89 @@ const DeleteConfirmModal = ({
 // YouTube Videos Modal Component
 const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [summary, setSummary] = useState([]);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState('');
+  const token = localStorage.getItem("token");
+
+  // Convert timestamp to seconds
+  const timestampToSeconds = (timestamp) => {
+    const parts = timestamp.split(':');
+    if (parts.length === 2) {
+      // MM:SS format
+      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    } else if (parts.length === 3) {
+      // HH:MM:SS format
+      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+    }
+    return 0;
+  };
+
+  // Handle timestamp click
+  const handleTimestampClick = (timestamp) => {
+    const seconds = timestampToSeconds(timestamp);
+    const newUrl = `https://www.youtube.com/embed/${selectedVideo.videoId}?start=${seconds}&autoplay=1&enablejsapi=1`;
+    setCurrentVideoUrl(newUrl);
+  };
 
   // Reset selected video when modal opens/closes or videos change
   useEffect(() => {
     if (!isOpen) {
       setSelectedVideo(null);
+      setSummary([]);
+      setSummaryError(null);
+      setCurrentVideoUrl('');
     }
   }, [isOpen]);
 
   useEffect(() => {
     setSelectedVideo(null);
+    setSummary([]);
+    setSummaryError(null);
+    setCurrentVideoUrl('');
   }, [videos]);
+
+  // Fetch video summary
+  const fetchVideoSummary = async (videoId) => {
+    setSummaryLoading(true);
+    setSummaryError(null);
+    setSummary([]);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/video-summary", // Replace with your actual endpoint
+        { videoId: videoId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setSummary(response.data.summary || []);
+    } catch (error) {
+      console.error("Error fetching video summary:", error);
+      setSummaryError("Failed to load video summary. Please try again.");
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
 
   const handleVideoSelect = (video) => {
     setSelectedVideo(video);
+    const initialUrl = `https://www.youtube.com/embed/${video.videoId}?autoplay=1&enablejsapi=1`;
+    setCurrentVideoUrl(initialUrl);
+    // Fetch summary when video is selected
+    fetchVideoSummary(video.videoId);
   };
 
   const handleBackToList = () => {
     setSelectedVideo(null);
+    setSummary([]);
+    setSummaryError(null);
+    setCurrentVideoUrl('');
   };
 
   return (
@@ -165,18 +230,22 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
               style={{ maxHeight: "calc(90vh - 80px)" }}
             >
               {selectedVideo ? (
-                // Video Player View
-                <div className="space-y-4">
+                // Video Player View with Summary
+                <div className="space-y-6">
+                  {/* Video Player */}
                   <div className="aspect-video w-full">
                     <iframe
-                      src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1`}
+                      key={currentVideoUrl} // This will force re-render when URL changes
+                      src={currentVideoUrl}
                       title={selectedVideo.title}
-                      className="w-full h-full rounded-lg"
+                      className="w-full h-full rounded-lg youtube-iframe"
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
                   </div>
+
+                  {/* Video Info */}
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="font-semibold text-gray-900 mb-2">
                       {selectedVideo.title}
@@ -190,6 +259,68 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
                       >
                         🔗 Watch on YouTube
                       </a>
+                    </div>
+                  </div>
+
+                  {/* Video Summary Section */}
+                  <div className="bg-white border border-gray-200 rounded-lg">
+                    <div className="border-b border-gray-200 px-4 py-3">
+                      <h5 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <span className="text-blue-600">📝</span>
+                        Video Summary
+                      </h5>
+                    </div>
+                    
+                    <div className="p-4">
+                      {summaryLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span className="ml-3 text-gray-600">Generating summary...</span>
+                        </div>
+                      ) : summaryError ? (
+                        <div className="text-center py-8">
+                          <div className="text-red-500 mb-2">⚠️</div>
+                          <p className="text-red-600 text-sm mb-3">{summaryError}</p>
+                          <button
+                            onClick={() => fetchVideoSummary(selectedVideo.videoId)}
+                            className="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
+                          >
+                            Try Again
+                          </button>
+                        </div>
+                      ) : summary.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="text-gray-400 mb-2">📄</div>
+                          <p className="text-gray-600">No summary available for this video.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                          {summary.map((item, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="flex gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <div className="flex-shrink-0">
+                                <button
+                                  onClick={() => handleTimestampClick(item.timestamp)}
+                                  className="inline-flex items-center justify-center w-16 h-8 bg-blue-100 text-blue-700 text-xs font-mono rounded hover:bg-blue-200 hover:text-blue-800 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                  title={`Jump to ${item.timestamp}`}
+                                >
+                                  {item.timestamp}
+                                </button>
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-gray-800 text-sm leading-relaxed">
+                                  {item.summaryText}
+                                </p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -234,7 +365,7 @@ const YouTubeModal = ({ isOpen, onClose, videos, loading, title }) => {
                           {video.title}
                         </h4>
                         <p className="text-sm text-gray-500 mt-1">
-                          Click to watch
+                          Click to watch with summary
                         </p>
                       </div>
                     </motion.div>
