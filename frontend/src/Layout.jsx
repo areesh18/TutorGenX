@@ -1,8 +1,9 @@
 "use client"
 
-/* Clean, educational Layout for React Router */
 import { NavLink, Outlet } from "react-router-dom"
 import { useState } from "react"
+import MyChatbot from "./components/Chatbot"; // Import the chatbot
+import { motion, AnimatePresence } from "framer-motion";
 
 function Item({
   to,
@@ -44,6 +45,7 @@ function Item({
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [chatbotOpen, setChatbotOpen] = useState(false); // State for chatbot visibility
 
   const toggleSidebar = () => setSidebarOpen((s) => !s)
   const toggleCollapse = () => setSidebarCollapsed((c) => !c)
@@ -106,7 +108,6 @@ export default function Layout() {
               className={`w-5 h-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`}
               aria-hidden="true"
             >
-              {/* Proper chevron-left shape (points left by default, rotates 180° when collapsed to point right) */}
               <path
                 d="M15 19L8 12l7-7"
                 stroke="currentColor"
@@ -160,7 +161,6 @@ export default function Layout() {
                     />
                   </svg>
                 </Item>
-
                 <Item
                   to="/courses"
                   label="Courses"
@@ -172,7 +172,6 @@ export default function Layout() {
                     <path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </Item>
-
                 <Item
                   to="/ytsection"
                   label="Videos"
@@ -191,7 +190,6 @@ export default function Layout() {
                     <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" strokeWidth="2" />
                   </svg>
                 </Item>
-
                 <Item
                   to="/booksection"
                   label="Books"
@@ -208,7 +206,6 @@ export default function Layout() {
                     <path d="M6 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </Item>
-
                 <Item
                   to="/quizfrompdf"
                   label="Create Quiz"
@@ -231,7 +228,6 @@ export default function Layout() {
                     <path d="M12 4v16M20 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </Item>
-                
                 <Item
                   to="/create-course"
                   label="Create Course"
@@ -245,7 +241,6 @@ export default function Layout() {
                 </Item>
               </div>
             </div>
-
             <div>
               {!sidebarCollapsed && (
                 <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">AI Features</h3>
@@ -290,8 +285,8 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main */}
-      <div className="flex-1 min-w-0 flex flex-col h-full">
+      {/* Main Content Area */}
+      <div className="flex-1 min-w-0 flex flex-col h-full relative">
         {/* Mobile top bar */}
         <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <button
@@ -318,14 +313,46 @@ export default function Layout() {
           <div
             className={`mx-auto w-full min-w-0 ${
               sidebarCollapsed
-                ? "max-w-[100rem] 2xl:max-w-[110rem]" // ~1600–1760px when collapsed
-                : "max-w-[90rem] xl:max-w-[96rem]" // ~1440–1536px when expanded
+                ? "max-w-[100rem] 2xl:max-w-[110rem]"
+                : "max-w-[90rem] xl:max-w-[96rem]"
             }`}
           >
-            {/* Provide a clean content container; Outlet renders page content */}
             <Outlet />
           </div>
         </main>
+        
+        {/* Chatbot Area */}
+        <div className="absolute bottom-6 right-6 z-40">
+            <AnimatePresence>
+                {chatbotOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <MyChatbot />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <motion.button
+                onClick={() => setChatbotOpen(!chatbotOpen)}
+                className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label={chatbotOpen ? "Close chat" : "Open chat"}
+            >
+                {chatbotOpen ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                )}
+            </motion.button>
+        </div>
       </div>
     </div>
   )

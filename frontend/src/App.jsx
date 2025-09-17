@@ -13,7 +13,7 @@ import Ytsection from "./pages/Ytsection";
 import QuizFromPDF from "./pages/QuizFromPDF";  
 import Flashcards from "./pages/Flashcards";
 import Dashboard from "./pages/Dashboard";
-
+import Chatbot from "./components/Chatbot";
 
 function AppWrapper() {
   return (
@@ -40,6 +40,7 @@ function App() {
           <Route path="/quizfrompdf" element={<QuizFromPDF />} />
           <Route path="/flashcards" element={<Flashcards />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/chatbot" element={<Chatbot />} />
           
         </Route>
       </Routes>
