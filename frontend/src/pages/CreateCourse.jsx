@@ -265,7 +265,7 @@ function CreateCourse() {
       setRoadmap([])
       setMsg("Course Saved✅")
       fetchSavedRoadmaps()
-      navigate("/courses")
+      navigate("/dashboard")
     } catch (err) {
       console.error("Error saving roadmap:", err)
       alert("Failed to save roadmap")
