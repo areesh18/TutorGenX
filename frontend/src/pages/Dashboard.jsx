@@ -1086,40 +1086,40 @@ const Dashboard = () => {
   };
 
   // Handle Books button click
-  const handleBooksClick = async (courseTitle) => {
-    setBooksModal({
-      isOpen: true,
-      books: [],
-      loading: true,
-      title: courseTitle,
-    });
+const handleBooksClick = async (goal) => { // from courseTitle to goal
+  setBooksModal({
+    isOpen: true,
+    books: [],
+    loading: true,
+    title: goal,
+  });
 
     try {
-      const res = await axios.post(
-        "http://localhost:8080/booksection",
-        { topic: courseTitle },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    const res = await axios.post(
+      "http://localhost:8080/booksection",
+      { goal: goal }, // send goal
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-      setBooksModal((prev) => ({
-        ...prev,
-        books: res.data.books || [],
-        loading: false,
-      }));
-    } catch (err) {
-      console.error("Error fetching books:", err);
-      setBooksModal((prev) => ({
-        ...prev,
-        books: [],
-        loading: false,
-      }));
-    }
-  };
+    setBooksModal((prev) => ({
+      ...prev,
+      books: res.data.books || [],
+      loading: false,
+    }));
+  } catch (err) {
+    console.error("Error fetching books:", err);
+    setBooksModal((prev) => ({
+      ...prev,
+      books: [],
+      loading: false,
+    }));
+  }
+};
 
   // Handle modal confirmation
   const handleDeleteConfirm = async () => {
