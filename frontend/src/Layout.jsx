@@ -2,7 +2,6 @@
 
 import { NavLink, Outlet } from "react-router-dom"
 import { useState } from "react"
-import MyChatbot from "./components/Chatbot"; // Import the chatbot
 import { motion, AnimatePresence } from "framer-motion";
 
 function Item({
@@ -45,7 +44,6 @@ function Item({
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [chatbotOpen, setChatbotOpen] = useState(false); // State for chatbot visibility
 
   const toggleSidebar = () => setSidebarOpen((s) => !s)
   const toggleCollapse = () => setSidebarCollapsed((c) => !c)
@@ -297,39 +295,6 @@ export default function Layout() {
             <Outlet />
           </div>
         </main>
-        
-        {/* Chatbot Area */}
-        <div className="absolute bottom-6 right-6 z-40">
-            <AnimatePresence>
-                {chatbotOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <MyChatbot />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            <motion.button
-                onClick={() => setChatbotOpen(!chatbotOpen)}
-                className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label={chatbotOpen ? "Close chat" : "Open chat"}
-            >
-                {chatbotOpen ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                )}
-            </motion.button>
-        </div>
       </div>
     </div>
   )

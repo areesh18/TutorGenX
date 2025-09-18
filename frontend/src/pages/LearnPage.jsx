@@ -7,28 +7,27 @@ import ReactMarkdown from "react-markdown";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"; // theme (you can pick another)
-import QuizSection from "./QuizSection"; // Add this line after other imports/*  */
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import QuizSection from "./QuizSection";
 import { useChatbotContext } from "../context/ChatbotContext";
+import MyChatbot from "../components/Chatbot";
+
 function LearnPage() {
-  const { setLearningContext } = useChatbotContext(); // Get the context setter
-  
+  const { setLearningContext } = useChatbotContext();
+
   const { roadmapId } = useParams();
   const [roadmap, setRoadmap] = useState(null);
   const [activeTab, setActiveTab] = useState("content");
   const [openWeek, setOpenWeek] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
-  // Add this NEW cache state
   const [contentCache, setContentCache] = useState({
     explanations: {},
     simplifiedExps: {},
     examples: {},
   });
-  // Helper function to generate cache key
   const getCacheKey = (topic, weekIndex, topicIndex) => {
     return `${weekIndex}-${topicIndex}-${topic}`;
   };
-  // Keep these existing states (don't change these)
   const [explanation, setExplanation] = useState("");
   const [simplifiedExp, setSimplifiedExp] = useState("");
   const [examples, setExamples] = useState([]);
@@ -36,8 +35,9 @@ function LearnPage() {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [currentTopicIndex, setCurrentTopicIndex] = useState(0);
   const [updating, setUpdating] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showHint, setShowHint] = useState(true);
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowHint(false), 5000);
@@ -48,7 +48,6 @@ function LearnPage() {
     setShowHint(false);
     setSidebarOpen(true);
   };
-  /*  const [score, setScore] = useState(0); */
 
   const fetchRoadmap = useCallback(async () => {
     try {
@@ -80,6 +79,7 @@ function LearnPage() {
       }
     }
   }, [roadmap, selectedTopic]);
+
   useEffect(() => {
     const generateExample = async () => {
       if (!selectedTopic || !explanation || explanation === "Loading...")
@@ -89,7 +89,6 @@ function LearnPage() {
         currentWeekIndex,
         currentTopicIndex
       );
-      // Check if already cached
       if (contentCache.examples[cacheKey]) {
         setExamples(contentCache.examples[cacheKey]);
         return;
@@ -111,7 +110,6 @@ function LearnPage() {
         const examplesData = res.data.examples;
         setExamples(examplesData);
 
-        // Cache the examples
         setContentCache((prev) => ({
           ...prev,
           examples: {
@@ -140,15 +138,15 @@ function LearnPage() {
     currentTopicIndex,
     contentCache.examples,
   ]);
-// This useEffect will run whenever the topic or explanation changes
+
   useEffect(() => {
     if (selectedTopic && explanation && explanation !== "Loading...") {
       setLearningContext({ topic: selectedTopic, explanation });
     } else {
-      // Clear context when there's no topic
       setLearningContext({ topic: '', explanation: '' });
     }
   }, [selectedTopic, explanation, setLearningContext]);
+
   useEffect(() => {
     const generateSimplifiedExp = async () => {
       if (!selectedTopic || !explanation || explanation === "Loading...")
@@ -159,7 +157,6 @@ function LearnPage() {
         currentTopicIndex
       );
 
-      // Check if already cached
       if (contentCache.simplifiedExps[cacheKey]) {
         setSimplifiedExp(contentCache.simplifiedExps[cacheKey]);
         return;
@@ -181,7 +178,6 @@ function LearnPage() {
         const simplifiedText = res.data.simplifiedexplanation;
         setSimplifiedExp(simplifiedText);
 
-        // Cache the simplified explanation
         setContentCache((prev) => ({
           ...prev,
           simplifiedExps: {
@@ -263,7 +259,6 @@ function LearnPage() {
   const isCurrentTopicCompleted = () => {
     if (!roadmap || !roadmap.weeks) return false;
 
-    // Use sorted weeks to get the correct week
     const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
     const week = sortedWeeks[currentWeekIndex];
 
@@ -278,12 +273,12 @@ function LearnPage() {
 
     return progress[currentTopicIndex] === true;
   };
+
   const handleMarkAsCompletedButton = async () => {
-    if (updating) return; // ignore clicks while updating
+    if (updating) return;
     setUpdating(true);
 
     try {
-      // Get the correct week using sorted weeks
       const sortedWeeks = [...roadmap.weeks].sort((a, b) => a.week - b.week);
       const currentWeek = sortedWeeks[currentWeekIndex];
 
@@ -300,16 +295,15 @@ function LearnPage() {
         "http://localhost:8080/update-progress",
         {
           roadmap_id: roadmap.ID,
-          week_id: currentWeek.ID, // Use the correct week ID from sorted array
+          week_id: currentWeek.ID,
           topic_index: currentTopicIndex,
-          value: !currentlyCompleted, // toggle
+          value: !currentlyCompleted,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      // Refresh the roadmap data
       await fetchRoadmap();
     } catch (err) {
       console.error("⚠️ Error updating completion status:", err);
@@ -362,30 +356,23 @@ function LearnPage() {
   const handleExplainTopic = async (topic, weekIndex, topicIndex) => {
     setCurrentWeekIndex(weekIndex);
     setCurrentTopicIndex(topicIndex);
-    /* setLoadingTabData(true); */
     setSelectedTopic(topic);
-    /* setExplanation("Loading..."); */
-    setSidebarOpen(false); // Close mobile sidebar when topic is selected
+    setSidebarOpen(false);
     const cacheKey = getCacheKey(topic, weekIndex, topicIndex);
 
-    // Check if explanation is already cached
     if (contentCache.explanations[cacheKey]) {
       setExplanation(contentCache.explanations[cacheKey]);
-
-      // Set cached content for other tabs if available
       if (contentCache.simplifiedExps[cacheKey]) {
         setSimplifiedExp(contentCache.simplifiedExps[cacheKey]);
       } else {
         setSimplifiedExp("");
       }
-
       if (contentCache.examples[cacheKey]) {
         setExamples(contentCache.examples[cacheKey]);
       } else {
         setExamples([]);
       }
-
-      return; // Exit early if content is cached
+      return;
     }
 
     setLoadingTabData(true);
@@ -404,7 +391,6 @@ function LearnPage() {
       const explanationText = res.data.explanation;
       setExplanation(explanationText);
 
-      // Cache the explanation
       setContentCache((prev) => ({
         ...prev,
         explanations: {
@@ -419,19 +405,19 @@ function LearnPage() {
       setLoadingTabData(false);
     }
   };
+
   const handleCopyCode = async (code) => {
     try {
       await navigator.clipboard.writeText(code);
-      // You could add a toast notification here
       console.log("Code copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy code:", err);
     }
   };
-  // Sidebar component
+
   const RoadmapSidebar = () => {
     const totalWeeks = roadmap.weeks.length;
-    const compactMode = totalWeeks > 6; // Compact if too many weeks
+    const compactMode = totalWeeks > 6;
 
     return (
       <>
@@ -612,7 +598,6 @@ function LearnPage() {
     );
   };
 
-  //Main section
   const MainSection = () => (
     <div className="flex-1 lg:flex-[3] xl:flex-[3.25] 2xl:flex-[3.5] min-w-0 rounded-none lg:rounded-2xl h=[100svh] lg:h-[90vh] w-full max-w-none flex flex-col overflow-hidden lg:mr-6 xl:mr-6 bg-white border border-gray-200 shadow-sm">
       {/* Header */}
@@ -1183,7 +1168,6 @@ function LearnPage() {
         )}
 
         {/* Quiz Tab */}
-
         {activeTab === "quiz" && (
           <QuizSection
             selectedTopic={selectedTopic}
@@ -1286,7 +1270,7 @@ function LearnPage() {
         )}
       </div>
 
-      {/* Sticky bottom nav - MORE COMPACT FOR MOBILE */}
+      {/* Sticky bottom nav */}
       <div className="p-3 sm:p-4 md:p-6 border-t border-gray-200 bg-white flex-shrink-0">
         <div className="flex items-center justify-between gap-1 sm:gap-3">
           <motion.button
@@ -1350,10 +1334,10 @@ function LearnPage() {
       </div>
     </div>
   );
+
   return (
     <>
       {loadingTabData && (
-        //  Refreshed loading overlay UI: lighter, accessible, responsive, no gradients
         <div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1375,11 +1359,42 @@ function LearnPage() {
       )}
 
       {/* Main Content Area */}
-      <div className="min-h-screen flex flex-col lg:flex-row justify-start mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 items-start gap-3 sm:gap-5 lg:gap-6 xl:gap-8 overflow-x-hidden bg-gray-50 w-full max-w-none">
-        {/* Main Section (top on mobile, left on desktop) */}
+      <div className="min-h-screen flex flex-col lg:flex-row justify-start mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-2 sm:py-4 md:py-6 items-start gap-3 sm:gap-5 lg:gap-6 xl:gap-8 overflow-x-hidden bg-gray-50 w-full max-w-none relative">
         <MainSection />
-        {/* Right Sidebar (bottom on mobile, right on desktop) */}
         <RoadmapSidebar />
+
+        {/* Chatbot Area */}
+        <div className="fixed bottom-6 right-6 z-40">
+            <AnimatePresence>
+                {chatbotOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <MyChatbot />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <motion.button
+                onClick={() => setChatbotOpen(!chatbotOpen)}
+                className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label={chatbotOpen ? "Close chat" : "Open chat"}
+            >
+                {chatbotOpen ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                )}
+            </motion.button>
+        </div>
       </div>
 
       <style jsx>{`
@@ -1440,7 +1455,6 @@ function LearnPage() {
             height: calc(100vh - 250px) !important;
           }
         }
-        /* Prevent horizontal overflow */
         .prose * {
           max-width: 100%;
           overflow-wrap: break-word;
@@ -1456,7 +1470,6 @@ function LearnPage() {
           overflow-wrap: break-word;
           word-break: break-all;
         }
-        /* Add this to the existing <style jsx> block */
         .prose-invert h1,
         .prose-invert h2,
         .prose-invert h3,

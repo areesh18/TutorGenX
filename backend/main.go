@@ -80,6 +80,7 @@ func main() {
 	router.Handle("/my-flashcards", utils.ValidateToken(http.HandlerFunc(handlers.GetUserFlashcardsFromPdf))).Methods("GET")
 	router.Handle("/ytsection", utils.ValidateToken(http.HandlerFunc(handlers.YouTubeHandler))).Methods("POST")
 	router.Handle("/video-summary", utils.ValidateToken(http.HandlerFunc(handlers.GetYouTubeVideoSummaryGemini))).Methods("POST")
+	router.HandleFunc("/ws", handlers.HandleChatbot)
 	//Start the server
 	fmt.Println("Server running at http://localhost:8080")
 	handlerWithCORS := utils.CORSMiddleware(router)
