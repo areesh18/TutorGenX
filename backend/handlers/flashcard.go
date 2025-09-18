@@ -20,7 +20,8 @@ import (
 const flashcardChunkSize = 10000 // A safe chunk size for Groq API
 
 type FlashcardRequest struct {
-	PDFtext string `json:"pdftext"`
+	PDFtext  string `json:"pdftext"`
+	FileName string `json:"fileName,omitempty"`
 }
 
 type Flashcard struct {
@@ -47,6 +48,15 @@ func GenerateFlashcards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	title := req.FileName
+	if title == "" {
+		// AI Title Generation Logic would be here
+		if len(req.PDFtext) > 50 {
+			title = req.PDFtext[:50] + "..."
+		} else {
+			title = req.PDFtext
+		}
+	}
 	if req.PDFtext == "" {
 		http.Error(w, "PDF text is required", http.StatusBadRequest)
 		return
@@ -152,6 +162,7 @@ Generate flashcards now:`, chunk)
 	if result.Error == gorm.ErrRecordNotFound {
 		newFlashcardSet := models.FlashcardSet{
 			UserEmail:  userEmail,
+			Title:      title,
 			PDFText:    req.PDFtext[:50],
 			Flashcards: string(flashcardsJSON),
 		}

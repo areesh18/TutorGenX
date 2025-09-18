@@ -21,7 +21,8 @@ import (
 const maxChunkSize = 10000
 
 type QuizRequest2 struct {
-	PDFtext string `json:"pdftext"`
+	PDFtext  string `json:"pdftext"`
+	FileName string `json:"fileName,omitempty"`
 }
 
 func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
@@ -34,18 +35,29 @@ func GenerateQuizFromPdf(w http.ResponseWriter, r *http.Request) {
 	userEmail := claims["email"].(string)
 
 	var req QuizRequest2
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
+	title := req.FileName
+	if title == "" {
+		// AI Title Generation Logic would be here
+		// For now, we'll use a snippet as a fallback
+		if len(req.PDFtext) > 50 {
+			title = req.PDFtext[:50] + "..."
+		} else {
+			title = req.PDFtext
+		}
+	}
 	if req.PDFtext == "" {
 		http.Error(w, "PDF text is required", http.StatusBadRequest)
 		return
 	}
 	// 1. Check for existing content in the database
 	var quizSet models.QuizSet
-	result := db.DB.Where("user_email = ? AND pdf_text = ?", userEmail, req.PDFtext[:50]).First(&quizSet)
+	result := db.DB.Where("user_email = ? AND pdf_text = ? AND title = ?", userEmail, req.PDFtext[:50], title).First(&quizSet)
 	if result.Error == nil {
 		if quizSet.Quiz != "" {
 			var cachedQuiz QuizResponse
@@ -153,12 +165,13 @@ Generate quiz now:`, chunk)
 	if result.Error == gorm.ErrRecordNotFound {
 		newQuizSet := models.QuizSet{
 			UserEmail: userEmail,
+			Title:     title,
 			PDFText:   req.PDFtext[:50],
 			Quiz:      string(quizJSON),
 		}
 		db.DB.Create(&newQuizSet)
 	} else {
-		db.DB.Model(&quizSet).Where("user_email = ? AND pdf_text = ?", userEmail, req.PDFtext[:50]).Update("quiz", string(quizJSON))
+		db.DB.Model(&quizSet).Where("user_email = ? AND pdf_text = ? AND title = ?", userEmail, req.PDFtext[:50], title).Update("quiz", string(quizJSON))
 	}
 
 	w.Header().Set("Content-Type", "application/json")

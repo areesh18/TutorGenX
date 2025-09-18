@@ -6,6 +6,7 @@ import "gorm.io/gorm"
 type FlashcardSet struct {
 	gorm.Model
 	UserEmail  string `json:"user_email"`
+	Title      string `json:"title"`
 	PDFText    string `gorm:"type:text" json:"pdf_text"`
 	Flashcards string `gorm:"type:text" json:"flashcards"`
 }
