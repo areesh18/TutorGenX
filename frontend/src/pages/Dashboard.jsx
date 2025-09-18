@@ -1641,7 +1641,7 @@ const Dashboard = () => {
                     </button>
                   </div>
 
-                  <p className="text-sm text-gray-600 mb-4">{quiz.pdf_text}</p>
+                  <p className="text-sm text-gray-600 mb-4 break-words">{quiz.pdf_text}</p>
 
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">
