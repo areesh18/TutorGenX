@@ -14,10 +14,10 @@ import {
 
 // Custom components
 const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-xl border border-gray-200">
-    <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4" />
-    <span className="text-gray-900 font-medium text-lg">Processing...</span>
-    <span className="text-gray-500 text-sm mt-1">This may take a moment.</span>
+  <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="w-8 h-8 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-3" />
+    <span className="text-gray-700 font-medium">Processing...</span>
+    <span className="text-gray-500 text-sm">This may take a moment.</span>
   </div>
 );
 
@@ -103,42 +103,53 @@ const FlashcardFromPDF = () => {
   const currentCard = flashcards[currentCardIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50 px-2 sm:px-6 py-4 flex flex-col items-center justify-center font-sans text-gray-900">
+    <div className="min-h-screen bg-gray-50 px-4 py-8 flex flex-col items-center justify-center">
+      {/* Header */}
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-4 sm:p-8 bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-lg space-y-6"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-8"
       >
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-indigo-600 text-white rounded-full mb-4 shadow-md">
-            <FileText size={28} className="sm:size-32" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-            Create Flashcards from PDF
-          </h2>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Upload a PDF and let AI generate flashcards for you instantly.
-          </p>
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FileText className="text-blue-600" size={32} />
         </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          PDF to Flashcards
+        </h1>
+        <p className="text-gray-600">
+          Upload a PDF and generate study flashcards instantly
+        </p>
+      </motion.div>
 
-        <div className="flex flex-col items-center justify-center p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-lg sm:rounded-xl bg-gray-50 w-full">
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+      {/* Upload Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8"
+      >
+        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-blue-300 transition-colors">
+          <div className="space-y-4">
             <input
               type="file"
               accept="application/pdf"
               onChange={handleFileChange}
-              className="block w-full text-xs sm:text-sm text-gray-500
+              className="block w-full text-sm text-gray-600
                 file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-xs sm:file:text-sm file:font-semibold
-                file:bg-indigo-50 file:text-indigo-700
-                hover:file:bg-indigo-100"
+                file:rounded-lg file:border-0
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100 file:cursor-pointer"
             />
+            
+            {file && (
+              <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
+                Selected: <span className="font-medium">{file.name}</span>
+              </div>
+            )}
+
             <motion.button
               onClick={handleUpload}
               disabled={loading || !file}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -154,102 +165,113 @@ const FlashcardFromPDF = () => {
                 </>
               )}
             </motion.button>
+
+            {error && (
+              <div className="text-sm text-red-600 p-3 bg-red-50 rounded-lg">
+                {error}
+              </div>
+            )}
           </div>
-          {file && (
-            <p className="mt-4 text-xs sm:text-sm text-gray-600 break-all">
-              Selected file:{" "}
-              <span className="font-medium text-gray-800">{file.name}</span>
-            </p>
-          )}
-          {error && (
-            <p className="mt-4 text-xs sm:text-sm text-red-600">{error}</p>
-          )}
         </div>
       </motion.div>
 
-      <AnimatePresence mode="wait">
+      {/* Loading */}
+      <AnimatePresence>
         {loading && (
           <motion.div
-            key="loading-spinner"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mt-6 sm:mt-8 w-full"
           >
             <LoadingSpinner />
           </motion.div>
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
+      {/* Flashcards */}
+      <AnimatePresence>
         {flashcards.length > 0 && !loading && (
           <motion.div
-            key="flashcard-section"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mt-6 sm:mt-8 space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-3xl"
           >
-            {/* Use flex-row for arrows and card */}
-            <div className="flex flex-row items-center justify-center gap-4 w-full">
-              <motion.button
+            {/* Progress */}
+            <div className="text-center mb-6">
+              <span className="text-gray-600">
+                {currentCardIndex + 1} of {flashcards.length}
+              </span>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <motion.div
+                  className="bg-blue-500 h-2 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${((currentCardIndex + 1) / flashcards.length) * 100}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            </div>
+
+            {/* Card and Navigation */}
+            <div className="flex items-center gap-4">
+              <button
                 onClick={handlePrev}
-                className="p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                className="p-3 bg-white rounded-full shadow-sm hover:shadow-md border border-gray-200 hover:bg-gray-50"
               >
-                <ChevronLeft size={24} />
-              </motion.button>
+                <ChevronLeft size={24} className="text-gray-600" />
+              </button>
 
               <div
-                className="relative flex-1 h-64 sm:h-80 perspective"
+                className="flex-1 h-80 cursor-pointer"
                 onClick={handleFlip}
               >
                 <motion.div
-                  className="absolute w-full h-full rounded-2xl shadow-xl p-4 sm:p-8 flex items-center justify-center cursor-pointer"
-                  initial={{ rotateY: 0 }}
+                  className="relative w-full h-full rounded-xl shadow-sm"
                   animate={{ rotateY: isFlipped ? 180 : 0 }}
                   transition={{ duration: 0.6 }}
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  {/* Front Side */}
+                  {/* Question Side */}
                   <div
-                    className="absolute w-full h-full flex items-center justify-center text-center backface-hidden"
+                    className="absolute inset-0 bg-blue-500 text-white rounded-xl p-8 flex items-center justify-center text-center"
                     style={{ backfaceVisibility: "hidden" }}
                   >
-                    <h3 className="text-lg sm:text-2xl font-bold text-gray-900 leading-snug break-words px-2">
-                      {currentCard.front}
-                    </h3>
+                    <div>
+                      <h3 className="text-xl font-semibold leading-relaxed">
+                        {currentCard.front}
+                      </h3>
+                      <p className="text-blue-100 text-sm mt-4">
+                        Click to reveal answer
+                      </p>
+                    </div>
                   </div>
-                  {/* Back Side */}
+
+                  {/* Answer Side */}
                   <div
-                    className="absolute w-full h-full flex items-center justify-center text-center backface-hidden"
+                    className="absolute inset-0 bg-green-500 text-white rounded-xl p-8 flex items-center justify-center text-center"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                     }}
                   >
-                    <p className="text-base sm:text-xl text-gray-700 break-words px-2">
-                      {currentCard.back}
-                    </p>
+                    <div>
+                      <p className="text-lg leading-relaxed">
+                        {currentCard.back}
+                      </p>
+                      <p className="text-green-100 text-sm mt-4">
+                        Click to see question
+                      </p>
+                    </div>
                   </div>
                 </motion.div>
               </div>
 
-              <motion.button
+              <button
                 onClick={handleNext}
-                className="p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                className="p-3 bg-white rounded-full shadow-sm hover:shadow-md border border-gray-200 hover:bg-gray-50"
               >
-                <ChevronRight size={24} />
-              </motion.button>
+                <ChevronRight size={24} className="text-gray-600" />
+              </button>
             </div>
-
-            <p className="text-center text-gray-500 mt-4 text-xs sm:text-base">
-              Flashcard {currentCardIndex + 1} of {flashcards.length}
-            </p>
           </motion.div>
         )}
       </AnimatePresence>

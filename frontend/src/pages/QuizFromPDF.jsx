@@ -9,18 +9,15 @@ import {
   CheckCircle,
   XCircle,
   RefreshCcw,
+  Award,
 } from "lucide-react";
 
 // Custom components for a cleaner UI
 const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center p-6 sm:p-8 bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-200 w-full max-w-xs sm:max-w-md mx-auto">
-    <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4" />
-    <span className="text-gray-900 font-medium text-base sm:text-lg">
-      Processing...
-    </span>
-    <span className="text-gray-500 text-xs sm:text-sm mt-1">
-      This may take a moment.
-    </span>
+  <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="w-8 h-8 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-3" />
+    <span className="text-gray-700 font-medium">Processing...</span>
+    <span className="text-gray-500 text-sm">This may take a moment.</span>
   </div>
 );
 
@@ -127,44 +124,53 @@ const QuizFromPDF = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-2 sm:px-6 py-4 flex flex-col items-center justify-center font-sans text-gray-900">
-      {/* Main Content Card */}
+    <div className="min-h-screen bg-gray-50 px-4 py-8 flex flex-col items-center justify-center">
+      {/* Header */}
       <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-4 sm:p-8 bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-lg space-y-6"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-8"
       >
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-indigo-600 text-white rounded-full mb-4 shadow-md">
-            <FileText size={28} className="sm:size-32" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-            Create a Quiz from PDF
-          </h2>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Upload a PDF and let AI generate a quiz for you instantly.
-          </p>
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FileText className="text-blue-600" size={32} />
         </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          PDF to Quiz
+        </h1>
+        <p className="text-gray-600">
+          Upload a PDF and generate an interactive quiz instantly
+        </p>
+      </motion.div>
 
-        {/* File Upload Section */}
-        <div className="flex flex-col items-center justify-center p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-lg sm:rounded-xl bg-gray-50">
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+      {/* Upload Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8"
+      >
+        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-blue-300 transition-colors">
+          <div className="space-y-4">
             <input
               type="file"
               accept="application/pdf"
               onChange={handleFileChange}
-              className="block w-full text-xs sm:text-sm text-gray-500
+              className="block w-full text-sm text-gray-600
                 file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-xs sm:file:text-sm file:font-semibold
-                file:bg-indigo-50 file:text-indigo-700
-                hover:file:bg-indigo-100"
+                file:rounded-lg file:border-0
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100 file:cursor-pointer"
             />
+            
+            {file && (
+              <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
+                Selected: <span className="font-medium">{file.name}</span>
+              </div>
+            )}
+
             <motion.button
               onClick={handleUpload}
               disabled={loading || !file}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -180,60 +186,63 @@ const QuizFromPDF = () => {
                 </>
               )}
             </motion.button>
+
+            {error && (
+              <div className="text-sm text-red-600 p-3 bg-red-50 rounded-lg">
+                {error}
+              </div>
+            )}
           </div>
-          {file && (
-            <p className="mt-4 text-xs sm:text-sm text-gray-600 break-all">
-              Selected file:{" "}
-              <span className="font-medium text-gray-800">{file.name}</span>
-            </p>
-          )}
-          {error && (
-            <p className="mt-4 text-xs sm:text-sm text-red-600">{error}</p>
-          )}
         </div>
       </motion.div>
 
-      {/* Loading State */}
-      {loading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mt-6 sm:mt-8 w-full"
-        >
-          <LoadingSpinner />
-        </motion.div>
-      )}
+      {/* Loading */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <LoadingSpinner />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Quiz Section */}
-      <AnimatePresence mode="wait">
-        {quiz.length > 0 && (
+      <AnimatePresence>
+        {quiz.length > 0 && !loading && (
           <motion.div
-            key="quiz-section"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mt-6 sm:mt-8 space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-3xl"
           >
-            <h3 className="text-xl sm:text-2xl font-bold text-center">
-              Your Quiz
-            </h3>
-            <div className="space-y-4">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Quiz</h2>
+              <p className="text-gray-600">{quiz.length} questions to test your knowledge</p>
+            </div>
+
+            <div className="space-y-6">
               {quiz.map((q, idx) => (
                 <motion.div
                   key={idx}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="bg-white p-4 sm:p-6 rounded-lg sm:rounded-xl border border-gray-200 shadow-sm"
+                  className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
                 >
-                  <h3 className="font-semibold text-base sm:text-lg mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-full text-xs sm:text-sm font-bold">
-                      {idx + 1}
-                    </span>
-                    {q.question}
-                  </h3>
-                  <ul className="space-y-2">
+                  <div className="mb-4">
+                    <div className="flex items-start gap-3">
+                      <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <h3 className="font-semibold text-lg text-gray-900 leading-relaxed">
+                        {q.question}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 ml-11">
                     {q.options.map((opt, i) => {
                       const optionLetter = String.fromCharCode(65 + i);
                       const isSelected = selectedAnswers[idx] === optionLetter;
@@ -243,72 +252,81 @@ const QuizFromPDF = () => {
                           optionLetter ||
                           String(q.answer).trim() === String(opt).trim());
 
-                      let labelClasses =
-                        "bg-white border-gray-200 text-gray-700 hover:bg-gray-50";
+                      let optionClasses = "bg-white border-gray-200 hover:bg-gray-50";
+                      let iconColor = "text-gray-400";
+                      let showIcon = false;
+
                       if (quizSubmitted) {
                         if (isCorrect) {
-                          labelClasses =
-                            "bg-emerald-50 border-emerald-300 text-emerald-800";
+                          optionClasses = "bg-green-50 border-green-300 text-green-800";
+                          iconColor = "text-green-600";
+                          showIcon = true;
                         } else if (isSelected) {
-                          labelClasses =
-                            "bg-rose-50 border-rose-300 text-rose-800";
+                          optionClasses = "bg-red-50 border-red-300 text-red-800";
+                          iconColor = "text-red-600";
+                          showIcon = true;
                         }
                       } else if (isSelected) {
-                        labelClasses =
-                          "bg-indigo-50 border-indigo-300 text-indigo-800";
+                        optionClasses = "bg-blue-50 border-blue-300 text-blue-800";
                       }
 
                       return (
-                        <motion.li
+                        <motion.label
                           key={i}
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
+                          className={`flex items-center p-4 rounded-lg border cursor-pointer transition-all duration-200 ${optionClasses} ${
+                            quizSubmitted ? 'cursor-default' : ''
+                          }`}
+                          whileHover={!quizSubmitted ? { scale: 1.01 } : {}}
+                          whileTap={!quizSubmitted ? { scale: 0.99 } : {}}
                         >
-                          <label
-                            className={`flex items-center p-2 sm:p-3 rounded-lg border cursor-pointer transition-colors duration-200 ${labelClasses} w-full`}
-                          >
-                            <input
-                              type="radio"
-                              name={`q-${idx}`}
-                              value={optionLetter}
-                              checked={isSelected}
-                              disabled={quizSubmitted}
-                              onChange={() =>
-                                handleAnswerSelect(idx, optionLetter)
-                              }
-                              className="sr-only"
-                            />
-                            <span className="font-semibold w-5 text-center">
-                              {optionLetter}.
-                            </span>
-                            <span className="ml-2 break-words">{opt}</span>
-                          </label>
-                        </motion.li>
+                          <input
+                            type="radio"
+                            name={`q-${idx}`}
+                            value={optionLetter}
+                            checked={isSelected}
+                            disabled={quizSubmitted}
+                            onChange={() => handleAnswerSelect(idx, optionLetter)}
+                            className="sr-only"
+                          />
+                          <span className="font-bold text-sm w-6 text-center">
+                            {optionLetter}.
+                          </span>
+                          <span className="ml-3 flex-1">{opt}</span>
+                          {showIcon && (
+                            <div className="ml-2">
+                              {isCorrect ? (
+                                <CheckCircle size={20} className={iconColor} />
+                              ) : isSelected ? (
+                                <XCircle size={20} className={iconColor} />
+                              ) : null}
+                            </div>
+                          )}
+                        </motion.label>
                       );
                     })}
-                  </ul>
+                  </div>
                 </motion.div>
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            <div className="mt-8 text-center">
               {!quizSubmitted ? (
                 <motion.button
                   onClick={handleSubmitQuiz}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-md"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   Submit Quiz
                 </motion.button>
               ) : (
                 <motion.button
                   onClick={handleRetryQuiz}
-                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-md"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                  className="px-8 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  Retry
+                  Try Again
                 </motion.button>
               )}
             </div>
@@ -316,43 +334,43 @@ const QuizFromPDF = () => {
         )}
       </AnimatePresence>
 
-      {/* Popup */}
+      {/* Score Popup */}
       <AnimatePresence>
         {showPopup && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl text-center w-full max-w-xs sm:max-w-sm"
+              className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: -20 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-indigo-100 text-indigo-600 rounded-full mb-4">
-                <CheckCircle size={28} className="sm:size-32" />
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="text-blue-600" size={32} />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">
-                Quiz Completed!
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Quiz Complete!
               </h2>
-              <p className="text-gray-600 text-base sm:text-lg">
+              <p className="text-gray-600 text-lg mb-6">
                 You scored{" "}
-                <span className="font-bold text-indigo-600">{score}</span> out
-                of {quiz.length} questions.
+                <span className="font-bold text-blue-600">{score}</span> out of{" "}
+                <span className="font-bold">{quiz.length}</span>
               </p>
-              <div className="mt-6 flex flex-col gap-3">
+              <div className="space-y-3">
                 <button
                   onClick={handleRetryQuiz}
-                  className="w-full px-4 py-2.5 rounded-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                  className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
                 >
                   Try Again
                 </button>
                 <button
                   onClick={() => setShowPopup(false)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold transition-colors"
+                  className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition-colors"
                 >
                   Close
                 </button>
