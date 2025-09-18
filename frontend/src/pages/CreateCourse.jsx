@@ -179,8 +179,86 @@ const RoadmapModal = ({ isOpen, onClose, roadmap, onSave, onDiscard }) => {
     </AnimatePresence>
   )
 }
+// Follow-up questions modal
+const FollowUpModal = ({ isOpen, onClose, onSubmit }) => {
+  const [motivation, setMotivation] = useState("career");
+  const [learningStyle, setLearningStyle] = useState("balanced");
+
+  const handleFinalSubmit = (e) => {
+    e.preventDefault();
+    onSubmit({ motivation, learningStyle });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.95, y: 10, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.95, y: 10, opacity: 0 }}
+            className="relative bg-white rounded-xl shadow-xl w-full max-w-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Personalize Your Course</h3>
+            <p className="text-gray-600 mb-6">A few more details will help us create the perfect plan for you.</p>
+
+            <form onSubmit={handleFinalSubmit} className="space-y-6">
+              {/* Motivation Question */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What is your primary motivation for learning this?
+                </label>
+                <select
+                  value={motivation}
+                  onChange={(e) => setMotivation(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="career">For my career / To get a job</option>
+                  <option value="exam">For an exam or certification</option>
+                  <option value="hobby">As a hobby / Personal interest</option>
+                  <option value="project">To build a specific project</option>
+                </select>
+              </div>
+
+              {/* Learning Style Question */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Which learning style do you prefer?
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button type="button" onClick={() => setLearningStyle('practical')} className={`p-3 rounded-lg border text-sm ${learningStyle === 'practical' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white hover:bg-gray-50'}`}>Practical & Project-Based</button>
+                  <button type="button" onClick={() => setLearningStyle('theoretical')} className={`p-3 rounded-lg border text-sm ${learningStyle === 'theoretical' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white hover:bg-gray-50'}`}>Theoretical & Conceptual</button>
+                  <button type="button" onClick={() => setLearningStyle('balanced')} className={`p-3 rounded-lg border text-sm ${learningStyle === 'balanced' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white hover:bg-gray-50'}`}>A Balanced Mix</button>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg font-medium text-gray-700 bg-gray-100 hover:bg-gray-200">
+                  Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                  Generate Personalized Course
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 function CreateCourse() {
+  const [isFollowUpModalOpen, setFollowUpModalOpen] = useState(false);
   const [generatedTitle, setGeneratedTitle] = useState("")
   const [goal, setGoal] = useState("")
   const [roadmap, setRoadmap] = useState([])
@@ -279,39 +357,48 @@ function CreateCourse() {
     setMsg("Course Discarded")
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setMsg("Generating course..")
+ const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (goal.trim()) {
+      setFollowUpModalOpen(true);
+    }
+  };
+  // NEW: This function is called from the follow-up modal to finally generate the course
+  const handleFinalSubmit = async (learningContext) => {
+    setFollowUpModalOpen(false);
+    setLoading(true);
+    setMsg("Generating personalized course...");
     try {
       const res = await axios.post(
         "http://localhost:8080/roadmap",
-        { goal },
+        { 
+          goal,
+          motivation: learningContext.motivation,
+          learningStyle: learningContext.learningStyle
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
-      )
-      setRoadmap(res.data.roadmap)
-      setShowRoadmapModal(true)
-      setUnsavedRoadmap(true)
-      setNewGoal(res.data.goal)
-      setGoal("")
-      setMsg("Course Generated")
+        }
+      );
+      setRoadmap(res.data.roadmap);
+      setShowRoadmapModal(true);
+      setNewGoal(res.data.goal);
+      setGoal("");
+      setMsg("Course Generated");
     } catch (err) {
-      setGoal("")
-      console.error(err)
-
+      setGoal("");
+      console.error(err);
       if (err.response && err.response.data && typeof err.response.data === "string") {
-        setMsg(err.response.data)
+        setMsg(err.response.data);
       } else {
-        setMsg("Failed to generate roadmap")
+        setMsg("Failed to generate roadmap");
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Open delete modal for single roadmap
   const handleDeleteClick = (id, title = "Learning Roadmap") => {
@@ -420,7 +507,12 @@ function CreateCourse() {
         onCancel={handleDeleteCancel}
         confirmText={deleteModal.type === "all" ? "Delete All" : "Delete"}
       />
-
+      {/* NEW: Add the follow-up modal */}
+      <FollowUpModal 
+        isOpen={isFollowUpModalOpen}
+        onClose={() => setFollowUpModalOpen(false)}
+        onSubmit={handleFinalSubmit}
+      />
       {/* Roadmap Preview Modal */}
       <RoadmapModal
         isOpen={showRoadmapModal}

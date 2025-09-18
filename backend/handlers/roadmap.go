@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"tutor_genX/db"
 	"tutor_genX/models"
 	"tutor_genX/utils"
@@ -18,9 +17,10 @@ import (
 )
 
 type RoadmapRequest struct {
-	Goal string `json:"goal"`
+	Goal          string `json:"goal"`
+	Motivation    string `json:"motivation"`    // e.g., "exam", "career", "hobby", "project"
+	LearningStyle string `json:"learningStyle"` // e.g., "practical", "theoretical", "balanced"
 }
-
 type RoadmapWeek struct {
 	Week   int      `json:"week"`
 	Title  string   `json:"title"`
@@ -200,127 +200,29 @@ func HandleRoadmap(w http.ResponseWriter, r *http.Request) {
 	cfg.BaseURL = "https://api.groq.com/openai/v1"
 	client := openai.NewClientWithConfig(cfg)
 
-	// Step 1: Classify the learning goal
-	classificationPrompt := fmt.Sprintf(`Classify the user's learning goal into one of three categories: CODING, THEORETICAL, or SCIENCE. Respond with only one of these words.
+	prompt := fmt.Sprintf(`You are an expert curriculum designer. Create a personalized learning roadmap based on the user's goal and preferences.
 
-Goal: "%s"`, req.Goal)
+	**User Goal:** "%s"
+	**Motivation:** "%s" (Valid values: career, exam, hobby, project)
+	**Preferred Learning Style:** "%s" (Valid values: practical, theoretical, balanced)
 
-	classificationResp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model: "llama-3.3-70b-versatile",
-			Messages: []openai.ChatCompletionMessage{
-				{Role: openai.ChatMessageRoleUser, Content: classificationPrompt},
-			},
-		},
-	)
-	if err != nil {
-		http.Error(w, "Failed to classify goal: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	goalType := strings.TrimSpace(classificationResp.Choices[0].Message.Content)
+	**Instructions:**
+	1.  **Analyze Context:** Carefully consider the motivation and learning style to tailor the content.
+		* If **Motivation is 'career' or 'project'** and **Learning Style is 'practical'**, the roadmap must be 70-80%% project-based, with mini-projects and a capstone project.
+		* If **Motivation is 'exam'**, prioritize core concepts, key theories, and include revision/practice test weeks.
+		* If **Learning Style is 'theoretical'**, focus on deep dives into concepts, history, and critical analysis.
+		* If **Learning Style is 'balanced'**, create a 50/50 split between theory and application.
+	2.  **Structure:** Create an 8-16 week roadmap. Each week must have a clear title and 3-5 specific, actionable topics.
+	3.  **Progression:** The difficulty must progress logically from foundational to advanced.
 
-	// Step 2: Generate roadmap using a specialized prompt based on the goal type
-	var prompt string
-	switch goalType {
-	case "CODING":
-		prompt = fmt.Sprintf(`You are an expert in technical education. Create a practical, project-based learning roadmap for a coding-related goal.
-
-		**Goal:** "%s"
-
-		**Instructions:**
-		1.  **Structure:** Create an 8-12 week roadmap.
-		2.  **Content Mix:**
-			* **Theory (30%%):** Start each week with fundamental concepts.
-			* **Practical (70%%):** Include hands-on coding exercises, mini-projects, and debugging tasks. Every 3-4 weeks, include a larger project that integrates previously learned skills.
-		3.  **Topics:** Each week should have 3-5 specific, actionable topics.
-		4.  **Progression:** The roadmap must progress logically from basic setup to advanced concepts and deployment.
-
-		**Output Format (Strict JSON array):**
-		[
-		  {
-			"week": 1,
-			"title": "Foundations and Setup",
-			"topics": [
-			  "Install development environment and necessary tools",
-			  "Learn basic syntax and data structures",
-			  "Complete a 'Hello World' project to verify setup"
-			]
-		  }
-		]`, req.Goal)
-	case "THEORETICAL":
-		prompt = fmt.Sprintf(`You are a university professor creating a syllabus for a theoretical subject.
-
-		**Goal:** "%s"
-
-		**Instructions:**
-		1.  **Structure:** Create a 10-14 week roadmap.
-		2.  **Content Mix:**
-			* **Foundational Knowledge (60%%):** Focus on core theories, historical context, and key literature.
-			* **Critical Analysis (40%%):** Include topics related to analyzing primary texts, forming arguments, and writing critical essays.
-		3.  **Topics:** Each week should have 3-5 specific topics related to readings, concepts, and analytical exercises.
-		4.  **Progression:** Start with foundational concepts and move towards complex theories and comparative analysis.
-
-		**Output Format (Strict JSON array):**
-		[
-		  {
-			"week": 1,
-			"title": "Introduction to Core Concepts",
-			"topics": [
-			  "Read foundational texts on the subject",
-			  "Define key terminology and schools of thought",
-			  "Write a summary of the main historical debates"
-			]
-		  }
-		]`, req.Goal)
-	case "SCIENCE":
-		prompt = fmt.Sprintf(`You are a science educator designing a curriculum for a scientific subject.
-
-		**Goal:** "%s"
-
-		**Instructions:**
-		1.  **Structure:** Create a 12-16 week roadmap.
-		2.  **Content Mix:**
-			* **Core Principles (50%%):** Cover the fundamental laws, theories, and models.
-			* **Practical Application (50%%):** Include topics on experimental methods, data analysis, and real-world applications of the scientific principles.
-		3.  **Topics:** Each week should have 3-5 specific topics that balance theory with practical understanding.
-		4.  **Progression:** Build from basic principles to complex systems, incorporating data interpretation and case studies.
-
-		**Output Format (Strict JSON array):**
-		[
-		  {
-			"week": 1,
-			"title": "Fundamentals of the Field",
-			"topics": [
-			  "Understand the core principles and laws",
-			  "Learn about key historical experiments",
-			  "Analyze a basic dataset related to the topic"
-			]
-		  }
-		]`, req.Goal)
-	default: // Fallback for general goals
-		prompt = fmt.Sprintf(`You are a career counselor creating a learning roadmap.
-
-		**Goal:** "%s"
-
-		**Instructions:**
-		1.  **Structure:** Create an 8-16 week roadmap based on goal complexity.
-		2.  **Content:** Each week should focus on 1-2 main concepts with 3-5 specific, actionable topics.
-		3.  **Progression:** Ensure a logical progression from beginner to advanced, including practical applications or revision weeks.
-
-		**Output Format (Strict JSON array):**
-		[
-		  {
-			"week": 1,
-			"title": "Foundations and Setup",
-			"topics": [
-			  "Topic 1",
-			  "Topic 2",
-			  "Topic 3"
-			]
-		  }
-		]`, req.Goal)
-	}
+	**Output Format (Strict JSON array, no other text):**
+	[
+	  {
+		"week": 1,
+		"title": "Week 1 Title",
+		"topics": ["Topic 1.1", "Topic 1.2", "Topic 1.3"]
+	  }
+	]`, req.Goal, req.Motivation, req.LearningStyle)
 
 	// Call Groq with the specialized prompt
 	resp, err := client.CreateChatCompletion(
