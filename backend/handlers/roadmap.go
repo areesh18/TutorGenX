@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"tutor_genX/db"
 	"tutor_genX/models"
 	"tutor_genX/utils"
@@ -20,14 +21,6 @@ type RoadmapRequest struct {
 	Goal string `json:"goal"`
 }
 
-/* type RoadmapItem struct {
-	Week  int    `json:"week"`
-	Topic string `json:"topic"`
-} */
-/* type RoadmapResponse struct {
-	Goal    string        `json:"goal"`
-	Roadmap []RoadmapItem `json:"roadmap"`
-} */
 type RoadmapWeek struct {
 	Week   int      `json:"week"`
 	Title  string   `json:"title"`
@@ -189,7 +182,6 @@ func HandleRoadmap(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	/* userEmail := claims["email"].(string) */
 
 	// Parse request body
 	var req RoadmapRequest
@@ -208,50 +200,129 @@ func HandleRoadmap(w http.ResponseWriter, r *http.Request) {
 	cfg.BaseURL = "https://api.groq.com/openai/v1"
 	client := openai.NewClientWithConfig(cfg)
 
-	// Smart prompt with validation
-	prompt := fmt.Sprintf(`You are a career counselor creating learning roadmaps. 
-Your job is to ALWAYS return valid JSON.
+	// Step 1: Classify the learning goal
+	classificationPrompt := fmt.Sprintf(`Classify the user's learning goal into one of three categories: CODING, THEORETICAL, or SCIENCE. Respond with only one of these words.
 
-VALIDATION RULES:
-- Valid goals: specific skills, career paths, technologies, subjects, or exam preparation.
-- Invalid goals: vague, unrealistic, inappropriate, or non-educational (e.g. "I want to be an apple").
-- If invalid, return ONLY:
-{"error": "Invalid goal"}
+Goal: "%s"`, req.Goal)
 
-ROADMAP GENERATION (for valid goals):
-1. Rewrite vague or typo-filled goals into a clear, specific learning goal.
-2. Create a roadmap:
-   - 8–16 weeks maximum (adjust based on goal complexity).
-   - Each week focuses on 1–2 main concepts.
-   - 3–5 specific, actionable topics per week.
-   - Progressive difficulty (beginner → advanced).
-   - Include practical applications/projects/revision every 2–3 weeks.
+	classificationResp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: "llama-3.3-70b-versatile",
+			Messages: []openai.ChatCompletionMessage{
+				{Role: openai.ChatMessageRoleUser, Content: classificationPrompt},
+			},
+		},
+	)
+	if err != nil {
+		http.Error(w, "Failed to classify goal: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	goalType := strings.TrimSpace(classificationResp.Choices[0].Message.Content)
 
-OUTPUT FORMAT (strict JSON array):
-[
-  {
-    "week": 1,
-    "title": "Foundations and Setup",
-    "topics": [
-      "Install development environment",
-      "Learn basic syntax and structure",
-      "Complete first hello world program"
-    ]
-  }
-]
+	// Step 2: Generate roadmap using a specialized prompt based on the goal type
+	var prompt string
+	switch goalType {
+	case "CODING":
+		prompt = fmt.Sprintf(`You are an expert in technical education. Create a practical, project-based learning roadmap for a coding-related goal.
 
-QUALITY CHECKS:
-- Always return JSON only (no text outside JSON).
-- No repeated topics across weeks.
-- Each topic must be specific and actionable.
-- Logical progression.
-- Realistic workload (8–12 hours weekly).
+		**Goal:** "%s"
 
-Goal: %s
+		**Instructions:**
+		1.  **Structure:** Create an 8-12 week roadmap.
+		2.  **Content Mix:**
+			* **Theory (30%%):** Start each week with fundamental concepts.
+			* **Practical (70%%):** Include hands-on coding exercises, mini-projects, and debugging tasks. Every 3-4 weeks, include a larger project that integrates previously learned skills.
+		3.  **Topics:** Each week should have 3-5 specific, actionable topics.
+		4.  **Progression:** The roadmap must progress logically from basic setup to advanced concepts and deployment.
 
-Now generate the correct JSON output:`, req.Goal)
+		**Output Format (Strict JSON array):**
+		[
+		  {
+			"week": 1,
+			"title": "Foundations and Setup",
+			"topics": [
+			  "Install development environment and necessary tools",
+			  "Learn basic syntax and data structures",
+			  "Complete a 'Hello World' project to verify setup"
+			]
+		  }
+		]`, req.Goal)
+	case "THEORETICAL":
+		prompt = fmt.Sprintf(`You are a university professor creating a syllabus for a theoretical subject.
 
-	// Call Groq
+		**Goal:** "%s"
+
+		**Instructions:**
+		1.  **Structure:** Create a 10-14 week roadmap.
+		2.  **Content Mix:**
+			* **Foundational Knowledge (60%%):** Focus on core theories, historical context, and key literature.
+			* **Critical Analysis (40%%):** Include topics related to analyzing primary texts, forming arguments, and writing critical essays.
+		3.  **Topics:** Each week should have 3-5 specific topics related to readings, concepts, and analytical exercises.
+		4.  **Progression:** Start with foundational concepts and move towards complex theories and comparative analysis.
+
+		**Output Format (Strict JSON array):**
+		[
+		  {
+			"week": 1,
+			"title": "Introduction to Core Concepts",
+			"topics": [
+			  "Read foundational texts on the subject",
+			  "Define key terminology and schools of thought",
+			  "Write a summary of the main historical debates"
+			]
+		  }
+		]`, req.Goal)
+	case "SCIENCE":
+		prompt = fmt.Sprintf(`You are a science educator designing a curriculum for a scientific subject.
+
+		**Goal:** "%s"
+
+		**Instructions:**
+		1.  **Structure:** Create a 12-16 week roadmap.
+		2.  **Content Mix:**
+			* **Core Principles (50%%):** Cover the fundamental laws, theories, and models.
+			* **Practical Application (50%%):** Include topics on experimental methods, data analysis, and real-world applications of the scientific principles.
+		3.  **Topics:** Each week should have 3-5 specific topics that balance theory with practical understanding.
+		4.  **Progression:** Build from basic principles to complex systems, incorporating data interpretation and case studies.
+
+		**Output Format (Strict JSON array):**
+		[
+		  {
+			"week": 1,
+			"title": "Fundamentals of the Field",
+			"topics": [
+			  "Understand the core principles and laws",
+			  "Learn about key historical experiments",
+			  "Analyze a basic dataset related to the topic"
+			]
+		  }
+		]`, req.Goal)
+	default: // Fallback for general goals
+		prompt = fmt.Sprintf(`You are a career counselor creating a learning roadmap.
+
+		**Goal:** "%s"
+
+		**Instructions:**
+		1.  **Structure:** Create an 8-16 week roadmap based on goal complexity.
+		2.  **Content:** Each week should focus on 1-2 main concepts with 3-5 specific, actionable topics.
+		3.  **Progression:** Ensure a logical progression from beginner to advanced, including practical applications or revision weeks.
+
+		**Output Format (Strict JSON array):**
+		[
+		  {
+			"week": 1,
+			"title": "Foundations and Setup",
+			"topics": [
+			  "Topic 1",
+			  "Topic 2",
+			  "Topic 3"
+			]
+		  }
+		]`, req.Goal)
+	}
+
+	// Call Groq with the specialized prompt
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
@@ -268,50 +339,12 @@ Now generate the correct JSON output:`, req.Goal)
 
 	content := resp.Choices[0].Message.Content
 
-	// Check if Groq said it's an invalid goal
-	if content == `{"error": "Invalid goal"}` {
-		http.Error(w, "Please enter a valid career or learning goal.", http.StatusBadRequest)
-		return
-	}
-
 	// Try parsing roadmap
 	var roadmap []RoadmapWeek
 	if err := json.Unmarshal([]byte(content), &roadmap); err != nil || len(roadmap) == 0 {
-		http.Error(w, "Failed to parse roadmap. Ensure your goal is clear and well-formed.", http.StatusBadRequest)
+		http.Error(w, "Failed to parse roadmap. Please try a different goal.", http.StatusBadRequest)
 		return
 	}
-
-	// Save roadmap to DB
-	/* newRoadmap := models.Roadmap{
-		UserEmail: userEmail,
-		Goal:      req.Goal,
-	}
-	if err := db.DB.Create(&newRoadmap).Error; err != nil {
-		http.Error(w, "Failed to save roadmap", http.StatusInternalServerError)
-		return
-	}
-
-	for _, week := range roadmap {
-		topicsJSON, err := json.Marshal(week.Topics)
-		if err != nil {
-			http.Error(w, "Failed to serialize topics", http.StatusInternalServerError)
-			return
-		}
-		progress := make([]bool, len(week.Topics))
-		progressJSON, err := json.Marshal(progress)
-		if err != nil {
-			http.Error(w, "Failed to serialize progress", http.StatusInternalServerError)
-			return
-		}
-
-		db.DB.Create(&models.RoadmapWeek{
-			RoadmapID: newRoadmap.ID,
-			Week:      week.Week,
-			Title:     week.Title,
-			Topics:    string(topicsJSON),
-			Progress:  string(progressJSON),
-		})
-	} */
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -509,84 +542,6 @@ User Input: %s`, req.GoalReq)
 	})
 
 }
-
-/* func ExplainTopicHandler(w http.ResponseWriter, r *http.Request) {
-	// Auth check
-	claims, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	userID := claims["email"].(string)
-
-	// Parse request body
-	var req struct {
-		Topic string `json:"topic"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Topic == "" {
-		http.Error(w, "Invalid request: topic is required", http.StatusBadRequest)
-		return
-	}
-	//check for existing content in the db
-	var content models.Content
-	result := db.DB.Where("user_id = ? AND topic = ?", userID, req.Topic).First(&content)
-	 if result.Error == nil{
-		// Content entry exists. Check if the explanation is already saved.
-		if content.Explanation != "" {
-			// Found in cache, return immediately
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(SimplifiedResponse{SimplifiedExplanation: content.SimplifiedExplanation})
-			return
-		}
-
-	 }
-	// Groq API setup
-	apiKey := os.Getenv("GROQ_API_KEY")
-	if apiKey == "" {
-		http.Error(w, "GROQ_API_KEY not set", http.StatusInternalServerError)
-		return
-	}
-
-	cfg := openai.DefaultConfig(apiKey)
-	cfg.BaseURL = "https://api.groq.com/openai/v1"
-	client := openai.NewClientWithConfig(cfg)
-
-	// Prompt
-	prompt := fmt.Sprintf(`Explain the following topic like you're teaching a beginner. Your explanation should be clear, concise, and easy to read.
-
-Use the following Markdown formatting to structure your response:
-- Use **bold** text for key terms and important concepts.
-- Use headings (## and ###) to break the content into logical sections.
-- Use bullet points (*) or numbered lists (1.) for step-by-step instructions or to list related concepts.
-- Use code blocks (`+"```"+`) for any code snippets or technical examples.
-- Use blockquotes (>) for important notes, tips, or warnings.
-
-**Important:** Focus on clear explanations using text, headings, lists, and code blocks only. Do not create tables, diagrams, or use pipe symbols (|) in your response.
-
-Topic: %s`, req.Topic)
-
-	// Call Groq
-	resp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model: "llama-3.3-70b-versatile",
-			Messages: []openai.ChatCompletionMessage{
-				{Role: openai.ChatMessageRoleUser, Content: prompt},
-			},
-		},
-	)
-	if err != nil {
-		http.Error(w, "Failed to fetch explanation: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	explanation := resp.Choices[0].Message.Content
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"explanation": explanation,
-	})
-} */
 
 func TestPreload(w http.ResponseWriter, r *http.Request) {
 	var roadmap models.Roadmap
