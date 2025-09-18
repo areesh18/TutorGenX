@@ -1,7 +1,7 @@
-// frontend/src/pages/FlashcardFromPDF.jsx
+// frontend/src/pages/Flashcards.jsx
 "use client";
 
-import React, { useState } from "react";
+import React,  { useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -103,15 +103,15 @@ const FlashcardFromPDF = () => {
   const currentCard = flashcards[currentCardIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[#F8FAFC] px-4 py-8 flex flex-col items-center justify-center">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-8"
       >
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <FileText className="text-blue-600" size={32} />
+        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FileText className="text-indigo-600" size={32} />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           PDF to Flashcards
@@ -127,7 +127,7 @@ const FlashcardFromPDF = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-2xl bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8"
       >
-        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-blue-300 transition-colors">
+        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-indigo-300 transition-colors">
           <div className="space-y-4">
             <input
               type="file"
@@ -136,10 +136,10 @@ const FlashcardFromPDF = () => {
               className="block w-full text-sm text-gray-600
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-lg file:border-0
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100 file:cursor-pointer"
+                file:bg-indigo-50 file:text-indigo-700
+                hover:file:bg-indigo-100 file:cursor-pointer"
             />
-            
+
             {file && (
               <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
                 Selected: <span className="font-medium">{file.name}</span>
@@ -149,7 +149,7 @@ const FlashcardFromPDF = () => {
             <motion.button
               onClick={handleUpload}
               disabled={loading || !file}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -194,7 +194,7 @@ const FlashcardFromPDF = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-3xl"
+            className="w-full max-w-xl"
           >
             {/* Progress */}
             <div className="text-center mb-6">
@@ -203,16 +203,20 @@ const FlashcardFromPDF = () => {
               </span>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                 <motion.div
-                  className="bg-blue-500 h-2 rounded-full"
+                  className="bg-indigo-500 h-2 rounded-full"
                   initial={{ width: 0 }}
-                  animate={{ width: `${((currentCardIndex + 1) / flashcards.length) * 100}%` }}
+                  animate={{
+                    width: `${
+                      ((currentCardIndex + 1) / flashcards.length) * 100
+                    }%`,
+                  }}
                   transition={{ duration: 0.3 }}
                 />
               </div>
             </div>
 
             {/* Card and Navigation */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={handlePrev}
                 className="p-3 bg-white rounded-full shadow-sm hover:shadow-md border border-gray-200 hover:bg-gray-50"
@@ -221,43 +225,43 @@ const FlashcardFromPDF = () => {
               </button>
 
               <div
-                className="flex-1 h-80 cursor-pointer"
+                className="flex-1 h-80 sm:h-96 cursor-pointer"
                 onClick={handleFlip}
+                style={{ perspective: "1000px" }}
               >
                 <motion.div
-                  className="relative w-full h-full rounded-xl shadow-sm"
+                  className="relative w-full h-full rounded-xl"
                   animate={{ rotateY: isFlipped ? 180 : 0 }}
-                  transition={{ duration: 0.6 }}
+                  transition={{ duration: 0.5 }}
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  {/* Question Side */}
+                  {/* Both sides are now within this container */}
                   <div
-                    className="absolute inset-0 bg-blue-500 text-white rounded-xl p-8 flex items-center justify-center text-center"
+                    className="absolute inset-0 bg-white rounded-xl p-6 sm:p-8 flex items-center justify-center text-center border border-gray-200 shadow-sm"
                     style={{ backfaceVisibility: "hidden" }}
                   >
                     <div>
-                      <h3 className="text-xl font-semibold leading-relaxed">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-800 leading-relaxed">
                         {currentCard.front}
                       </h3>
-                      <p className="text-blue-100 text-sm mt-4">
+                      <p className="text-gray-500 text-sm mt-4">
                         Click to reveal answer
                       </p>
                     </div>
                   </div>
 
-                  {/* Answer Side */}
                   <div
-                    className="absolute inset-0 bg-green-500 text-white rounded-xl p-8 flex items-center justify-center text-center"
+                    className="absolute inset-0 bg-blue-50 rounded-xl p-6 sm:p-8 flex items-center justify-center text-center border border-blue-200 shadow-sm"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                     }}
                   >
                     <div>
-                      <p className="text-lg leading-relaxed">
+                      <p className="text-base sm:text-lg text-gray-700 leading-relaxed">
                         {currentCard.back}
                       </p>
-                      <p className="text-green-100 text-sm mt-4">
+                      <p className="text-gray-500 text-sm mt-4">
                         Click to see question
                       </p>
                     </div>

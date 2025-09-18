@@ -1,35 +1,303 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
   FileText,
-  CheckCircle,
-  XCircle,
   RefreshCcw,
   Award,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  CheckCircle2,
+  XCircle,
+  X,
 } from "lucide-react";
 
-// Custom components for a cleaner UI
-const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-sm border border-gray-100">
-    <div className="w-8 h-8 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-3" />
-    <span className="text-gray-700 font-medium">Processing...</span>
-    <span className="text-gray-500 text-sm">This may take a moment.</span>
-  </div>
-);
+// Modal components adapted from Dashboard.jsx
 
+const Modal = ({ isOpen, onClose, title, children, size = "large" }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            className={`w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-gray-100`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+              <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+              {children}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const QuizModal = ({ isOpen, onClose, quizData }) => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
+  const [score, setScore] = useState(0);
+
+  let questions = [];
+  try {
+    // The data from the API is already an array, so we structure it to match what the modal expects
+    const parsed = quizData;
+    questions = parsed.quiz || [];
+  } catch (err) {
+    console.error("Quiz parse error:", err);
+  }
+
+  const resetQuiz = () => {
+    setCurrentQuestion(0);
+    setSelectedAnswers({});
+    setShowResults(false);
+    setScore(0);
+  };
+
+  const handleAnswerSelect = (questionIndex, answer) => {
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionIndex]: answer,
+    }));
+  };
+
+  const calculateScore = () => {
+    let correct = 0;
+    questions.forEach((q, index) => {
+      if (selectedAnswers[index] === q.answer) {
+        correct++;
+      }
+    });
+    setScore(correct);
+    setShowResults(true);
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      calculateScore();
+    }
+  };
+
+  const prevQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      resetQuiz();
+    }
+  }, [isOpen]);
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        showResults ? "Quiz Results" : `Quiz • ${questions.length} questions`
+      }
+      size="large"
+    >
+      <div className="p-6">
+        {questions.length === 0 ? (
+          <div className="text-center py-12">
+            <Zap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No quiz questions available</p>
+          </div>
+        ) : showResults ? (
+          <div className="space-y-6">
+            <div className="text-center space-y-4">
+              <div
+                className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${
+                  score >= questions.length * 0.7
+                    ? "bg-green-100"
+                    : "bg-orange-100"
+                }`}
+              >
+                {score >= questions.length * 0.7 ? (
+                  <CheckCircle2 className="w-10 h-10 text-green-600" />
+                ) : (
+                  <XCircle className="w-10 h-10 text-orange-600" />
+                )}
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {score} / {questions.length}
+                </h3>
+                <p className="text-gray-600">
+                  {Math.round((score / questions.length) * 100)}% Score
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+              {questions.map((q, index) => {
+                const userAnswer = selectedAnswers[index];
+                const isCorrect = userAnswer === q.answer;
+
+                return (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-xl border ${
+                      isCorrect
+                        ? "bg-green-50 border-green-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">
+                        {index + 1}. {q.question}
+                      </h4>
+                      {isCorrect ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                      )}
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <p
+                        className={`${
+                          isCorrect ? "text-green-700" : "text-red-700"
+                        }`}
+                      >
+                        Your answer: {userAnswer || "Not answered"}
+                      </p>
+                      {!isCorrect && (
+                        <p className="text-green-700">
+                          Correct answer: {q.answer}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={resetQuiz}
+                className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <RotateCcw size={18} />
+                Retake Quiz
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <span>
+                Question {currentQuestion + 1} of {questions.length}
+              </span>
+              <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${
+                      ((currentQuestion + 1) / questions.length) * 100
+                    }%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-medium text-gray-900">
+                {questions[currentQuestion]?.question}
+              </h3>
+
+              <div className="space-y-3">
+                {questions[currentQuestion]?.options?.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswerSelect(currentQuestion, option)}
+                    className={`w-full p-4 text-left rounded-xl border transition-all ${
+                      selectedAnswers[currentQuestion] === option
+                        ? "border-indigo-300 bg-indigo-50 text-indigo-900"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span className="font-medium text-sm text-gray-500 mr-3">
+                      {String.fromCharCode(65 + index)}.
+                    </span>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+              <button
+                onClick={prevQuestion}
+                disabled={currentQuestion === 0}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={18} />
+                Previous
+              </button>
+
+              <div className="text-sm text-gray-500">
+                {Object.keys(selectedAnswers).length} / {questions.length}{" "}
+                answered
+              </div>
+
+              <button
+                onClick={nextQuestion}
+                disabled={!selectedAnswers[currentQuestion]}
+                className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {currentQuestion === questions.length - 1
+                  ? "Finish Quiz"
+                  : "Next"}
+                {currentQuestion !== questions.length - 1 && (
+                  <ChevronRight size={18} />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+
+// Main Component
 const QuizFromPDF = () => {
   const [file, setFile] = useState(null);
   const [quiz, setQuiz] = useState([]);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [showPopup, setShowPopup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -45,12 +313,8 @@ const QuizFromPDF = () => {
     setLoading(true);
     setError(null);
     setQuiz([]);
-    setScore(0);
-    setQuizSubmitted(false);
-    setSelectedAnswers({}); // <-- Add this line to reset answers
-
+    
     try {
-      // Step 1: Upload PDF -> get extracted text
       const formData = new FormData();
       formData.append("pdf", file);
 
@@ -65,7 +329,6 @@ const QuizFromPDF = () => {
       );
       const extractedText = textRes.data;
 
-      // Step 2: Send extracted text -> get quiz
       const quizRes = await axios.post(
         "http://localhost:8080/quizfrompdf",
         { pdftext: extractedText, fileName: file.name },
@@ -76,55 +339,38 @@ const QuizFromPDF = () => {
         }
       );
       setQuiz(quizRes.data.quiz || []);
+      if (quizRes.data.quiz && quizRes.data.quiz.length > 0) {
+        setIsQuizModalOpen(true);
+      } else {
+        setError("Could not generate a quiz from the provided PDF.");
+      }
     } catch (err) {
       console.error("Error generating quiz:", err);
       setError(
-        "Failed to generate quiz. Please check the console for details."
+        "Failed to generate quiz. The document might be empty or in an unsupported format."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAnswerSelect = (questionIndex, optionLetter) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionIndex]: optionLetter,
-    }));
-  };
+  const LoadingSpinner = () => (
+    <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-sm border border-gray-100">
+        <div className="w-8 h-8 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-3" />
+        <span className="text-gray-700 font-medium">Processing...</span>
+        <span className="text-gray-500 text-sm">This may take a moment.</span>
+    </div>
+    );
 
-  const handleSubmitQuiz = () => {
-    let total = 0;
-    quiz.forEach((q, idx) => {
-      const selectedLetter = selectedAnswers[idx];
-      if (!selectedLetter) return;
-      const optionIndex = selectedLetter.charCodeAt(0) - 65;
-      const selectedText = q.options?.[optionIndex];
-      const answer = q.answer;
-
-      const matchesByLetter =
-        typeof answer === "string" &&
-        /^[A-Z]$/.test(answer.trim()) &&
-        answer.trim().toUpperCase() === selectedLetter;
-      const matchesByText =
-        String(answer).trim() === String(selectedText).trim();
-
-      if (matchesByLetter || matchesByText) total++;
-    });
-    setScore(total);
-    setQuizSubmitted(true);
-    setShowPopup(true);
-  };
-
-  const handleRetryQuiz = () => {
-    setSelectedAnswers({});
-    setScore(0);
-    setQuizSubmitted(false);
-    setShowPopup(false);
-  };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[#F8FAFC] px-4 py-8 flex flex-col items-center justify-center">
+        <QuizModal
+            isOpen={isQuizModalOpen}
+            onClose={() => setIsQuizModalOpen(false)}
+            quizData={{ quiz: quiz }}
+        />
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -163,7 +409,7 @@ const QuizFromPDF = () => {
             
             {file && (
               <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
-                Selected: <span className="font-medium">{file.name}</span>
+                Selected: <span className="font-medium break-words">{file.name}</span>
               </div>
             )}
 
@@ -188,7 +434,7 @@ const QuizFromPDF = () => {
             </motion.button>
 
             {error && (
-              <div className="text-sm text-red-600 p-3 bg-red-50 rounded-lg">
+              <div className="text-sm text-red-600 p-3 bg-red-50 rounded-lg mt-4">
                 {error}
               </div>
             )}
@@ -205,177 +451,6 @@ const QuizFromPDF = () => {
             exit={{ opacity: 0 }}
           >
             <LoadingSpinner />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Quiz Section */}
-      <AnimatePresence>
-        {quiz.length > 0 && !loading && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-3xl"
-          >
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Quiz</h2>
-              <p className="text-gray-600">{quiz.length} questions to test your knowledge</p>
-            </div>
-
-            <div className="space-y-6">
-              {quiz.map((q, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
-                >
-                  <div className="mb-4">
-                    <div className="flex items-start gap-3">
-                      <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
-                        {idx + 1}
-                      </span>
-                      <h3 className="font-semibold text-lg text-gray-900 leading-relaxed">
-                        {q.question}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 ml-11">
-                    {q.options.map((opt, i) => {
-                      const optionLetter = String.fromCharCode(65 + i);
-                      const isSelected = selectedAnswers[idx] === optionLetter;
-                      const isCorrect =
-                        quizSubmitted &&
-                        (String(q.answer).trim().toUpperCase() ===
-                          optionLetter ||
-                          String(q.answer).trim() === String(opt).trim());
-
-                      let optionClasses = "bg-white border-gray-200 hover:bg-gray-50";
-                      let iconColor = "text-gray-400";
-                      let showIcon = false;
-
-                      if (quizSubmitted) {
-                        if (isCorrect) {
-                          optionClasses = "bg-green-50 border-green-300 text-green-800";
-                          iconColor = "text-green-600";
-                          showIcon = true;
-                        } else if (isSelected) {
-                          optionClasses = "bg-red-50 border-red-300 text-red-800";
-                          iconColor = "text-red-600";
-                          showIcon = true;
-                        }
-                      } else if (isSelected) {
-                        optionClasses = "bg-blue-50 border-blue-300 text-blue-800";
-                      }
-
-                      return (
-                        <motion.label
-                          key={i}
-                          className={`flex items-center p-4 rounded-lg border cursor-pointer transition-all duration-200 ${optionClasses} ${
-                            quizSubmitted ? 'cursor-default' : ''
-                          }`}
-                          whileHover={!quizSubmitted ? { scale: 1.01 } : {}}
-                          whileTap={!quizSubmitted ? { scale: 0.99 } : {}}
-                        >
-                          <input
-                            type="radio"
-                            name={`q-${idx}`}
-                            value={optionLetter}
-                            checked={isSelected}
-                            disabled={quizSubmitted}
-                            onChange={() => handleAnswerSelect(idx, optionLetter)}
-                            className="sr-only"
-                          />
-                          <span className="font-bold text-sm w-6 text-center">
-                            {optionLetter}.
-                          </span>
-                          <span className="ml-3 flex-1">{opt}</span>
-                          {showIcon && (
-                            <div className="ml-2">
-                              {isCorrect ? (
-                                <CheckCircle size={20} className={iconColor} />
-                              ) : isSelected ? (
-                                <XCircle size={20} className={iconColor} />
-                              ) : null}
-                            </div>
-                          )}
-                        </motion.label>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="mt-8 text-center">
-              {!quizSubmitted ? (
-                <motion.button
-                  onClick={handleSubmitQuiz}
-                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-sm"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Submit Quiz
-                </motion.button>
-              ) : (
-                <motion.button
-                  onClick={handleRetryQuiz}
-                  className="px-8 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold shadow-sm"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Try Again
-                </motion.button>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Score Popup */}
-      <AnimatePresence>
-        {showPopup && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: -20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            >
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="text-blue-600" size={32} />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Quiz Complete!
-              </h2>
-              <p className="text-gray-600 text-lg mb-6">
-                You scored{" "}
-                <span className="font-bold text-blue-600">{score}</span> out of{" "}
-                <span className="font-bold">{quiz.length}</span>
-              </p>
-              <div className="space-y-3">
-                <button
-                  onClick={handleRetryQuiz}
-                  className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-                >
-                  Try Again
-                </button>
-                <button
-                  onClick={() => setShowPopup(false)}
-                  className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
