@@ -68,7 +68,7 @@ function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard
               icon={<BookOpen />}
-              title="Personalized Roadmaps"
+              title="Personalized Courses"
               description="Create custom learning paths tailored to your goals. Our AI designs a step-by-step curriculum to guide your studies."
               delay={0.2}
             />

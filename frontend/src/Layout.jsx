@@ -1,6 +1,6 @@
 "use client"
 
-import { NavLink, Outlet } from "react-router-dom"
+import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -51,9 +51,15 @@ function Item({
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const navigate = useNavigate();
 
   const toggleSidebar = () => setSidebarOpen((s) => !s)
   const toggleCollapse = () => setSidebarCollapsed((c) => !c)
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 text-gray-900 font-sans overflow-hidden">
@@ -261,6 +267,32 @@ export default function Layout() {
 
         {/* Profile */}
         <div className="p-4 border-t border-gray-200/60 flex-shrink-0 bg-white/30">
+        <button
+            onClick={handleLogout}
+            title={sidebarCollapsed ? "Logout" : ""}
+            className={`group relative flex items-center w-full ${
+              sidebarCollapsed ? "lg:justify-center lg:gap-0" : "gap-3"
+            } px-3 py-2.5 rounded-lg transition-all duration-200 ease-out text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm border border-transparent mb-2`}
+          >
+            <span className={`w-5 h-5 shrink-0 transition-colors duration-200 [&>svg]:w-5 [&>svg]:h-5 ${
+              sidebarCollapsed ? "text-gray-500 group-hover:text-red-600" : "text-gray-400 group-hover:text-red-600"
+            }`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </span>
+            <span className={`${sidebarCollapsed ? "flex lg:hidden" : "flex"} flex-col min-w-0`}>
+              <span className="font-medium leading-5 text-pretty text-sm">Logout</span>
+            </span>
+            {sidebarCollapsed && (
+              <span className="hidden lg:block absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap shadow-lg border border-gray-700 z-50">
+                Logout
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 border-l border-b border-gray-700 rotate-45"></span>
+              </span>
+            )}
+          </button>
           <Item
             to="/profile"
             label="Profile"
