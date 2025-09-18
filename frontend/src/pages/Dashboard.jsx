@@ -1627,7 +1627,7 @@ const Dashboard = () => {
                         <Zap className="w-4 h-4 text-orange-600" />
                       </div>
                       <h3 className="font-medium text-gray-900">
-                        Quiz #{quiz.ID}
+                        Quiz #{i+1}
                       </h3>
                     </div>
                     <button
@@ -1692,7 +1692,7 @@ const Dashboard = () => {
                         <Brain className="w-4 h-4 text-indigo-600" />
                       </div>
                       <h3 className="font-medium text-gray-900">
-                        Set #{fc.ID}
+                        Set #{i+1}
                       </h3>
                     </div>
                     <button
