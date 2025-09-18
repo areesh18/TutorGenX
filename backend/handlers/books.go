@@ -1,18 +1,24 @@
+// areesh18/tutorgenx/TutorGenX-4fad9d4aedd9b91e06ede18a8ffd2acadecf959e/backend/handlers/books.go
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 	"tutor_genX/utils"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/sashabaranov/go-openai"
 )
 
 // BookSearchRequest defines the structure for the incoming request body.
 type BookSearchRequest struct {
-	Topic string `json:"topic"`
+	Goal string `json:"goal"`
 }
 
 // Book represents a single book entry from the Open Library API response.
@@ -31,62 +37,109 @@ type BookSearchResponse struct {
 
 // BookHandler searches for free books on a given topic using the Open Library API.
 func BookHandler(w http.ResponseWriter, r *http.Request) {
-	// Auth check using the JWT from the request context.
+	// Auth check
 	_, ok := r.Context().Value(utils.UserContextKey).(jwt.MapClaims)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	// Decode the JSON request body.
+	// Decode the request
 	var req BookSearchRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Topic == "" {
-		http.Error(w, "Invalid request: topic is required", http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Goal == "" {
+		http.Error(w, "Invalid request: goal is required", http.StatusBadRequest)
 		return
 	}
+	log.Printf("Received book search request for goal: %s", req.Goal)
 
-	// Construct the Open Library API URL. The 'ebooks=true' query parameter
-	// filters results to only include digital books.
-	apiURL := fmt.Sprintf("https://openlibrary.org/search.json?q=%s&ebooks=true", url.QueryEscape(req.Topic))
+	// Setup Groq
+	apiKey := os.Getenv("GROQ_API_KEY")
+	if apiKey == "" {
+		http.Error(w, "GROQ_API_KEY not set", http.StatusInternalServerError)
+		return
+	}
+	cfg := openai.DefaultConfig(apiKey)
+	cfg.BaseURL = "https://api.groq.com/openai/v1"
+	client := openai.NewClientWithConfig(cfg)
 
-	// Make the HTTP GET request to the Open Library API.
-	resp, err := http.Get(apiURL)
+	// A more robust prompt to extract keywords from a conversational goal
+	prompt := fmt.Sprintf(`Your task is to extract a concise, 2-5 word book search query from a user's learning goal. Ignore conversational filler. Respond with ONLY the search query.
+For example:
+
+Goal: "i want to master all concepts in computer networks for my upcmming exam in btech i dont know anything about this topic"
+Query: "Computer Networks"
+
+Goal: "how do i get started with python as a complete beginner"
+Query: "Python"
+
+Goal: "i need to become a full stack web developer using the mern stack"
+Query: "MERN stack full stack development"
+
+Goal: "learn data science and machine learning"
+Query: "Data Science machine learning"
+
+Goal: "%s"
+Query:`, req.Goal)
+
+	// Call Groq
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: "llama-3.3-70b-versatile",
+			Messages: []openai.ChatCompletionMessage{
+				{Role: openai.ChatMessageRoleUser, Content: prompt},
+			},
+		},
+	)
+
+	var searchTerm string
+	if err != nil || len(resp.Choices) == 0 || resp.Choices[0].Message.Content == "" {
+		log.Printf("AI search term generation failed: %v. Falling back to original goal.", err)
+		searchTerm = req.Goal // Fallback to the original goal
+	} else {
+		// Clean up the AI response
+		searchTerm = strings.TrimSpace(resp.Choices[0].Message.Content)
+		searchTerm = strings.Trim(searchTerm, "\"")
+		log.Printf("AI generated search term: %s", searchTerm)
+	}
+
+	// Search Open Library
+	apiURL := fmt.Sprintf("https://openlibrary.org/search.json?q=%s&ebooks=true", url.QueryEscape(searchTerm))
+	httpResp, err := http.Get(apiURL)
 	if err != nil {
 		http.Error(w, "Failed to fetch data from Open Library API", http.StatusInternalServerError)
 		return
 	}
-	defer resp.Body.Close()
+	defer httpResp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if httpResp.StatusCode != http.StatusOK {
 		http.Error(w, "Open Library API returned an error", http.StatusInternalServerError)
 		return
 	}
 
-	// Decode the JSON response from the Open Library API.
 	var result map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(httpResp.Body).Decode(&result); err != nil {
 		http.Error(w, "Failed to parse Open Library API response", http.StatusInternalServerError)
 		return
 	}
 
-	// Extract the 'docs' array from the response, which contains the book data.
 	docs, ok := result["docs"].([]interface{})
 	if !ok {
-		http.Error(w, "Invalid response format from Open Library API", http.StatusInternalServerError)
+		// No 'docs' field is a valid response for no results, so we'll just return an empty list.
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(BookSearchResponse{Books: []Book{}})
 		return
 	}
+	log.Printf("Found %d books from Open Library before filtering.", len(docs))
 
 	var books []Book
-	// Iterate through the documents and create a structured list of books.
 	for _, doc := range docs {
 		bookData, ok := doc.(map[string]interface{})
 		if !ok {
 			continue
 		}
 
-		// Check if the book has an 'ia' field, which indicates it's available via Internet Archive.
-		// These books are generally free to download or borrow.
-		if _, hasIA := bookData["ia"]; hasIA {
+		if ia, hasIA := bookData["ia"].([]interface{}); hasIA && len(ia) > 0 {
 			var authorNames []string
 			if authors, ok := bookData["author_name"].([]interface{}); ok {
 				for _, author := range authors {
@@ -96,19 +149,22 @@ func BookHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			// Add the book to our list.
+			firstPublishYear := 0
+			if fpy, ok := bookData["first_publish_year"].(float64); ok {
+				firstPublishYear = int(fpy)
+			}
+
 			books = append(books, Book{
 				Title:            fmt.Sprintf("%v", bookData["title"]),
 				AuthorName:       authorNames,
-				FirstPublishYear: int(bookData["first_publish_year"].(float64)),
+				FirstPublishYear: firstPublishYear,
 				Key:              fmt.Sprintf("%v", bookData["key"]),
-				// Construct the download URL for Internet Archive books.
-				DownloadURL: fmt.Sprintf("https://archive.org/details/%v", bookData["ia"].([]interface{})[0]),
+				DownloadURL:      fmt.Sprintf("https://archive.org/details/%v", ia[0]),
 			})
 		}
 	}
+	log.Printf("Returning %d filtered books.", len(books))
 
-	// Set the Content-Type header and encode the final response.
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(BookSearchResponse{
 		Books: books,

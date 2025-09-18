@@ -374,7 +374,7 @@ const BooksModal = ({ isOpen, onClose, books, loading, title }) => {
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                 <span className="text-amber-600">📚</span>
-                Books for "{title}"
+                Books for your course
               </h3>
               <button
                 onClick={onClose}
@@ -1086,40 +1086,40 @@ const Dashboard = () => {
   };
 
   // Handle Books button click
-  const handleBooksClick = async (courseTitle) => {
-    setBooksModal({
-      isOpen: true,
-      books: [],
-      loading: true,
-      title: courseTitle,
-    });
+  const handleBooksClick = async (goal) => { // from courseTitle to goal
+  setBooksModal({
+    isOpen: true,
+    books: [],
+    loading: true,
+    title: goal,
+  });
 
     try {
-      const res = await axios.post(
-        "http://localhost:8080/booksection",
-        { topic: courseTitle },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    const res = await axios.post(
+      "http://localhost:8080/booksection",
+      { goal: goal }, // send goal
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-      setBooksModal((prev) => ({
-        ...prev,
-        books: res.data.books || [],
-        loading: false,
-      }));
-    } catch (err) {
-      console.error("Error fetching books:", err);
-      setBooksModal((prev) => ({
-        ...prev,
-        books: [],
-        loading: false,
-      }));
-    }
-  };
+    setBooksModal((prev) => ({
+      ...prev,
+      books: res.data.books || [],
+      loading: false,
+    }));
+  } catch (err) {
+    console.error("Error fetching books:", err);
+    setBooksModal((prev) => ({
+      ...prev,
+      books: [],
+      loading: false,
+    }));
+  }
+};
 
   // Handle modal confirmation
   const handleDeleteConfirm = async () => {
@@ -1419,7 +1419,7 @@ const Dashboard = () => {
                             <motion.button
                               onClick={() =>
                                 handleBooksClick(
-                                  roadmap?.title || "Learning Roadmap"
+                                  roadmap.goal || roadmap.title || "Learning Roadmap"
                                 )
                               }
                               className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-600 hover:bg-amber-100 transition-colors"
