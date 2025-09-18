@@ -20,21 +20,28 @@ function Item({
         [
           "group relative flex items-center w-full",
           collapsed ? "lg:justify-center lg:gap-0" : "gap-3",
-          "px-3 py-2.5 rounded-md transition-colors",
-          isActive ? "bg-indigo-50 text-indigo-700" : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+          "px-3 py-2.5 rounded-lg transition-all duration-200 ease-out",
+          isActive 
+            ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-100 shadow-sm" 
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm border border-transparent",
         ].join(" ")
       }
     >
-      <span className="w-5 h-5 text-gray-500 shrink-0 [&>svg]:w-5 [&>svg]:h-5">{children}</span>
+      <span className={`w-5 h-5 shrink-0 transition-colors duration-200 [&>svg]:w-5 [&>svg]:h-5 ${
+        collapsed ? "text-gray-500 group-hover:text-blue-600" : "text-gray-400 group-hover:text-blue-600"
+      }`}>
+        {children}
+      </span>
 
       <span className={`${collapsed ? "flex lg:hidden" : "flex"} flex-col min-w-0`}>
-        <span className="font-medium leading-5 text-pretty">{label}</span>
-        {sublabel ? <span className="text-xs text-gray-500 leading-4">{sublabel}</span> : null}
+        <span className="font-medium leading-5 text-pretty text-sm">{label}</span>
+        {sublabel ? <span className="text-xs text-gray-400 leading-4 mt-0.5">{sublabel}</span> : null}
       </span>
 
       {collapsed && (
-        <span className="hidden lg:block absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+        <span className="hidden lg:block absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap shadow-lg border border-gray-700 z-50">
           {label}
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 border-l border-b border-gray-700 rotate-45"></span>
         </span>
       )}
     </NavLink>
@@ -49,33 +56,42 @@ export default function Layout() {
   const toggleCollapse = () => setSidebarCollapsed((c) => !c)
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 text-gray-900 font-sans overflow-hidden">
       {/* Mobile overlay */}
-      {sidebarOpen && (
-        <button
-          aria-label="Close sidebar"
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            aria-label="Close sidebar"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-20 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
-      <aside
+      <motion.aside
+        initial={false}
+        animate={{
+          width: sidebarCollapsed ? 64 : 288,
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         className={[
-          "bg-white border-r border-gray-200 text-gray-900 flex flex-col transition-all duration-300 ease-in-out",
+          "bg-white/80 backdrop-blur-xl border-r border-gray-200/60 text-gray-900 flex flex-col transition-all duration-300 ease-in-out shadow-sm",
           "fixed lg:static inset-y-0 left-0 z-30 transform",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0",
-          sidebarCollapsed ? "lg:w-16" : "lg:w-72",
-          "w-72",
+          "w-72 lg:w-auto",
           "h-full",
         ].join(" ")}
       >
         {/* Brand / Header */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+        <div className="p-5 border-b border-gray-200/60 flex items-center justify-between flex-shrink-0 bg-white/50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-indigo-600 text-white grid place-items-center">
-              {/* book icon */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white grid place-items-center shadow-md">
               <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
                 <path
                   d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V19a0 0 0 0 1 0 0H7.5A2.5 2.5 0 0 1 5 16.5v-11Z"
@@ -85,12 +101,21 @@ export default function Layout() {
                 <path d="M5 6h12.5A1.5 1.5 0 0 1 19 7.5V20" stroke="currentColor" strokeWidth="1.5" />
               </svg>
             </div>
-            {!sidebarCollapsed && (
-              <div>
-                <h1 className="text-base font-semibold tracking-tight">TutorGenX</h1>
-                <p className="text-xs text-gray-500">Smart Learning Platform</p>
-              </div>
-            )}
+            <AnimatePresence>
+              {!sidebarCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    TutorGenX
+                  </h1>
+                  <p className="text-xs text-gray-400 font-medium">Smart Learning Platform</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Desktop collapse */}
@@ -98,12 +123,12 @@ export default function Layout() {
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={toggleCollapse}
-            className="hidden lg:inline-flex p-2 rounded-md border hover:bg-gray-100 text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/70"
+            className="hidden lg:inline-flex p-2 rounded-lg border border-gray-200 hover:bg-gray-100 hover:border-gray-300 text-gray-500 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-all duration-200"
           >
             <svg
               viewBox="0 0 24 24"
               fill="none"
-              className={`w-5 h-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`}
+              className={`w-4 h-4 transition-transform duration-300 ${sidebarCollapsed ? "rotate-180" : ""}`}
               aria-hidden="true"
             >
               <path
@@ -120,7 +145,7 @@ export default function Layout() {
           <button
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 text-gray-500"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors duration-200"
           >
             <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
               <path
@@ -135,13 +160,22 @@ export default function Layout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto overflow-x-hidden">
-          <div className="space-y-6">
+        <nav className="flex-1 px-4 py-6 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+          <div className="space-y-8">
             <div>
-              {!sidebarCollapsed && (
-                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Navigation</h3>
-              )}
-              <div className="space-y-1 group">
+              <AnimatePresence>
+                {!sidebarCollapsed && (
+                  <motion.h3
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1"
+                  >
+                    Navigation
+                  </motion.h3>
+                )}
+              </AnimatePresence>
+              <div className="space-y-1.5">
                 <Item
                   to="/dashboard"
                   label="Dashboard"
@@ -151,15 +185,16 @@ export default function Layout() {
                 >
                   <svg viewBox="0 0 24 24" fill="none">
                     <path
-                      d="M3 12l7-7 4 4 7-7"
+                      d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
                       stroke="currentColor"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
+                    <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Item>
-                <Item
+                {/* <Item
                   to="/courses"
                   label="Courses"
                   sublabel="Browse courses"
@@ -167,28 +202,11 @@ export default function Layout() {
                   collapsed={sidebarCollapsed}
                 >
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </Item>
-                {/* <Item
-                  to="/ytsection"
-                  label="Videos"
-                  sublabel="YouTube resources"
-                  titleWhenCollapsed="Videos"
-                  collapsed={sidebarCollapsed}
-                >
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M10 9l5 3-5 3V9z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                    />
-                    <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" strokeWidth="2" />
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Item> */}
-                <Item
+                {/* <Item
                   to="/booksection"
                   label="Books"
                   sublabel="Reading library"
@@ -196,55 +214,53 @@ export default function Layout() {
                   collapsed={sidebarCollapsed}
                 >
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M6 4h10a2 2 0 012 2v14H6a2 2 0 01-2-2V6a2 2 0 012-2z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    />
-                    <path d="M6 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                </Item>
+                </Item> */}
                 <Item
                   to="/quizfrompdf"
                   label="Create Quiz"
                   sublabel="AI-assisted creation"
-                  titleWhenCollapsed="Create"
+                  titleWhenCollapsed="Create Quiz"
                   collapsed={sidebarCollapsed}
                 >
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 4v16M20 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1H3c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M3 12v6c0 .552.448 1 1 1h16c.552 0 1-.448 1-1v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Item>
                 <Item
                   to="/flashcards"
                   label="Create Flashcards"
                   sublabel="AI-assisted creation"
-                  titleWhenCollapsed="Create"
+                  titleWhenCollapsed="Create Flashcards"
                   collapsed={sidebarCollapsed}
                 >
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 4v16M20 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" />
+                    <path d="M9 9h6v6H9z" stroke="currentColor" strokeWidth="2" />
                   </svg>
                 </Item>
                 <Item
                   to="/create-course"
                   label="Create Course"
                   sublabel="AI-assisted creation"
-                  titleWhenCollapsed="Create"
+                  titleWhenCollapsed="Create Course"
                   collapsed={sidebarCollapsed}
                 >
                   <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 4v16M20 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Item>
               </div>
             </div>
-            
           </div>
         </nav>
 
         {/* Profile */}
-        <div className="p-4 border-t border-gray-200 flex-shrink-0">
+        <div className="p-4 border-t border-gray-200/60 flex-shrink-0 bg-white/30">
           <Item
             to="/profile"
             label="Profile"
@@ -253,47 +269,51 @@ export default function Layout() {
             collapsed={sidebarCollapsed}
           >
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M6 4h10a2 2 0 012 2v14H6a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" />
-              <path d="M6 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
             </svg>
           </Item>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 flex flex-col h-full relative">
         {/* Mobile top bar */}
-        <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
+        <div className="lg:hidden bg-white/80 backdrop-blur-xl border-b border-gray-200/60 px-4 py-3 flex items-center justify-between flex-shrink-0 shadow-sm">
           <button
             onClick={toggleSidebar}
             aria-label="Open sidebar"
-            className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200"
           >
             <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
               <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
-          <h2 className="text-base font-semibold">TutorGenX</h2>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            TutorGenX
+          </h2>
           <div className="w-10 flex justify-end">
-            <div className="w-8 h-8 rounded-md bg-indigo-600 text-white grid place-items-center">
-              <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5">
-                <path d="M6 4h10a2 2 0 012 2v14H6a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white grid place-items-center shadow-md">
+              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
               </svg>
             </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <div
-            className={`mx-auto w-full min-w-0 ${
-              sidebarCollapsed
-                ? "max-w-[100rem] 2xl:max-w-[110rem]"
-                : "max-w-[90rem] xl:max-w-[96rem]"
-            }`}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+          <motion.div
+            initial={false}
+            animate={{
+              maxWidth: sidebarCollapsed ? "100rem" : "90rem",
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="mx-auto w-full min-w-0 2xl:max-w-[110rem] xl:max-w-[96rem]"
           >
             <Outlet />
-          </div>
+          </motion.div>
         </main>
       </div>
     </div>
