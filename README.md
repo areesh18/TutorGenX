@@ -110,3 +110,27 @@ The backend provides a RESTful API to support the frontend application. Here are
     * `POST /booksection`: Search for books related to a topic.
 * **Real-time Chat:**
     * `/ws`: WebSocket endpoint for the AI chatbot.
+## Screenshots
+
+Here are some screenshots of the TutorGenX application in action:
+
+**Dashboard**
+![TutorGenX Dashboard](assets/dashboard.png)
+
+**Course Creation**
+![TutorGenX Course Creation](assets/Create_course_1.png)
+
+**Learning Interface**
+![TutorGenX Learning Interface](assets/CoursePage.png)
+
+**Quiz Preview**
+![TutorGenX Quiz Interface](assets/Quiz_preview_1.png)
+
+**Profile Page**
+![](assets/profile_page.png)
+**Login Page**
+![](assets/login.png)
+
+**Mobile view**
+![](assets/Course_mobile_view.png)
+![](assets/Sidebar_mview.png)
